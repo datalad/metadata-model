@@ -10,12 +10,14 @@ class MetadataRootRecord(ConnectedObject):
                  mapper_family,
                  realm,
                  dataset_identifier: UUID,
+                 dataset_version: str,
                  dataset_level_metadata: Connector,
                  file_tree: Connector):
 
         self.mapper_family = mapper_family
         self.realm = realm
         self.dataset_identifier = dataset_identifier
+        self.dataset_version = dataset_version
         self.dataset_level_metadata = dataset_level_metadata
         self.file_tree = file_tree
 
@@ -26,14 +28,17 @@ class MetadataRootRecord(ConnectedObject):
         it saves the properties of the UUIDSet and the top-half
         of the connectors with the appropriate class mapper.
         """
-        self.file_tree.save(self.mapper_family, self.realm, force_write)
-        self.dataset_level_metadata.save(self.mapper_family, self.realm, force_write)
+        self.save_connected_components(force_write)
         return Reference(
             self.mapper_family,
             "MetadataRootRecord",
             get_mapper(
                 self.mapper_family,
                 "MetadataRootRecord")(self.realm).unmap(self))
+
+    def save_connected_components(self, force_write: bool = False):
+        self.file_tree.save(self.mapper_family, self.realm, force_write)
+        self.dataset_level_metadata.save(self.mapper_family, self.realm, force_write)
 
     def set_file_tree(self, file_tree: ConnectedObject):
         self.file_tree = Connector.from_object(file_tree)

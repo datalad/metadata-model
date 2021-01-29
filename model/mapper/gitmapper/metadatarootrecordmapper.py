@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 from .gittools import git_load_json, git_save_json
 from ..basemapper import BaseMapper
@@ -18,12 +19,13 @@ class MetadataRootRecordGitMapper(BaseMapper):
         return MetadataRootRecord(
             "git",
             self.realm,
-            json_object["dataset_identifier"],
+            UUID(json_object["dataset_identifier"]),
+            json_object["dataset_version"],
             Connector.from_reference(
-                Reference.from_json(json_object["dataset_level_metadata"])
+                Reference.from_json_obj(json_object["dataset_level_metadata"])
             ),
             Connector.from_reference(
-                Reference.from_json(json_object["file_level_metadata"])
+                Reference.from_json_obj(json_object["file_level_metadata"])
             )
         )
 
@@ -31,15 +33,15 @@ class MetadataRootRecordGitMapper(BaseMapper):
         from model.metadatarootrecord import MetadataRootRecord
         assert isinstance(obj, MetadataRootRecord)
         json_object = {
-            "dataset_identifier": obj.dataset_identifier,
+            "dataset_identifier": str(obj.dataset_identifier),
+            "dataset_version": str(obj.dataset_version),
             "dataset_level_metadata": obj.dataset_level_metadata.save(
                 "git",
                 self.realm
-            ).to_json(),
+            ).to_json_obj(),
             "file_level_metadata": obj.file_tree.save(
                 "git",
                 self.realm
-            ).to_json()
+            ).to_json_obj()
         }
         return git_save_json(self.realm, json_object)
-

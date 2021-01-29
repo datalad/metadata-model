@@ -16,8 +16,11 @@ class FileTree(ConnectedObject, TreeNode):
         self.mapper_family = mapper_family
         self.realm = realm
 
-    def add_directory(self, path):
-        self.add_node(path, TreeNode())
+    def add_directory(self, name):
+        self.add_node(name, TreeNode())
+
+    def add_file(self, path):
+        self.add_node_hierarchy(path, TreeNode())
 
     def add_metadata(self, path: str, metadata: Optional[Metadata] = None):
         self.add_node_hierarchy(path, TreeNode(value=Connector.from_object(metadata)))

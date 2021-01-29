@@ -20,8 +20,11 @@ class Reference:
             f"class_name='{self.class_name}', "
             f"location={repr(self.location)})")
 
-    def to_json(self):  # TODO: rename to to_json_str
-        return json.dumps({
+    def to_json_str(self):  # TODO: rename to to_json_str
+        return json.dumps(self.to_json_obj())
+
+    def to_json_obj(self):
+        return {
             "@": dict(
                 type="Reference",
                 version="1.0",
@@ -29,14 +32,19 @@ class Reference:
             **dict(
                 mapper_family=self.mapper_family,
                 class_name=self.class_name,
-                location=self.location)})
+                location=self.location)
+        }
 
     @classmethod
-    def from_json(cls, json_str: str) -> "Reference":   # TODO: rename to from_json_str
-        obj = json.loads(json_str)
+    def from_json_str(cls, json_str: str) -> "Reference":
+        return cls.from_json_obj(json.loads(json_str))
+
+    @classmethod
+    def from_json_obj(cls, obj) -> "Reference":
         assert obj["@"]["type"] == "Reference"
         assert obj["@"]["version"] == "1.0"
         return cls(
             obj["mapper_family"],
             obj["class_name"],
-            obj["location"])
+            obj["location"]
+        )
