@@ -23,10 +23,20 @@ class TreeNode:
             **dict(new_nodes)
         }
 
-    def add_node_hierarchy(self, path: str, new_node: "TreeNode"):
-        self._add_node_hierarchy(path.split("/"), new_node)
+    def add_node_hierarchy(self,
+                           path: str,
+                           new_node: "TreeNode",
+                           allow_leaf_node_conversion: bool = False):
+        self._add_node_hierarchy(
+            path.split("/"),
+            new_node,
+            allow_leaf_node_conversion
+        )
 
-    def _add_node_hierarchy(self, path_elements: List[str], new_node: "TreeNode"):
+    def _add_node_hierarchy(self,
+                            path_elements: List[str],
+                            new_node: "TreeNode",
+                            allow_leaf_node_conversion: bool):
         if len(path_elements) == 1:
             self.add_node(path_elements[0], new_node)
         else:
@@ -35,9 +45,9 @@ class TreeNode:
                 sub_node = TreeNode()
                 self.add_node(path_elements[0], sub_node)
             else:
-                if sub_node.is_leaf_node():
+                if not allow_leaf_node_conversion and sub_node.is_leaf_node():
                     raise ValueError(f"Cannot replace leaf node with name {path_elements[0]} with a directory node")
-            sub_node._add_node_hierarchy(path_elements[1:], new_node)
+            sub_node._add_node_hierarchy(path_elements[1:], new_node, allow_leaf_node_conversion)
 
     def add_node_hierarchies(self, new_node_hierarchies: List[Tuple[str, "TreeNode"]]):
         for path_node_tuple in new_node_hierarchies:

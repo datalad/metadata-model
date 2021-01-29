@@ -68,7 +68,8 @@ class DatasetTreeGitMapper(BaseMapper):
             dataset_path = "/".join(path_element[:-1])
             dataset_tree.add_node_hierarchy(
                 dataset_path,
-                TreeNode(metadata_root_record)
+                TreeNode(metadata_root_record),
+                allow_leaf_node_conversion=True
             )
         return dataset_tree
 
