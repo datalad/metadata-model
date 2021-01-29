@@ -1,0 +1,56 @@
+import json
+from typing import Dict, List, Tuple, Union
+
+from .execute import checked_execute
+
+
+def git_command_line(repo_dir: str, command: str, arguments: List[str]) -> List[str]:
+    return [
+               "git",
+               "-P",
+               "--git-dir",
+               repo_dir + "/.git",
+               command
+           ] + arguments
+
+
+def git_text_result(cmd_line):
+    result = checked_execute(cmd_line)[0]
+    return "\n".join(result)
+
+
+def git_load_str(repo_dir, object_reference) -> str:
+    cmd_line = git_command_line(repo_dir, "show", [object_reference])
+    return git_text_result(cmd_line)
+
+
+def git_load_json(repo_dir, object_reference) -> Union[Dict, List]:
+    return json.loads(git_load_str(repo_dir, object_reference))
+
+
+def git_ls_tree(repo_dir, object_reference) -> List[str]:
+    cmd_line = git_command_line(repo_dir, "ls-tree", [object_reference])
+    return checked_execute(cmd_line)[0]
+
+
+def git_ls_tree_recursive(repo_dir, object_reference) -> List[str]:
+    cmd_line = git_command_line(repo_dir, "ls-tree", ["-r", object_reference])
+    return checked_execute(cmd_line)[0]
+
+
+def git_save_str(repo_dir, content: str) -> str:
+    cmd_line = git_command_line(repo_dir, "hash-object", ["-w", "--stdin"])
+    return checked_execute(cmd_line, stdin_content=content)[0][0]
+
+
+def git_save_json(repo_dir, json_object: Union[Dict, List]) -> str:
+    return git_save_str(repo_dir, json.dumps(json_object))
+
+
+def git_save_tree(repo_dir, entry_list: List[Tuple[str, str, str, str]]) -> str:
+    tree_spec = "\n".join([
+        f"{flag} {node_type} {object_hash}\t{name}"
+        for flag, node_type, object_hash, name in entry_list
+    ]) + "\n"
+    cmd_line = git_command_line(repo_dir, "mktree", ["--missing", ])
+    return checked_execute(cmd_line, stdin_content=tree_spec)[0][0]
