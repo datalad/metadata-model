@@ -15,7 +15,7 @@ class FileTreeGitMapper(BaseMapper):
             if child_node.is_leaf_node():
                 assert isinstance(child_node.value, Connector)
                 # Save connectors reference.
-                location = git_save_str(self.realm, child_node.value.reference.to_json())
+                location = git_save_str(self.realm, child_node.value.reference.to_json_str())
                 dir_entries.append(("100644", "blob", location, name))
             else:
                 dir_entries.append(("040000", "tree", self._save_file_tree(child_node), name))

@@ -1,7 +1,9 @@
 import logging
+import sys
 from time import time
 from typing import Dict, List, Tuple, Union
 
+from model.filetree import FileTree
 from model.metadata import ExtractorConfiguration, Metadata, MetadataInstance
 
 
@@ -13,6 +15,29 @@ MDC_LOGGER = logging.getLogger("metadata_creator")
 tree_pattern = [3, -3, 4, -3]
 dataset_versions = 3
 dataset_metadata_formats = ["core-metadata", "annex-metadata", "random-metadata"]
+
+
+FORMATS = ["core-metadata", "annex-metadata", "random-metadata"]
+PARAMETERS = [
+    {
+        "param_1": "1.1",
+        "param_2": "2.1",
+        "param_3": "3.1",
+        "param_4": "4.1",
+    },
+    {
+        "param_1": "1.2",
+        "param_2": "2.2",
+        "param_3": "3.2",
+        "param_4": "4.2",
+    },
+    {
+        "param_1": "1.3",
+        "param_2": "2.3",
+        "param_3": "3.3",
+        "param_4": "4.3",
+    }
+]
 
 
 def _create_tree_paths(tree_spec: List[Tuple[int, int]], level: int) -> List[str]:
@@ -78,30 +103,24 @@ def _create_metadata(
     return metadata
 
 
-metadata = _create_metadata(
-    "git",
-    "/tmp",
-    ["core-extrator", "format_x"],
-    [
-        {
-            "param_1": "1.1",
-            "param_2": "2.1",
-            "param_3": "3.1",
-            "param_4": "4.1",
-        },
-        {
-            "param_1": "1.2",
-            "param_2": "2.2",
-            "param_3": "3.2",
-            "param_4": "4.2",
-        },
-        {
-            "param_1": "1.3",
-            "param_2": "2.3",
-            "param_3": "3.3",
-            "param_4": "4.3",
-        }
-    ]
-)
+def main(argv):
+    _, mapper_family, realm = argv
 
-print(metadata)
+    file_tree = FileTree(mapper_family, realm)
+
+    file_paths = _create_file_paths([3, 4, 10], [])
+    for path in file_paths:
+        metadata = _create_metadata(
+            mapper_family,
+            realm,
+            FORMATS,
+            PARAMETERS
+        )
+        file_tree.add_metadata(path, metadata)
+
+    reference = file_tree.save()
+    print(reference)
+
+
+if __name__ == "__main__":
+    main(sys.argv)
