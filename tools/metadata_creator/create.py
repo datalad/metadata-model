@@ -1,8 +1,11 @@
 import logging
-from uuid import UUID
-from typing import List, Tuple
+from time import time
+from typing import Dict, List, Tuple, Union
 
-from model.mapper.reference import Reference
+from model.metadata import ExtractorConfiguration, Metadata, MetadataInstance
+
+
+JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]
 
 
 MDC_LOGGER = logging.getLogger("metadata_creator")
@@ -27,29 +30,78 @@ def _create_tree_paths(tree_spec: List[Tuple[int, int]], level: int) -> List[str
     ]
 
 
-def _create_file_tree(tree_spec: List[int], upper_levels: List[int]) -> List[str]:
+def _create_file_paths(tree_spec: List[int], upper_levels: List[int]) -> List[str]:
     upper_level_postfix = (
         "." + ".".join(map(str, upper_levels))
         if upper_levels
         else ""
     )
     node_count = tree_spec[0]
-
     if len(tree_spec) == 1:
         return [
             f"file{upper_level_postfix}.{node_number}"
-            for node_number in range(tree_spec[0])]
+            for node_number in range(node_count)]
 
-    result = []
-    for node_index in range(node_count):
-        for sub_tree in _create_file_tree(tree_spec[1:], upper_levels + [node_index]):
-            name = f"d{upper_level_postfix}.{node_index}/{sub_tree}"
-            result.append(name)
-    return result
-
+    return [
+        f"dir{upper_level_postfix}.{node_index}/{sub_tree}"
+        for node_index in range(node_count)
+        for sub_tree in _create_file_paths(tree_spec[1:], upper_levels + [node_index])
+    ]
 
 
-#print(sorted(_create_tree_paths([(4, 2), (3, 1), (2, 2)], 0)))
+def _create_metadata(
+        mapper_family: str,
+        realm: str,
+        formats: List[str],
+        parameter_lists: List[JSONObject]) -> Metadata:
 
-print(_create_file_tree([2, 3, 2], []))
+    metadata = Metadata(mapper_family, realm)
+    for format in formats:
+        for parameter_list in parameter_lists:
 
+            extractor_configuration = ExtractorConfiguration(
+                "1.0",
+                parameter_list
+            )
+
+            metadata.add_extractor_run(
+                int(time()),
+                format,
+                "Auto-created by create.py",
+                "christian.moench@web.de",
+                extractor_configuration,
+                f'{{"type": "inline", "content": '
+                f'"metadata content for format {format}, '
+                f'parameter: {extractor_configuration}"}}'
+            )
+
+    return metadata
+
+
+metadata = _create_metadata(
+    "git",
+    "/tmp",
+    ["core-extrator", "format_x"],
+    [
+        {
+            "param_1": "1.1",
+            "param_2": "2.1",
+            "param_3": "3.1",
+            "param_4": "4.1",
+        },
+        {
+            "param_1": "1.2",
+            "param_2": "2.2",
+            "param_3": "3.2",
+            "param_4": "4.2",
+        },
+        {
+            "param_1": "1.3",
+            "param_2": "2.3",
+            "param_3": "3.3",
+            "param_4": "4.3",
+        }
+    ]
+)
+
+print(metadata)
