@@ -27,5 +27,29 @@ def _create_tree_paths(tree_spec: List[Tuple[int, int]], level: int) -> List[str
     ]
 
 
-print(sorted(_create_tree_paths([(4, 2), (3, 1), (2, 2)], 0)))
+def _create_file_tree(tree_spec: List[int], upper_levels: List[int]) -> List[str]:
+    upper_level_postfix = (
+        "." + ".".join(map(str, upper_levels))
+        if upper_levels
+        else ""
+    )
+    node_count = tree_spec[0]
+
+    if len(tree_spec) == 1:
+        return [
+            f"file{upper_level_postfix}.{node_number}"
+            for node_number in range(tree_spec[0])]
+
+    result = []
+    for node_index in range(node_count):
+        for sub_tree in _create_file_tree(tree_spec[1:], upper_levels + [node_index]):
+            name = f"d{upper_level_postfix}.{node_index}/{sub_tree}"
+            result.append(name)
+    return result
+
+
+
+#print(sorted(_create_tree_paths([(4, 2), (3, 1), (2, 2)], 0)))
+
+print(_create_file_tree([2, 3, 2], []))
 
