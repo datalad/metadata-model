@@ -24,7 +24,7 @@ class VersionListGitMapper(BaseMapper):
                 pdm_assoc["time_stamp"],
                 pdm_assoc["path"],
                 Connector.from_reference(
-                    Reference.from_json(pdm_assoc["metadata_root"])
+                    Reference.from_json_str(pdm_assoc["metadata_root"])
                 )
             )
             for pdm_assoc in json_object

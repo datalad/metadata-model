@@ -30,7 +30,7 @@ class FileTreeGitMapper(BaseMapper):
         for line in git_ls_tree_recursive(self.realm, ref.location):
             _, _, location, path = line.split()
             connector = Connector.from_reference(
-                Reference.from_json(
+                Reference.from_json_str(
                     git_load_str(self.realm, location)))
             file_tree.add_node_hierarchy(path, TreeNode(connector))
         return file_tree
