@@ -2,9 +2,12 @@ import logging
 import sys
 from time import time
 from typing import Dict, List, Tuple, Union
+from uuid import UUID
 
+from model.connector import Connector
 from model.filetree import FileTree
 from model.metadata import ExtractorConfiguration, Metadata
+from model.metadatarootrecord import MetadataRootRecord
 from model.mapper.reference import Reference
 
 
@@ -92,7 +95,8 @@ def _create_metadata(mapper_family: str,
     return metadata
 
 
-def _create_file_tree(mapper_family, realm) -> Reference:
+def _create_file_tree(mapper_family, realm) -> FileTree:
+
     file_tree = FileTree(mapper_family, realm)
     file_paths = _create_file_paths([3, 4, 10], [])
     for path in file_paths:
@@ -105,13 +109,37 @@ def _create_file_tree(mapper_family, realm) -> Reference:
             2
         )
         file_tree.add_metadata(path, metadata)
+    return file_tree
 
-    return file_tree.save()
+
+def _create_metadata_root_record(mapper_family, realm) -> MetadataRootRecord:
+
+    file_tree = _create_file_tree(mapper_family, realm)
+
+    dataset_level_metadata = _create_metadata(
+        mapper_family,
+        realm,
+        "/dataset",
+        ["dataset_format_1", "dataset_format_2"],
+        4,
+        2
+    )
+
+    metadata_root_record = MetadataRootRecord(
+        mapper_family,
+        realm,
+        UUID("00000000000000000000000000000001"),
+        "0011223344566778899aabbccdeeff",
+        Connector.from_object(dataset_level_metadata),
+        Connector.from_object(file_tree)
+    )
+    return metadata_root_record
 
 
 def main(argv):
     _, mapper_family, realm = argv
-    print(_create_file_tree(mapper_family, realm))
+    metadata_root_record = _create_metadata_root_record(mapper_family, realm)
+    print(metadata_root_record.save())
 
 
 if __name__ == "__main__":
