@@ -8,7 +8,8 @@ from model.connector import Connector
 from model.filetree import FileTree
 from model.metadata import ExtractorConfiguration, Metadata
 from model.metadatarootrecord import MetadataRootRecord
-from model.mapper.reference import Reference
+from model.uuidset import UUIDSet
+from model.versionlist import VersionList, VersionRecord
 
 
 JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]
@@ -112,7 +113,10 @@ def _create_file_tree(mapper_family, realm) -> FileTree:
     return file_tree
 
 
-def _create_metadata_root_record(mapper_family, realm) -> MetadataRootRecord:
+def _create_metadata_root_record(mapper_family: str,
+                                 realm: str,
+                                 uuid: UUID,
+                                 primary_data_version: str) -> MetadataRootRecord:
 
     file_tree = _create_file_tree(mapper_family, realm)
 
@@ -128,8 +132,8 @@ def _create_metadata_root_record(mapper_family, realm) -> MetadataRootRecord:
     metadata_root_record = MetadataRootRecord(
         mapper_family,
         realm,
-        UUID("00000000000000000000000000000001"),
-        "0011223344566778899aabbccdeeff",
+        uuid,
+        primary_data_version,
         Connector.from_object(dataset_level_metadata),
         Connector.from_object(file_tree)
     )
@@ -138,8 +142,42 @@ def _create_metadata_root_record(mapper_family, realm) -> MetadataRootRecord:
 
 def main(argv):
     _, mapper_family, realm = argv
-    metadata_root_record = _create_metadata_root_record(mapper_family, realm)
-    print(metadata_root_record.save())
+
+    uuid_1 = UUID("00000000000000000000000000000001")
+    uuid_2 = UUID("00000000000000000000000000000002")
+
+    primary_data_version_1 = "010102030405060708090a0b0c0d0e0f10111201"
+    primary_data_version_2 = "020102030405060708090a0b0c0d0e0f10111202"
+    primary_data_version_3 = "030102030405060708090a0b0c0d0e0f10111203"
+
+    metadata_root_record = _create_metadata_root_record(
+        mapper_family,
+        realm,
+        uuid_1,
+        primary_data_version_1
+    )
+
+    version_list = VersionList(
+        mapper_family,
+        realm,
+        {
+            primary_data_version_1: VersionRecord(
+                "00:10:01",
+                "/dataset/path",
+                Connector.from_object(metadata_root_record)
+            )
+        }
+    )
+
+    uuid_set = UUIDSet(
+        mapper_family,
+        realm,
+        {
+            uuid_1: Connector.from_object(version_list),
+        }
+    )
+
+    print(uuid_set.save())
 
 
 if __name__ == "__main__":

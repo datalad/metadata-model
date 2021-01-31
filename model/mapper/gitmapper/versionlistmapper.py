@@ -24,7 +24,7 @@ class VersionListGitMapper(BaseMapper):
                 pdm_assoc["time_stamp"],
                 pdm_assoc["path"],
                 Connector.from_reference(
-                    Reference.from_json_str(pdm_assoc["metadata_root"])
+                    Reference.from_json_obj(pdm_assoc["metadata_root"])
                 )
             )
             for pdm_assoc in json_object
@@ -42,7 +42,7 @@ class VersionListGitMapper(BaseMapper):
                 "metadata_root": version_record.mrr_connector.save(
                     "git",
                     self.realm
-                ).to_json()
+                ).to_json_obj()
             }
             for primary_data_version, version_record in obj.version_set.items()
         ]
