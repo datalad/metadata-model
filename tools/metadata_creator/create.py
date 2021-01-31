@@ -4,7 +4,8 @@ from time import time
 from typing import Dict, List, Tuple, Union
 
 from model.filetree import FileTree
-from model.metadata import ExtractorConfiguration, Metadata, MetadataInstance
+from model.metadata import ExtractorConfiguration, Metadata
+from model.mapper.reference import Reference
 
 
 JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]
@@ -17,27 +18,8 @@ dataset_versions = 3
 dataset_metadata_formats = ["core-metadata", "annex-metadata", "random-metadata"]
 
 
-FORMATS = ["core-metadata", "annex-metadata", "random-metadata"]
-PARAMETERS = [
-    {
-        "param_1": "1.1",
-        "param_2": "2.1",
-        "param_3": "3.1",
-        "param_4": "4.1",
-    },
-    {
-        "param_1": "1.2",
-        "param_2": "2.2",
-        "param_3": "3.2",
-        "param_4": "4.2",
-    },
-    {
-        "param_1": "1.3",
-        "param_2": "2.3",
-        "param_3": "3.3",
-        "param_4": "4.3",
-    }
-]
+FILE_LEVEL_FORMATS = ["file-format-1", "file-format-2"]
+DATASET_LEVEL_FORMATS = ["dataset-format-1", "dataset-format-2"]
 
 
 def _create_tree_paths(tree_spec: List[Tuple[int, int]], level: int) -> List[str]:
@@ -74,14 +56,22 @@ def _create_file_paths(tree_spec: List[int], upper_levels: List[int]) -> List[st
     ]
 
 
-def _create_metadata(
-        mapper_family: str,
-        realm: str,
-        formats: List[str],
-        parameter_lists: List[JSONObject]) -> Metadata:
+def _create_metadata(mapper_family: str,
+                     realm: str,
+                     path: str,
+                     formats: List[str],
+                     parameter_count: int,
+                     invocation_count: int) -> Metadata:
 
     metadata = Metadata(mapper_family, realm)
     for format in formats:
+        parameter_lists = [
+            {
+                f"{format}-parameter-{invocation}.{i}": f"v-{format}.{invocation}.{i}"
+                for i in range(parameter_count)
+            }
+            for invocation in range(invocation_count)
+        ]
         for parameter_list in parameter_lists:
 
             extractor_configuration = ExtractorConfiguration(
@@ -96,30 +86,32 @@ def _create_metadata(
                 "christian.moench@web.de",
                 extractor_configuration,
                 f'{{"type": "inline", "content": '
-                f'"metadata content for format {format}, '
-                f'parameter: {extractor_configuration}"}}'
+                f'"{format}({path})"}}'
             )
 
     return metadata
 
 
-def main(argv):
-    _, mapper_family, realm = argv
-
+def _create_file_tree(mapper_family, realm) -> Reference:
     file_tree = FileTree(mapper_family, realm)
-
     file_paths = _create_file_paths([3, 4, 10], [])
     for path in file_paths:
         metadata = _create_metadata(
             mapper_family,
             realm,
-            FORMATS,
-            PARAMETERS
+            path,
+            FILE_LEVEL_FORMATS,
+            3,
+            2
         )
         file_tree.add_metadata(path, metadata)
 
-    reference = file_tree.save()
-    print(reference)
+    return file_tree.save()
+
+
+def main(argv):
+    _, mapper_family, realm = argv
+    print(_create_file_tree(mapper_family, realm))
 
 
 if __name__ == "__main__":
