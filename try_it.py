@@ -7,6 +7,8 @@ from model.text import Text
 from model.uuidset import UUIDSet
 from model.versionlist import VersionList
 from model.mapper.reference import Reference
+from model.metadatarootrecord import MetadataRootRecord
+from model.datasettree import DatasetTree
 
 
 MAPPER_FAMILY = "git"
@@ -19,6 +21,7 @@ uuid_2 = UUID("00000000000000000000000000000002")
 
 
 try_metadata_objects = True
+try_dataset_tree = True
 try_tree = True
 try_read = True
 try_write = False
@@ -85,19 +88,33 @@ if try_metadata_objects:
         {"core-extractor": {mi1, mi2, mi3}}
     )
 
-    x = m1.to_json()
-
-    print(m1)
-    print(x)
-
-    m2 = Metadata.from_json(x)
-
-    print(m2)
-
-    print(m1 == m2)
-
-    if not try_tree:
+    if not (try_tree or try_dataset_tree):
         exit(0)
+
+
+if try_dataset_tree:
+    mrr = MetadataRootRecord(
+        MAPPER_FAMILY,
+        REALM,
+        uuid_2,
+        "aaa34239081abea9087987897",
+        Connector.from_object(Text("dataset-level-metadata-connector")),
+        Connector.from_object(Text("file-tree-connector")),
+    )
+
+    dt = DatasetTree(MAPPER_FAMILY, REALM)
+    dt.add_dataset("a/b/c/d", mrr)
+    dt.add_dataset("a/b", mrr)
+
+    reference = dt.save()
+    print(reference)
+
+    dt_2_con = Connector.from_reference(reference)
+    dt_2 = dt_2_con.load(MAPPER_FAMILY, REALM)
+    reference2 = dt_2_con.save(MAPPER_FAMILY, REALM)
+    print(reference2)
+
+    exit(0)
 
 
 if try_tree:

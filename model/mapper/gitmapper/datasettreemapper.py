@@ -13,32 +13,29 @@ class DatasetTreeGitMapper(BaseMapper):
     def _unmap_metadata_root_record(self, metadata_root_record) -> str:
         return MetadataRootRecordGitMapper(self.realm).unmap(metadata_root_record)
 
-    def _save_dataset_tree(self, node: "TreeNode") -> str:
+    def _save_metadata_root_record(self, mrr) -> str:
         from model.metadatarootrecord import MetadataRootRecord
 
+        # Write a MetadataRootRecord object and add it as directory
+        # entry with the name DATALAD_ROOT_RECORD_NAME.
+        assert isinstance(mrr, MetadataRootRecord)
+        mrr_location = self._unmap_metadata_root_record(mrr)
+        return git_save_tree(self.realm, [("100644", "blob", mrr_location, DATALAD_ROOT_RECORD_NAME)])
+
+    def _save_dataset_tree(self, node: "TreeNode") -> str:
         dir_entries = []
         for name, child_node in node.child_nodes.items():
+
             if child_node.is_leaf_node():
-
-                # Write a MetadataRootRecord object and add is as directory
-                # entry with the name DATALAD_ROOT_RECORD_NAME.
-                assert isinstance(child_node.value, MetadataRootRecord)
-                mrr_location = self._unmap_metadata_root_record(child_node.value)
-                location = git_save_tree(self.realm, [("100644", "blob", mrr_location, DATALAD_ROOT_RECORD_NAME)])
-
+                location = self._save_metadata_root_record(child_node.value)
                 dir_entries.append(("040000", "tree", location, name))
 
             elif child_node.value is not None:
-
-                assert isinstance(child_node.value, MetadataRootRecord)
-                mrr_location = self._unmap_metadata_root_record(child_node.value)
-                location = git_save_tree(self.realm, [("100644", "blob", mrr_location, DATALAD_ROOT_RECORD_NAME)])
-
+                location = self._save_metadata_root_record(child_node.value)
                 dir_entries.append(("040000", "tree", location, name))
                 dir_entries.append(("040000", "tree", self._save_dataset_tree(child_node), name))
 
             else:
-
                 dir_entries.append(("040000", "tree", self._save_dataset_tree(child_node), name))
 
         return git_save_tree(self.realm, dir_entries)

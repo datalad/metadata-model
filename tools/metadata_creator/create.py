@@ -26,18 +26,31 @@ FILE_LEVEL_FORMATS = ["file-format-1", "file-format-2"]
 DATASET_LEVEL_FORMATS = ["dataset-format-1", "dataset-format-2"]
 
 
-def _create_tree_paths(tree_spec: List[Tuple[int, int]], level: int) -> List[str]:
+def _create_tree_paths(tree_spec: List[Tuple[int, int]], upper_levels: List[int]) -> List[str]:
+    upper_level_postfix = (
+        "." + ".".join(map(str, upper_levels))
+        if upper_levels
+        else ""
+    )
     if len(tree_spec) == 1:
         return [
-            f"dataset.{node_number}"
+            f"dataset{upper_level_postfix}.{node_number}"
             for node_number in range(tree_spec[0][0])
         ]
-    return [
-        f"dataset.{node_number}/" + sub_spec
-        if node_number < tree_spec[0][1]
-        else f"sub_dir.{node_number}/" + sub_spec
-        for sub_spec in _create_tree_paths(tree_spec[1:], level + 1)
+
+    # If we create a path that identifies a dataset, add it the the result list
+    result = [
+        f"dataset{upper_level_postfix}.{node_number}"
         for node_number in range(tree_spec[0][0])
+        if node_number < tree_spec[0][1]
+    ]
+
+    return result + [
+        f"dataset{upper_level_postfix}.{node_number}/" + sub_spec
+        if node_number < tree_spec[0][1]
+        else f"dir{upper_level_postfix}.{node_number}/" + sub_spec
+        for node_number in range(tree_spec[0][0])
+        for sub_spec in _create_tree_paths(tree_spec[1:], upper_levels + [node_number])
     ]
 
 
@@ -143,6 +156,8 @@ def _create_metadata_root_record(mapper_family: str,
 def main(argv):
     _, mapper_family, realm = argv
 
+    tm = _create_tree_paths([(3, 1), (2, 1), (3, 3)], [])
+
     uuid_1 = UUID("00000000000000000000000000000001")
     uuid_2 = UUID("00000000000000000000000000000002")
 
@@ -176,6 +191,7 @@ def main(argv):
             uuid_1: Connector.from_object(version_list),
         }
     )
+
 
     print(uuid_set.save())
 
