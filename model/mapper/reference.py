@@ -20,7 +20,7 @@ class Reference:
             f"class_name='{self.class_name}', "
             f"location={repr(self.location)})")
 
-    def to_json_str(self):  # TODO: rename to to_json_str
+    def to_json_str(self):
         return json.dumps(self.to_json_obj())
 
     def to_json_obj(self):

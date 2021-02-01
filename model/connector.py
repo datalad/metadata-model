@@ -35,7 +35,7 @@ class Connector:
     def from_referenced_object(cls, reference, obj):
         return cls(reference, obj, True, False)
 
-    def load(self, family, realm) -> Any:     # TODO: rename to load_object
+    def load_object(self, family, realm) -> Any:     # TODO: rename to load_object
         if not self.is_mapped:
             assert self.reference is not None
             self.object = get_mapper(
@@ -45,7 +45,7 @@ class Connector:
             self.is_mapped = True
         return self.object
 
-    def save(self, family, realm, force_write=False) -> Reference:   # TODO: rename to save_object
+    def save_object(self, family, realm, force_write=False) -> Reference:   # TODO: rename to save_object
         if self.is_mapped:
             if self.is_modified or force_write:
                 class_name = type(self.object).__name__

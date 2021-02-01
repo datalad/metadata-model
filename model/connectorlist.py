@@ -16,5 +16,4 @@ class ConnectorList(list, _ConnectedObject):
 
     def save_bottom_half(self, family, realm):
         for index, connector in enumerate(self):
-            print(f"ConnectorList.save_bottom_half: saving element #{index}: {connector}")  # TODO: remove me
             connector.unmap(family, realm)

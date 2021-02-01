@@ -37,17 +37,17 @@ class MetadataRootRecord(ConnectedObject):
                 "MetadataRootRecord")(self.realm).unmap(self))
 
     def save_connected_components(self, force_write: bool = False):
-        self.file_tree.save(self.mapper_family, self.realm, force_write)
-        self.dataset_level_metadata.save(self.mapper_family, self.realm, force_write)
+        self.file_tree.save_object(self.mapper_family, self.realm, force_write)
+        self.dataset_level_metadata.save_object(self.mapper_family, self.realm, force_write)
 
     def set_file_tree(self, file_tree: ConnectedObject):
         self.file_tree = Connector.from_object(file_tree)
 
     def get_file_tree(self):
-        return self.file_tree.load(self.mapper_family, self.realm)
+        return self.file_tree.load_object(self.mapper_family, self.realm)
 
     def set_dataset_level_metadata(self, dataset_level_metadata: ConnectedObject):
         self.dataset_level_metadata = Connector.from_object(dataset_level_metadata)
 
     def get_dataset_level_metadata(self):
-        return self.dataset_level_metadata.load(self.mapper_family, self.realm)
+        return self.dataset_level_metadata.load_object(self.mapper_family, self.realm)

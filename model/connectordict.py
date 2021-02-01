@@ -16,5 +16,4 @@ class ConnectorDict(dict, _ConnectedObject):
 
     def save_bottom_half(self, family, realm, force_write: bool = False):
         for key, connector in self.items():
-            print(f"ConnectorDict.save_bottom_half: saving {key}, {connector}")  # TODO: remove me
-            connector.save(family, realm, force_write)
+            connector.save_object(family, realm, force_write)

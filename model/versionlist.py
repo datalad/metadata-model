@@ -42,7 +42,7 @@ class VersionList(ConnectedObject):
         of the connectors with the appropriate class mapper.
         """
         for primary_data_version, version_record in self.version_set.items():
-            version_record.mrr_connector.save(self.mapper_family, self.realm, force_write)
+            version_record.mrr_connector.save_object(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,
             "VersionList",
@@ -75,7 +75,7 @@ class VersionList(ConnectedObject):
         return (
             version_record.time_stamp,
             version_record.path,
-            version_record.mrr_connector.load(
+            version_record.mrr_connector.load_object(
                 self.mapper_family,
                 self.realm))
 
@@ -88,5 +88,5 @@ class VersionList(ConnectedObject):
         is true.
         """
         mrr_connector = self._get_mrr_connector(primary_data_version)
-        mrr_connector.save(self.mapper_family, self.realm, force_write)
+        mrr_connector.save_object(self.mapper_family, self.realm, force_write)
         mrr_connector.purge()

@@ -15,10 +15,11 @@ class FileTreeGitMapper(BaseMapper):
             if child_node.is_leaf_node():
                 assert isinstance(child_node.value, Connector)
                 # Save connector, that will ensure that the reference is set.
-                # Since this is a high level save-operation, it should probably
-                # be called in FileTree or TreeNode, but that would require
-                # another recursive descent. TODO: move this save-call?
-                child_node.value.save("git", self.realm)
+                # TODO: move this save-call? Since this is a high level
+                #  save-operation, it should probably be called in FileTree
+                #  or TreeNode, but that would require another recursive
+                #  descent.
+                child_node.value.save_object("git", self.realm)
                 # Save connectors reference.
                 location = git_save_str(self.realm, child_node.value.reference.to_json_str())
                 dir_entries.append(("100644", "blob", location, name))

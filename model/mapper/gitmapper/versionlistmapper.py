@@ -39,7 +39,7 @@ class VersionListGitMapper(BaseMapper):
                 "primary_data_version": primary_data_version,
                 "time_stamp": version_record.time_stamp,
                 "path": version_record.path,
-                "metadata_root": version_record.mrr_connector.save(
+                "metadata_root": version_record.mrr_connector.save_object(
                     "git",
                     self.realm
                 ).to_json_obj()

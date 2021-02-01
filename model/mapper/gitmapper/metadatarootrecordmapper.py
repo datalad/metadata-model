@@ -35,11 +35,11 @@ class MetadataRootRecordGitMapper(BaseMapper):
         json_object = {
             "dataset_identifier": str(obj.dataset_identifier),
             "dataset_version": str(obj.dataset_version),
-            "dataset_level_metadata": obj.dataset_level_metadata.save(
+            "dataset_level_metadata": obj.dataset_level_metadata.save_object(
                 "git",
                 self.realm
             ).to_json_obj(),
-            "file_level_metadata": obj.file_tree.save(
+            "file_level_metadata": obj.file_tree.save_object(
                 "git",
                 self.realm
             ).to_json_obj()

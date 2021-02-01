@@ -110,8 +110,8 @@ if try_dataset_tree:
     print(reference)
 
     dt_2_con = Connector.from_reference(reference)
-    dt_2 = dt_2_con.load(MAPPER_FAMILY, REALM)
-    reference2 = dt_2_con.save(MAPPER_FAMILY, REALM)
+    dt_2 = dt_2_con.load_object(MAPPER_FAMILY, REALM)
+    reference2 = dt_2_con.save_object(MAPPER_FAMILY, REALM)
     print(reference2)
 
     exit(0)
@@ -150,7 +150,7 @@ if try_read:
         )
     )
 
-    loaded_uuid_set: UUIDSet = c.load(MAPPER_FAMILY, REALM)
+    loaded_uuid_set: UUIDSet = c.load_object(MAPPER_FAMILY, REALM)
     version_list_uuid_0 = loaded_uuid_set.get_version_list(uuid_0)
     mrr = version_list_uuid_0.get_metadata_root_record("pd-version-1.1")
 

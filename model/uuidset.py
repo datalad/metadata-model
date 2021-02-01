@@ -50,7 +50,7 @@ class UUIDSet(ConnectedObject):
         Get the version list for uuid. If it is not mapped yet,
         it will be mapped.
         """
-        return self.uuid_set[uuid].load(self.mapper_family, self.realm)
+        return self.uuid_set[uuid].load_object(self.mapper_family, self.realm)
 
     def unget_version_list(self, uuid, force_write: bool = False):
         """

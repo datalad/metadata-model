@@ -44,7 +44,7 @@ class FileTree(ConnectedObject, TreeNode):
         """
         file_node_set = self.get_paths_recursive(False)
         for _, _, file_node in file_node_set:
-            file_node.value.save(self.mapper_family, self.realm, force_write)
+            file_node.value.save_object(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,
             "FileTree",
