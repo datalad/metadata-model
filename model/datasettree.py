@@ -38,7 +38,7 @@ class DatasetTree(ConnectedObject, TreeNode):
     def add_dataset(self, path, metadata_root_record: MetadataRootRecord):
         dataset_node = self.get_node_at_path(path)
         if dataset_node is None:
-            self.add_node_hierarchy(path, TreeNode(metadata_root_record))
+            self.add_node_hierarchy(path, TreeNode(metadata_root_record), allow_leaf_node_conversion=True)
         else:
             dataset_node.value = metadata_root_record
 

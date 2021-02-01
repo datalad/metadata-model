@@ -5,12 +5,12 @@ from typing import Dict, List, Tuple, Union
 from uuid import UUID
 
 from model.connector import Connector
+from model.datasettree import DatasetTree
 from model.filetree import FileTree
 from model.metadata import ExtractorConfiguration, Metadata
 from model.metadatarootrecord import MetadataRootRecord
 from model.uuidset import UUIDSet
 from model.versionlist import VersionList, VersionRecord
-
 
 JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]
 
@@ -153,10 +153,28 @@ def _create_metadata_root_record(mapper_family: str,
     return metadata_root_record
 
 
+def _create_dataset_tree(mapper_family, realm) -> DatasetTree:
+
+    dataset_paths = _create_tree_paths([(3, 1), (2, 1), (3, 3)], [])
+    dataset_tree = DatasetTree(mapper_family, realm)
+    for index, path in enumerate([""] + dataset_paths):
+        dataset_tree.add_dataset(
+            path,
+            _create_metadata_root_record(
+                mapper_family,
+                realm,
+                UUID(f"0000000000000000000000000000{index:04x}"),
+                str(1000 + index)
+            )
+        )
+
+    return dataset_tree
+
+
 def main(argv):
     _, mapper_family, realm = argv
 
-    tm = _create_tree_paths([(3, 1), (2, 1), (3, 3)], [])
+    dataset_tree = _create_dataset_tree(mapper_family, realm)
 
     uuid_1 = UUID("00000000000000000000000000000001")
     uuid_2 = UUID("00000000000000000000000000000002")
@@ -192,8 +210,8 @@ def main(argv):
         }
     )
 
-
     print(uuid_set.save())
+    print(dataset_tree.save())
 
 
 if __name__ == "__main__":
