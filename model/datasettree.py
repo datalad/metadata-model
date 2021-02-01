@@ -54,7 +54,7 @@ class DatasetTree(ConnectedObject, TreeNode):
         """
         file_node_set = self.get_paths_recursive(False)
         for _, _, file_node in file_node_set:
-            file_node.value.save_object(force_write)
+            file_node.value.save(force_write)
 
         return Reference(
             self.mapper_family,
