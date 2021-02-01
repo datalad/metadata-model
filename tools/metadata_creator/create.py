@@ -18,10 +18,6 @@ JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]
 
 MDC_LOGGER = logging.getLogger("metadata_creator")
 
-tree_pattern = [3, -3, 4, -3]
-dataset_versions = 3
-dataset_metadata_formats = ["core-metadata", "annex-metadata", "random-metadata"]
-
 
 FILE_LEVEL_FORMATS = ["file-format-1", "file-format-2"]
 DATASET_LEVEL_FORMATS = ["dataset-format-1", "dataset-format-2"]

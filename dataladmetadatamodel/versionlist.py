@@ -106,3 +106,5 @@ class TreeVersionList(VersionList):
             self.mapper_family,
             "TreeVersionList",
             get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))
+
+    get_dataset_tree = VersionList.get_metadata_root_record

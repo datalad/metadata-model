@@ -9,7 +9,7 @@ class MetadataGitMapper(BaseMapper):
     def map(self, ref: Reference) -> "Metadata":
         from dataladmetadatamodel.metadata import Metadata
         return Metadata.from_json(
-            git_load_str(self.realm, ref)
+            git_load_str(self.realm, ref.location)
         )
 
     def unmap(self, obj) -> str:

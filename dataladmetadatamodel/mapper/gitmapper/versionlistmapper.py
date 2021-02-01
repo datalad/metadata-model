@@ -51,6 +51,25 @@ class VersionListGitMapper(BaseMapper):
 
 
 class TreeVersionListGitMapper(VersionListGitMapper):
+    def map(self, ref: Reference) -> Any:
+        from dataladmetadatamodel.connector import Connector
+        from dataladmetadatamodel.versionlist import VersionRecord, TreeVersionList
+        assert isinstance(ref, Reference)
+        assert ref.mapper_family == "git"
+
+        json_object = git_load_json(self.realm, ref.location)
+        version_records = {
+            pdm_assoc["primary_data_version"]: VersionRecord(
+                pdm_assoc["time_stamp"],
+                pdm_assoc["path"],
+                Connector.from_reference(
+                    Reference.from_json_obj(pdm_assoc["metadata_root"])
+                )
+            )
+            for pdm_assoc in json_object
+        }
+        return TreeVersionList("git", self.realm, version_records)
+
     def unmap(self, obj: Any) -> str:
         location = super().unmap(obj)
         cmd_line = git_command_line(
