@@ -61,8 +61,8 @@ class DatasetTreeGitMapper(BaseMapper):
 
     def unmap(self, obj) -> str:
         """
-        Save DatasetTree as git tree with ".datatset_mrr"
-        nodes for each MetadataRootRecord.
+        Save DatasetTree as git tree with DATALAD_ROOT_RECORD_NAME
+        nodes for each MetadataRootRecord instance.
         """
         from model.datasettree import DatasetTree
 
