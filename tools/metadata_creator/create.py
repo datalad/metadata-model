@@ -5,13 +5,13 @@ from time import time
 from typing import Dict, List, Tuple, Union
 from uuid import UUID
 
-from model.connector import Connector
-from model.datasettree import DatasetTree
-from model.filetree import FileTree
-from model.metadata import ExtractorConfiguration, Metadata
-from model.metadatarootrecord import MetadataRootRecord
-from model.uuidset import UUIDSet
-from model.versionlist import TreeVersionList, VersionList, VersionRecord
+from dataladmetadatamodel.connector import Connector
+from dataladmetadatamodel.datasettree import DatasetTree
+from dataladmetadatamodel.filetree import FileTree
+from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
+from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.uuidset import UUIDSet
+from dataladmetadatamodel.versionlist import TreeVersionList, VersionList, VersionRecord
 
 
 JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]

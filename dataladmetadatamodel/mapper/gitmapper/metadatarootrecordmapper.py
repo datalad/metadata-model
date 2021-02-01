@@ -9,8 +9,8 @@ from ..reference import Reference
 class MetadataRootRecordGitMapper(BaseMapper):
 
     def map(self, ref: Reference) -> Any:
-        from model.connector import Connector
-        from model.metadatarootrecord import MetadataRootRecord
+        from dataladmetadatamodel.connector import Connector
+        from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
         assert isinstance(ref, Reference)
         assert ref.mapper_family == "git"
@@ -30,7 +30,7 @@ class MetadataRootRecordGitMapper(BaseMapper):
         )
 
     def unmap(self, obj) -> str:
-        from model.metadatarootrecord import MetadataRootRecord
+        from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
         assert isinstance(obj, MetadataRootRecord)
         json_object = {
             "dataset_identifier": str(obj.dataset_identifier),

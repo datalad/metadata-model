@@ -5,7 +5,7 @@ during model development.
 """
 from dataclasses import dataclass
 
-from model.connector import ConnectedObject
+from dataladmetadatamodel.connector import ConnectedObject
 
 
 @dataclass

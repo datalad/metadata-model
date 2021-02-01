@@ -8,7 +8,7 @@ from ..reference import Reference
 class FileTreeGitMapper(BaseMapper):
 
     def _save_file_tree(self, node: "TreeNode") -> str:
-        from model.connector import Connector
+        from dataladmetadatamodel.connector import Connector
 
         dir_entries = []
         for name, child_node in node.child_nodes.items():
@@ -28,9 +28,9 @@ class FileTreeGitMapper(BaseMapper):
         return git_save_tree(self.realm, dir_entries)
 
     def map(self, ref: Reference) -> "FileTree":
-        from model.connector import Connector
-        from model.filetree import FileTree
-        from model.treenode import TreeNode
+        from dataladmetadatamodel.connector import Connector
+        from dataladmetadatamodel.filetree import FileTree
+        from dataladmetadatamodel.treenode import TreeNode
 
         file_tree = FileTree("git", self.realm)
         for line in git_ls_tree_recursive(self.realm, ref.location):
@@ -43,7 +43,7 @@ class FileTreeGitMapper(BaseMapper):
 
     def unmap(self, obj) -> str:
         """ Save FileTree as git file tree """
-        from model.filetree import FileTree
+        from dataladmetadatamodel.filetree import FileTree
 
         assert isinstance(obj, FileTree)
         return self._save_file_tree(obj)

@@ -1,14 +1,14 @@
 from uuid import UUID
 
-from model.connector import Connector
-from model.filetree import FileTree
-from model.metadata import Metadata, ExtractorConfiguration, MetadataInstance
-from model.text import Text
-from model.uuidset import UUIDSet
-from model.versionlist import VersionList
-from model.mapper.reference import Reference
-from model.metadatarootrecord import MetadataRootRecord
-from model.datasettree import DatasetTree
+from dataladmetadatamodel.connector import Connector
+from dataladmetadatamodel.filetree import FileTree
+from dataladmetadatamodel.metadata import Metadata, ExtractorConfiguration, MetadataInstance
+from dataladmetadatamodel.text import Text
+from dataladmetadatamodel.uuidset import UUIDSet
+from dataladmetadatamodel.versionlist import VersionList
+from dataladmetadatamodel.mapper.reference import Reference
+from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.datasettree import DatasetTree
 
 
 MAPPER_FAMILY = "git"

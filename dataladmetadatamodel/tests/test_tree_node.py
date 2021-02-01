@@ -1,6 +1,6 @@
 import unittest
 
-from model.treenode import TreeNode
+from dataladmetadatamodel.treenode import TreeNode
 
 
 class TestHierarchy(unittest.TestCase):

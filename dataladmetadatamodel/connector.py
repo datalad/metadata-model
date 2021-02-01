@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
-from model.mapper import get_mapper
-from model.mapper.reference import Reference
+from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class ConnectedObject:

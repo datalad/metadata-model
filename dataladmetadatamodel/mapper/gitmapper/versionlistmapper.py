@@ -14,8 +14,8 @@ class VersionListGitMapper(BaseMapper):
     """
 
     def map(self, ref: Reference) -> Any:
-        from model.connector import Connector
-        from model.versionlist import VersionRecord, VersionList
+        from dataladmetadatamodel.connector import Connector
+        from dataladmetadatamodel.versionlist import VersionRecord, VersionList
         assert isinstance(ref, Reference)
         assert ref.mapper_family == "git"
 
@@ -33,7 +33,7 @@ class VersionListGitMapper(BaseMapper):
         return VersionList("git", self.realm, version_records)
 
     def unmap(self, obj: Any) -> str:
-        from model.versionlist import VersionList
+        from dataladmetadatamodel.versionlist import VersionList
         assert isinstance(obj, VersionList)
         json_object = [
             {

@@ -10,8 +10,8 @@ from ..reference import Reference
 class UUIDSetGitMapper(BaseMapper):
 
     def map(self, ref: Reference) -> Any:
-        from model.connector import Connector
-        from model.uuidset import UUIDSet
+        from dataladmetadatamodel.connector import Connector
+        from dataladmetadatamodel.uuidset import UUIDSet
         assert isinstance(ref, Reference)
         assert ref.mapper_family == "git"
 
@@ -29,7 +29,7 @@ class UUIDSetGitMapper(BaseMapper):
         the top-half of the connectors.
         """
         # Import UUIDSet here to prevent recursive imports
-        from model.uuidset import UUIDSet
+        from dataladmetadatamodel.uuidset import UUIDSet
         assert isinstance(uuid_set, UUIDSet)
 
         top_half = [

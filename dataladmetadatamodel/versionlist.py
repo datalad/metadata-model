@@ -95,7 +95,8 @@ class VersionList(ConnectedObject):
 class TreeVersionList(VersionList):
     """
     Thin wrapper around version list to support tree-version list
-    specific mapping.
+    specific mapping, for example in the git mapper, which will
+    update a reference, if mapping an TreeVersionList instance.
     """
     def save(self, force_write: bool = False) -> Reference:
         # Save all metadata root records that are connected
