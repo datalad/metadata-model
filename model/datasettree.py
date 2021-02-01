@@ -1,4 +1,5 @@
 import enum
+from typing import List, Tuple
 
 from .connector import ConnectedObject
 from .mapper import get_mapper
@@ -53,10 +54,17 @@ class DatasetTree(ConnectedObject, TreeNode):
         itself, with the class mapper.
         """
         file_node_set = self.get_paths_recursive(False)
-        for _, _, file_node in file_node_set:
+        for _, file_node in file_node_set:
             file_node.value.save(force_write)
 
         return Reference(
             self.mapper_family,
             "DatasetTree",
             get_mapper(self.mapper_family, "DatasetTree")(self.realm).unmap(self))
+
+    def get_dataset_paths(self) -> List[Tuple[str, MetadataRootRecord]]:
+        return [
+            (name, node.value)
+            for name, node in self.get_paths_recursive(True)
+            if node.value is not None
+        ]

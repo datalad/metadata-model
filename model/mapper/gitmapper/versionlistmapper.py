@@ -1,6 +1,7 @@
 from typing import Any
 
-from .gittools import git_load_json, git_save_json
+from .execute import checked_execute
+from .gittools import git_command_line, git_load_json, git_save_json
 from ..basemapper import BaseMapper
 from ..reference import Reference
 
@@ -47,3 +48,14 @@ class VersionListGitMapper(BaseMapper):
             for primary_data_version, version_record in obj.version_set.items()
         ]
         return git_save_json(self.realm, json_object)
+
+
+class TreeVersionListGitMapper(VersionListGitMapper):
+    def unmap(self, obj: Any) -> str:
+        location = super().unmap(obj)
+        cmd_line = git_command_line(
+            self.realm,
+            "update-ref",
+            ["refs/develop/dataset-tree", location])
+        checked_execute(cmd_line)
+        return "refs/develop/dataset-tree"

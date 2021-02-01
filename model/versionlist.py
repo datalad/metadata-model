@@ -90,3 +90,18 @@ class VersionList(ConnectedObject):
         mrr_connector = self._get_mrr_connector(primary_data_version)
         mrr_connector.save_object(self.mapper_family, self.realm, force_write)
         mrr_connector.purge()
+
+
+class TreeVersionList(VersionList):
+    """
+    Thin wrapper around version list to support tree-version list
+    specific mapping.
+    """
+    def save(self, force_write: bool = False) -> Reference:
+        # Save all metadata root records that are connected
+        for primary_data_version, version_record in self.version_set.items():
+            version_record.mrr_connector.save_object(self.mapper_family, self.realm, force_write)
+        return Reference(
+            self.mapper_family,
+            "TreeVersionList",
+            get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))

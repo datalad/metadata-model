@@ -23,7 +23,7 @@ class UUIDSetGitMapper(BaseMapper):
         }
         return UUIDSet("git", self.realm, initial_set)
 
-    def unmap(self, uuid_set: Any) -> Reference:
+    def unmap(self, uuid_set: Any) -> str:
         """
         Store the data in the UUIDSet, including
         the top-half of the connectors.
@@ -45,4 +45,4 @@ class UUIDSetGitMapper(BaseMapper):
             "update-ref",
             ["refs/develop/dataset-set", location])
         checked_execute(cmd_line)
-        return Reference("git", "UUIDSet", "refs/develop/dataset-set")
+        return "refs/develop/dataset-set"

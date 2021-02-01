@@ -1,3 +1,4 @@
+import itertools
 import logging
 import sys
 from time import time
@@ -10,10 +11,10 @@ from model.filetree import FileTree
 from model.metadata import ExtractorConfiguration, Metadata
 from model.metadatarootrecord import MetadataRootRecord
 from model.uuidset import UUIDSet
-from model.versionlist import VersionList, VersionRecord
+from model.versionlist import TreeVersionList, VersionList, VersionRecord
+
 
 JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]
-
 
 MDC_LOGGER = logging.getLogger("metadata_creator")
 
@@ -154,7 +155,6 @@ def _create_metadata_root_record(mapper_family: str,
 
 
 def _create_dataset_tree(mapper_family, realm) -> DatasetTree:
-
     dataset_paths = _create_tree_paths([(3, 1), (2, 1), (3, 3)], [])
     dataset_tree = DatasetTree(mapper_family, realm)
     for index, path in enumerate([""] + dataset_paths):
@@ -174,44 +174,56 @@ def _create_dataset_tree(mapper_family, realm) -> DatasetTree:
 def main(argv):
     _, mapper_family, realm = argv
 
+    time_counter = 0
+    version_counter = 256
+
+    def get_time_str(counter: int) -> str:
+        return str(123456789 + counter)
+
+    def get_primary_data_version(counter: int) -> str:
+        return "000102030405060708090a0b0c0d0e0f1011{counter:04x}".format(counter=counter)
+
     dataset_tree = _create_dataset_tree(mapper_family, realm)
-
-    uuid_1 = UUID("00000000000000000000000000000001")
-    uuid_2 = UUID("00000000000000000000000000000002")
-
-    primary_data_version_1 = "010102030405060708090a0b0c0d0e0f10111201"
-    primary_data_version_2 = "020102030405060708090a0b0c0d0e0f10111202"
-    primary_data_version_3 = "030102030405060708090a0b0c0d0e0f10111203"
-
-    metadata_root_record = _create_metadata_root_record(
-        mapper_family,
-        realm,
-        uuid_1,
-        primary_data_version_1
-    )
-
-    version_list = VersionList(
+    dataset_tree_version_list = TreeVersionList(
         mapper_family,
         realm,
         {
-            primary_data_version_1: VersionRecord(
-                "00:10:01",
-                "/dataset/path",
-                Connector.from_object(metadata_root_record)
+            dataset_tree.value.dataset_version: VersionRecord(
+                get_time_str(time_counter),
+                None,
+                Connector.from_object(dataset_tree)
             )
         }
     )
 
+    # Extract the UUID Set from the dataset tree:
+    uuid_version_lists = {}
+    datasets = dataset_tree.get_dataset_paths()
+    for path, metadata_root_record in datasets:
+        uuid_version_lists[metadata_root_record.dataset_identifier] = Connector.from_object(
+            VersionList(
+                mapper_family,
+                realm,
+                {
+                    get_primary_data_version(version_counter): VersionRecord(
+                        get_time_str(time_counter),
+                        path,
+                        Connector.from_object(metadata_root_record)
+                    )
+                }
+            )
+        )
+        version_counter += 1
+        time_counter += 1
+
     uuid_set = UUIDSet(
         mapper_family,
         realm,
-        {
-            uuid_1: Connector.from_object(version_list),
-        }
+        uuid_version_lists
     )
 
     print(uuid_set.save())
-    print(dataset_tree.save())
+    print(dataset_tree_version_list.save())
 
 
 if __name__ == "__main__":

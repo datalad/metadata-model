@@ -6,7 +6,7 @@ from ..basemapper import BaseMapper
 from ..reference import Reference
 
 
-DATALAD_ROOT_RECORD_NAME = ".datalad_mrr"
+DATALAD_ROOT_RECORD_NAME = ".datalad_metadata_root_record"
 
 
 class DatasetTreeGitMapper(BaseMapper):

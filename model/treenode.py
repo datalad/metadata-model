@@ -70,9 +70,9 @@ class TreeNode:
     def get_paths(self):
         return tuple(self.child_nodes.keys())
 
-    def get_paths_recursive(self, show_intermediate: Optional[bool] = False) -> List[Tuple[str, bool, Any]]:
+    def get_paths_recursive(self, show_intermediate: Optional[bool] = False) -> List[Tuple[str, "TreeNode"]]:
         if show_intermediate or self.is_leaf_node():
-            result = [("", not self.is_leaf_node(), self)]
+            result = [("", self)]
         else:
             result = []
         for child_name, child_node in self.child_nodes.items():
@@ -80,8 +80,7 @@ class TreeNode:
             result += [
                 (
                     child_name + ("/" + child_node_info[0] if child_node_info[0] else ""),
-                    child_node_info[1],
-                    child_node_info[2]
+                    child_node_info[1]
                 )
                 for child_node_info in child_node_infos
             ]

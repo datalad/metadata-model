@@ -6,6 +6,7 @@ from .metadatarootrecordmapper import MetadataRootRecordGitMapper
 from .referencemapper import ReferenceGitMapper
 from .textmapper import TextGitMapper
 from .uuidsetmapper import UUIDSetGitMapper
+from .versionlistmapper import TreeVersionListGitMapper
 from .versionlistmapper import VersionListGitMapper
 
 
@@ -16,6 +17,7 @@ GIT_MAPPER_FAMILY = {
     "MetadataRootRecord": MetadataRootRecordGitMapper,
     "Reference": ReferenceGitMapper,
     "Text": TextGitMapper,
+    "TreeVersionList": TreeVersionListGitMapper,
     "UUIDSet": UUIDSetGitMapper,
     "VersionList": VersionListGitMapper
 }
