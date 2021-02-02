@@ -20,7 +20,7 @@ class TestGenerator(unittest.TestCase):
         self.assertEqual(sorted(paths), sorted(returned_paths))
 
         returned_metadata = set([entry[1].object for entry in returned_entries])
-        self.assertEqual(returned_metadata, set([metadata_node]))
+        self.assertEqual(returned_metadata, {metadata_node})
 
 
 if __name__ == '__main__':
