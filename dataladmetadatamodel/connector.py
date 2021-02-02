@@ -81,5 +81,5 @@ class Connector:
     def __repr__(self):
         return (
             f"Connector(reference={repr(self.reference)}, "
-            f"obj={repr(self.object)}, is_mapped={repr(self.is_mapped)}, "
+            f"object={repr(self.object)}, is_mapped={repr(self.is_mapped)}, "
             f"is_modified={self.is_modified})")
