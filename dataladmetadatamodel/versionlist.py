@@ -107,4 +107,5 @@ class TreeVersionList(VersionList):
             "TreeVersionList",
             get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))
 
-    get_dataset_tree = VersionList.get_metadata_root_record
+    def get_dataset_tree(self, primary_data_version: str):
+        return super().get_metadata_root_record(primary_data_version)

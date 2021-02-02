@@ -18,7 +18,7 @@ def mdc(verbose, quiet, mapper_family, realm):
     Create test metadata
 
     This tools algorithmically creates metadata models and
-    maps them onto a backend. The currently supported backends
+    maps them onto a gitbackend. The currently supported backends
     are: `git´ and `memory´.
     """
     if quiet:

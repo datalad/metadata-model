@@ -1,7 +1,7 @@
 from typing import Any
 from uuid import UUID
 
-from .gittools import git_load_json, git_save_json
+from .gitbackend.subprocess import git_load_json, git_save_json
 from ..basemapper import BaseMapper
 from ..reference import Reference
 

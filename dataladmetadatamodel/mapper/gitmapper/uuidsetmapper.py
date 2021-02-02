@@ -1,8 +1,7 @@
 from typing import Any
 from uuid import UUID
 
-from .execute import checked_execute
-from .gittools import git_command_line, git_ls_tree, git_save_tree
+from .gitbackend.subprocess import git_ls_tree, git_save_tree, git_update_ref
 from ..basemapper import BaseMapper
 from ..reference import Reference
 
@@ -40,9 +39,5 @@ class UUIDSetGitMapper(BaseMapper):
             raise ValueError("Cannot unmap an empty UUID")
 
         location = git_save_tree(self.realm, top_half)
-        cmd_line = git_command_line(
-            self.realm,
-            "update-ref",
-            ["refs/develop/dataset-set", location])
-        checked_execute(cmd_line)
+        git_update_ref(self.realm, "refs/develop/dataset-set", location)
         return "refs/develop/dataset-set"

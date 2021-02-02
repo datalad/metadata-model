@@ -1,6 +1,6 @@
 
 
-from .gittools import git_load_str, git_ls_tree_recursive, git_save_str, git_save_tree
+from .gitbackend.subprocess import git_load_str, git_ls_tree_recursive, git_save_str, git_save_tree
 from ..basemapper import BaseMapper
 from ..reference import Reference
 

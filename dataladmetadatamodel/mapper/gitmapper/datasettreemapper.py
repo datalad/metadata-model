@@ -1,6 +1,5 @@
-from typing import Tuple
 
-from .gittools import git_ls_tree_recursive, git_save_tree
+from .gitbackend.subprocess import git_ls_tree_recursive, git_save_tree
 from .metadatarootrecordmapper import MetadataRootRecordGitMapper
 from ..basemapper import BaseMapper
 from ..reference import Reference

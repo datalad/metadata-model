@@ -1,6 +1,6 @@
 from typing import Any
 
-from .gittools import git_load_str, git_save_str
+from .gitbackend.subprocess import git_load_str, git_save_str
 from ..basemapper import BaseMapper
 from ..reference import Reference
 
