@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Generator, Optional, Tuple
 
 from .connector import ConnectedObject, Connector
 from .mapper import get_mapper
@@ -42,9 +42,16 @@ class FileTree(ConnectedObject, TreeNode):
         if they are mapped or modified Then save the tree itself,
         with the class mapper.
         """
-        for _, file_node in self.get_paths_recursive(False):
-            file_node.value.save_object(self.mapper_family, self.realm, force_write)
+        for _, metadata_connector in self.get_paths_recursive(False):
+            metadata_connector.save_object(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,
             "FileTree",
             get_mapper(self.mapper_family, "FileTree")(self.realm).unmap(self))
+
+    def get_paths_recursive(
+            self,
+            show_intermediate: Optional[bool] = False) -> Generator[Tuple[str, Connector], None, None]:
+
+        for name, tree_node in super().get_paths_recursive(show_intermediate):
+            yield name, tree_node.value
