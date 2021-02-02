@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, Generator, List, Optional, Set, Tuple, Union
 
 from .connector import ConnectedObject
 from .mapper import get_mapper
@@ -143,11 +143,11 @@ class Metadata(ConnectedObject):
             "Metadata",
             get_mapper(self.mapper_family, "Metadata")(self.realm).unmap(self))
 
-    def get_extractor_names(self):
-        return self.instances.keys()
+    def extractors(self) -> Generator[str, None, None]:
+        yield from self.instances.keys()
 
-    def get_extractor_runs(self, extractor_name: str) -> Set[MetadataInstance]:
-        return self.instances[extractor_name]
+    def extractor_runs(self) -> Generator[Tuple[str, Set[MetadataInstance]], None, None]:
+        yield from self.instances.items()
 
     def add_extractor_run(self,
                           time_stamp: Optional[int],
