@@ -125,6 +125,7 @@ def _create_file_tree(mapper_family, realm) -> FileTree:
 
 def _create_metadata_root_record(mapper_family: str,
                                  realm: str,
+                                 path: str,
                                  uuid: UUID,
                                  primary_data_version: str) -> MetadataRootRecord:
 
@@ -133,7 +134,7 @@ def _create_metadata_root_record(mapper_family: str,
     dataset_level_metadata = _create_metadata(
         mapper_family,
         realm,
-        "/dataset",
+        path,
         ["dataset_format_1", "dataset_format_2"],
         4,
         2
@@ -159,8 +160,9 @@ def _create_dataset_tree(mapper_family, realm) -> DatasetTree:
             _create_metadata_root_record(
                 mapper_family,
                 realm,
+                path,
                 UUID(f"0000000000000000000000000000{index:04x}"),
-                str(1000 + index)
+                "000102030405060708090a0b0c0d0e0f1011{index:04x}".format(index=index)
             )
         )
 
@@ -171,7 +173,7 @@ def main(argv):
     _, mapper_family, realm = argv
 
     time_counter = 0
-    version_counter = 256
+    version_counter = 0
 
     def get_time_str(counter: int) -> str:
         return str(123456789 + counter)

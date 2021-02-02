@@ -42,8 +42,7 @@ class FileTree(ConnectedObject, TreeNode):
         if they are mapped or modified Then save the tree itself,
         with the class mapper.
         """
-        file_node_set = self.get_paths_recursive(False)
-        for _, file_node in file_node_set:
+        for _, file_node in self.get_paths_recursive(False):
             file_node.value.save_object(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,

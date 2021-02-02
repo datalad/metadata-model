@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple
+from typing import Any, Generator, List, Optional, Tuple
 
 
 class TreeNode:
@@ -67,21 +67,14 @@ class TreeNode:
                 return None
         return current_node
 
-    def get_paths(self):
-        return tuple(self.child_nodes.keys())
+    def get_paths(self) -> Generator[str, None, None]:
+        yield from self.child_nodes.keys()
 
-    def get_paths_recursive(self, show_intermediate: Optional[bool] = False) -> List[Tuple[str, "TreeNode"]]:
+    def get_paths_recursive(self,
+                            show_intermediate: Optional[bool] = False
+                            ) -> Generator[Tuple[str, "TreeNode"], None, None]:
         if show_intermediate or self.is_leaf_node():
-            result = [("", self)]
-        else:
-            result = []
+            yield "", self
         for child_name, child_node in self.child_nodes.items():
-            child_node_infos = child_node.get_paths_recursive(show_intermediate)
-            result += [
-                (
-                    child_name + ("/" + child_node_info[0] if child_node_info[0] else ""),
-                    child_node_info[1]
-                )
-                for child_node_info in child_node_infos
-            ]
-        return result
+            for name, tree_node in child_node.get_paths_recursive(show_intermediate):
+                yield child_name + ("/" + name if name else ""), tree_node

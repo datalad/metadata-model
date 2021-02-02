@@ -11,8 +11,7 @@ class TestHierarchy(unittest.TestCase):
         for path in paths:
             tree.add_node_hierarchy(path, TreeNode(value=path))
 
-        leaf_path_infos = tree.get_paths_recursive(False)
-        leaf_path_names = [info[0] for info in leaf_path_infos]
+        leaf_path_names = [info[0] for info in tree.get_paths_recursive(False)]
         self.assertEqual(sorted(paths), sorted(leaf_path_names))
         self.assertIsNotNone(tree.get_node_at_path("a"))
         self.assertIsNotNone(tree.get_node_at_path("a/b"))
