@@ -57,6 +57,8 @@ class FileTree(ConnectedObject, TreeNode):
             yield name, tree_node.value
 
     def add_extractor_run(self,
+                          mapper_family,
+                          realm,
                           path,
                           time_stamp: Optional[float],
                           extractor_name: str,
@@ -65,7 +67,12 @@ class FileTree(ConnectedObject, TreeNode):
                           configuration: ExtractorConfiguration,
                           metadata_location: str):
 
-        metadata = self.get_metadata(path)
+        try:
+            metadata = self.get_metadata(path)
+        except AttributeError:
+            metadata = Metadata(mapper_family, realm)
+            self.add_metadata(path, metadata)
+
         metadata.add_extractor_run(
             time_stamp,
             extractor_name,

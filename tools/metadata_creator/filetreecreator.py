@@ -52,9 +52,20 @@ def create_file_tree(mapper_family: str,
                      parameter: Optional[dict] = None) -> FileTree:
 
     file_tree = FileTree(mapper_family, realm)
+    update_file_tree(mapper_family, realm, file_tree, root_dir, parameter)
+    return file_tree
+
+
+def update_file_tree(mapper_family: str,
+                     realm: str,
+                     file_tree: FileTree,
+                     root_dir: str,
+                     parameter: Optional[dict] = None):
+
     for path, entry in read_files(root_dir):
-        file_tree.add_metadata(path, Metadata(mapper_family, realm))
         file_tree.add_extractor_run(
+            mapper_family,
+            realm,
             path,
             None,
             "file-core-extractor",
@@ -65,4 +76,3 @@ def create_file_tree(mapper_family: str,
                 parameter or {}
             ),
             get_extractor_run(path, entry))
-    return file_tree
