@@ -20,11 +20,13 @@ def is_dataset_dir(entry: os.DirEntry) -> bool:
 def should_follow(entry: os.DirEntry, ignore_dot_dirs) -> bool:
     return entry.is_dir(follow_symlinks=False) \
            and not entry.name.startswith(".") or ignore_dot_dirs is False \
+           and entry not in ("..",) \
            and not is_dataset_dir(entry)
 
 
 def read_files(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, os.DirEntry], None, None]:
     """ Return all sub-entries of path that are files """
+
     entries = list(os.scandir(path))
     while entries:
         entry = entries.pop()
@@ -32,7 +34,7 @@ def read_files(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, 
             entries.extend(list(os.scandir(entry.path)))
         else:
             if not entry.is_dir():
-                yield entry.path, entry
+                yield entry.path[len(path) + 1:], entry
 
 
 def get_extractor_run(path: str, entry: os.DirEntry):

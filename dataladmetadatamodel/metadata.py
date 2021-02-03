@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Dict, Generator, List, Optional, Set, Tuple, Union
+from typing import Dict, Generator, Iterable, List, Optional, Set, Tuple, Union
 
 from .connector import ConnectedObject
 from .mapper import get_mapper
@@ -116,6 +116,54 @@ class MetadataInstance:
         return cls.from_json_obj(json.loads(json_str))
 
 
+class MetadataInstanceSet:
+    """
+    A set of metadata instances, i.e. extractor
+    run information records. Each instance is
+    identified by its configuration, i.e. an
+    instance of ExtractorConfiguration.
+    """
+    def __init__(self,
+                 initial_metadata_instances: Optional[Iterable[MetadataInstance]]):
+
+        self.parameter_set = list()
+        self.instance_set = dict()
+        for metadata_instance in initial_metadata_instances:
+            self.add_metadata_instance(metadata_instance)
+
+    def add_metadata_instance(self, metadata_instance: MetadataInstance):
+        if metadata_instance.configuration not in self.parameter_set:
+            self.parameter_set.append(metadata_instance.configuration)
+        instance_key = self.parameter_set.index(metadata_instance)
+        self.instance_set[instance_key] = metadata_instance
+
+    def to_json_obj(self) -> JSONObject:
+        return {
+            "@": dict(
+                type="MetadataInstanceSet",
+                version="1.0"
+            ),
+            "parameter_set": xxx,
+            "instance_set": yyy
+        }
+
+    def to_json_str(self) -> str:
+        return json.dumps(self.to_json_obj())
+
+    @classmethod
+    def from_json_obj(cls, obj: JSONObject) -> "MetadataInstanceSet":
+        assert obj["@"]["type"] == "MetadataInstanceSet"
+        assert obj["@"]["version"] == "1.0"
+        return cls(
+            obj["parameter_set"],
+            obj["instance_set"]
+        )
+
+    @classmethod
+    def from_json_str(cls, json_str: str) -> "MetadataInstanceSet":
+        return cls.from_json_obj(json.loads(json_str))
+
+
 class Metadata(ConnectedObject):
     """
     Holds entries for all metadata of a single object.
@@ -128,7 +176,7 @@ class Metadata(ConnectedObject):
     def __init__(self,
                  mapper_family: str,
                  realm: str,
-                 initial_instances: Optional[Dict[str, Dict[ExtractorConfiguration, MetadataInstance]]] = None):
+                 initial_instances: Optional[Dict[int, Dict[ExtractorConfiguration, MetadataInstance]]] = None):
 
         self.mapper_family = mapper_family
         self.realm = realm
