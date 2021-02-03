@@ -10,6 +10,11 @@ from .mapper.reference import Reference
 JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]
 
 
+class ParameterDict(dict):
+    def __hash__(self):
+        return hash(tuple(sorted(self.items())))
+
+
 class ExtractorConfiguration:
     """
     Holds a single configuration for an extractor.
@@ -19,7 +24,7 @@ class ExtractorConfiguration:
                  version: str,
                  parameter: Dict[str, JSONObject]):
         self.version = version
-        self.parameter = parameter
+        self.parameter = ParameterDict(parameter)
 
     def to_json_obj(self) -> JSONObject:
         return {
@@ -33,6 +38,15 @@ class ExtractorConfiguration:
 
     def to_json_str(self) -> str:
         return json.dumps(self.to_json_obj())
+
+    def __eq__(self, other):
+        return (
+            self.version == other.version
+            and self.parameter == other.parameter
+        )
+
+    def __hash__(self):
+        return hash((self.version, self.parameter))
 
     @classmethod
     def from_json_obj(cls, obj: JSONObject) -> "ExtractorConfiguration":
@@ -114,7 +128,7 @@ class Metadata(ConnectedObject):
     def __init__(self,
                  mapper_family: str,
                  realm: str,
-                 initial_instances: Optional[Dict[str, Set[MetadataInstance]]] = None):
+                 initial_instances: Optional[Dict[str, Dict[ExtractorConfiguration, MetadataInstance]]] = None):
 
         self.mapper_family = mapper_family
         self.realm = realm
@@ -146,32 +160,26 @@ class Metadata(ConnectedObject):
     def extractors(self) -> Generator[str, None, None]:
         yield from self.instances.keys()
 
-    def extractor_runs(self) -> Generator[Tuple[str, Set[MetadataInstance]], None, None]:
+    def extractor_runs(self) -> Generator[Tuple[str, Dict[ExtractorConfiguration, MetadataInstance]], None, None]:
         yield from self.instances.items()
 
     def add_extractor_run(self,
-                          time_stamp: Optional[int],
+                          time_stamp: Optional[float],
                           extractor_name: str,
                           author_name: str,
                           author_email: str,
                           configuration: ExtractorConfiguration,
                           metadata_location: str):
 
-        instance_set = self.instances.get(extractor_name, set())
-        instance_set.add(
-            MetadataInstance(
-                (
-                    time_stamp
-                    if time_stamp is not None
-                    else int(time.time())
-                ),
-                author_name,
-                author_email,
-                configuration,
-                metadata_location
-            )
+        instance_dict = self.instances.get(extractor_name, dict())
+        instance_dict[configuration] = MetadataInstance(
+            time_stamp if time_stamp is not None else time.time(),
+            author_name,
+            author_email,
+            configuration,
+            metadata_location
         )
-        self.instances[extractor_name] = instance_set
+        self.instances[extractor_name] = instance_dict
 
     @classmethod
     def from_json(cls, json_str: str):

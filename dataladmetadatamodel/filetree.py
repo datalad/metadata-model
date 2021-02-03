@@ -2,7 +2,7 @@ from typing import Generator, Optional, Tuple
 
 from .connector import ConnectedObject, Connector
 from .mapper import get_mapper
-from .metadata import Metadata
+from .metadata import ExtractorConfiguration, Metadata
 from .treenode import TreeNode
 from .mapper.reference import Reference
 
@@ -26,7 +26,7 @@ class FileTree(ConnectedObject, TreeNode):
         self.add_node_hierarchy(path, TreeNode(value=Connector.from_object(metadata)))
 
     def get_metadata(self, path: str):
-        return self.get_node_at_path(path).value.load(self.mapper_family, self.realm)
+        return self.get_node_at_path(path).value.load_object(self.mapper_family, self.realm)
 
     def set_metadata(self, path: str, metadata: Metadata):
         self.get_node_at_path(path).value.set(metadata)
@@ -55,3 +55,21 @@ class FileTree(ConnectedObject, TreeNode):
 
         for name, tree_node in super().get_paths_recursive(show_intermediate):
             yield name, tree_node.value
+
+    def add_extractor_run(self,
+                          path,
+                          time_stamp: Optional[float],
+                          extractor_name: str,
+                          author_name: str,
+                          author_email: str,
+                          configuration: ExtractorConfiguration,
+                          metadata_location: str):
+
+        metadata = self.get_metadata(path)
+        metadata.add_extractor_run(
+            time_stamp,
+            extractor_name,
+            author_name,
+            author_email,
+            configuration,
+            metadata_location)
