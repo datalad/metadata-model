@@ -8,11 +8,11 @@ with open("README.md", "r") as fh:
 
 
 setuptools.setup(
-    name="datalad-metadata-dataladmetadatamodel",
+    name="datalad-metadata-model",
     version="0.1.0",
     author="Christian Mönch",
-    author_email="c.moench@fz-juelich.de",
-    description="Metadata dataladmetadatamodel for datalad",
+    author_email="christian.moench@web.de",
+    description="Metadata model for datalad",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/christian-monch/metadata-model",
