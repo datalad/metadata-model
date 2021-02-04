@@ -146,6 +146,18 @@ class MetadataInstanceSet:
         instance_key = self.parameter_set.index(metadata_instance.configuration)
         self.instance_set[instance_key] = metadata_instance
 
+    def get_instances(self) -> Generator[MetadataInstance, None, None]:
+        yield from self.instance_set.values()
+
+    def get_configurations(self) -> List[ExtractorConfiguration]:
+        return self.parameter_set[:]
+
+    def get_instance_for_configuration_index(self, index: int):
+        return self.instance_set[index]
+
+    def get_instance_for_configuration(self, configuration: ExtractorConfiguration):
+        return self.instance_set[self.parameter_set.index(configuration)]
+
     def to_json_obj(self) -> JSONObject:
         return {
             "@": dict(
