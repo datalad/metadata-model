@@ -1,13 +1,11 @@
 import json
 import time
-from typing import Dict, Generator, Iterable, List, Optional, Set, Tuple, Union
+from typing import Dict, Generator, Iterable, List, Optional, Tuple
 
+from . import JSONObject
 from .connector import ConnectedObject
 from .mapper import get_mapper
 from .mapper.reference import Reference
-
-
-JSONObject = Union[List["JSONObject"], Dict[str, "JSONObject"], int, float, str]
 
 
 class ParameterDict(dict):
@@ -75,7 +73,7 @@ class MetadataInstance:
                  author_name,
                  author_email,
                  configuration: ExtractorConfiguration,
-                 metadata_location: str):
+                 metadata_location: JSONObject):
 
         self.time_stamp = time_stamp
         self.author_name = author_name
@@ -247,7 +245,7 @@ class Metadata(ConnectedObject):
                           author_name: str,
                           author_email: str,
                           configuration: ExtractorConfiguration,
-                          metadata_location: str):
+                          metadata_location: JSONObject):
 
         instance_set = self.instance_sets.get(extractor_name, MetadataInstanceSet())
         instance_set.add_metadata_instance(

@@ -1,5 +1,6 @@
 from typing import Generator, Optional, Tuple
 
+from . import JSONObject
 from .connector import ConnectedObject, Connector
 from .mapper import get_mapper
 from .metadata import ExtractorConfiguration, Metadata
@@ -65,7 +66,7 @@ class FileTree(ConnectedObject, TreeNode):
                           author_name: str,
                           author_email: str,
                           configuration: ExtractorConfiguration,
-                          metadata_location: str):
+                          metadata_location: JSONObject):
 
         try:
             metadata = self.get_metadata(path)
@@ -79,4 +80,5 @@ class FileTree(ConnectedObject, TreeNode):
             author_name,
             author_email,
             configuration,
-            metadata_location)
+            metadata_location
+        )
