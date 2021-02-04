@@ -93,7 +93,7 @@ def add_metadata_root_record(mapper_family,
         realm,
         UUID(dataset_info["dataset"]["id"]),
         "1234567891123456789212345678931234567894",
-         Connector.from_object(Metadata(mapper_family, realm)),
+         Connector.from_object(metadata),
          Connector.from_object(file_tree)
     )
     dataset_tree.add_dataset(path, mrr)
