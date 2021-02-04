@@ -1,16 +1,14 @@
-import json
 import os
+import sys
 import time
 from typing import Generator, Optional, Tuple
 from uuid import UUID
 
-from dataladmetadatamodel import JSONObject
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
-from tools.metadata_creator.execute import checked_execute
 from tools.metadata_creator.filetreecreator import create_file_tree
 
 
@@ -61,9 +59,14 @@ def get_extractor_run(path: str, entry: os.DirEntry):
     }
 
 
-def get_dataset_info(path) -> JSONObject:
-    stdout_content, _ = checked_execute(["datalad", "-C", path, "-f", "json_pp", "wtf"])
-    return json.loads(stdout_content)
+def get_dataset_id(path) -> UUID:
+    config_file_path = path + "/.datalad/config"
+    with open(config_file_path) as f:
+        for line in f.readlines():
+            elements = line.split()
+            if elements[:2] == ["id", "="]:
+                return UUID(elements[2])
+    raise ValueError("No dataset id in config file: " + config_file_path)
 
 
 def add_metadata_root_record(mapper_family,
@@ -72,10 +75,14 @@ def add_metadata_root_record(mapper_family,
                              path,
                              entry: os.DirEntry):
 
-    # Too slow: dataset_info = get_dataset_info(entry.path)
-    dataset_info = dict(dataset=dict(id="00000000-95ed-11ea-af77-7cdd908c7490"))
+    dataset_id = get_dataset_id(entry.path)
 
-    file_tree = create_file_tree(mapper_family, realm, entry.path)
+    file_tree = create_file_tree(
+        mapper_family,
+        realm,
+        entry.path,
+        {"ft_parameter_1": "ft_value_1"}
+    )
 
     metadata = Metadata(mapper_family, realm)
     metadata.add_extractor_run(
@@ -83,19 +90,26 @@ def add_metadata_root_record(mapper_family,
             "dataset-test-extractor",
             "datasetcreator.py",
             "support@datalad.org",
-            ExtractorConfiguration("1.2.3", {"parameter_a": "value_a"}),
+            ExtractorConfiguration("1.2.3", {"ds_parameter_a": "ds_value_a"}),
             {"info": "fake metadata for dataset-test-extractor", "path": path}
         )
-
 
     mrr = MetadataRootRecord(
         mapper_family,
         realm,
-        UUID(dataset_info["dataset"]["id"]),
+        dataset_id,
         "1234567891123456789212345678931234567894",
          Connector.from_object(metadata),
          Connector.from_object(file_tree)
     )
+
+    print(f"writing MRR of {dataset_id} at path {entry.path},", file=sys.stderr)
+    mrr.save()
+    print("unloading dataset metadata and filetree,", file=sys.stderr)
+    mrr.dataset_level_metadata.purge()
+    mrr.file_tree.purge()
+    print("done.", file=sys.stderr)
+
     dataset_tree.add_dataset(path, mrr)
 
 

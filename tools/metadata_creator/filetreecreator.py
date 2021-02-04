@@ -17,7 +17,7 @@ def is_dataset_dir(entry: os.DirEntry) -> bool:
 
 def should_follow(entry: os.DirEntry, ignore_dot_dirs) -> bool:
     return entry.is_dir(follow_symlinks=False) \
-           and not entry.name.startswith(".") or ignore_dot_dirs is False \
+           and (not entry.name.startswith(".") or ignore_dot_dirs is False) \
            and not is_dataset_dir(entry)
 
 
@@ -30,7 +30,7 @@ def read_files(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, 
         if should_follow(entry, ignore_dot_dirs):
             entries.extend(list(os.scandir(entry.path)))
         else:
-            if not entry.is_dir():
+            if not entry.is_dir() and not entry.name.startswith("."):
                 yield entry.path[len(path) + 1:], entry
 
 
