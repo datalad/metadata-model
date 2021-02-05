@@ -70,6 +70,9 @@ class TreeVersionListGitMapper(VersionListGitMapper):
         return TreeVersionList("git", self.realm, version_records)
 
     def unmap(self, obj: Any) -> str:
+        # Import in method to prevent recursive imports
+        from . import TREE_VERSION_LIST_REFERENCE
+
         location = super().unmap(obj)
-        git_update_ref(self.realm, "refs/develop/dataset-tree", location)
-        return "refs/develop/dataset-tree"
+        git_update_ref(self.realm, TREE_VERSION_LIST_REFERENCE, location)
+        return TREE_VERSION_LIST_REFERENCE

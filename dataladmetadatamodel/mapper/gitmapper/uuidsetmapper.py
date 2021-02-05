@@ -27,7 +27,8 @@ class UUIDSetGitMapper(BaseMapper):
         Store the data in the UUIDSet, including
         the top-half of the connectors.
         """
-        # Import UUIDSet here to prevent recursive imports
+        # Import here to prevent recursive imports
+        from . import UUID_SET_REFERENCE
         from dataladmetadatamodel.uuidset import UUIDSet
         assert isinstance(uuid_set, UUIDSet)
 
@@ -39,5 +40,5 @@ class UUIDSetGitMapper(BaseMapper):
             raise ValueError("Cannot unmap an empty UUID")
 
         location = git_save_tree(self.realm, top_half)
-        git_update_ref(self.realm, "refs/develop/dataset-set", location)
-        return "refs/develop/dataset-set"
+        git_update_ref(self.realm, UUID_SET_REFERENCE, location)
+        return UUID_SET_REFERENCE
