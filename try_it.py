@@ -152,7 +152,7 @@ if try_read:
 
     loaded_uuid_set: UUIDSet = c.load_object(MAPPER_FAMILY, REALM)
     version_list_uuid_0 = loaded_uuid_set.get_version_list(uuid_0)
-    mrr = version_list_uuid_0.get_metadata_root_record("pd-version-1.1")
+    mrr = version_list_uuid_0.get_dataset_tree("pd-version-1.1")
 
     print(loaded_uuid_set)
     print(mrr)

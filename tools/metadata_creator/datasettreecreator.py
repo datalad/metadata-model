@@ -2,7 +2,6 @@ import os
 import sys
 import time
 from typing import Generator, Optional, Tuple
-from uuid import UUID
 
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
@@ -10,6 +9,7 @@ from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
 from tools.metadata_creator.filetreecreator import create_file_tree
+from tools.metadata_creator.utils import get_dataset_id, get_dataset_version
 
 
 DATALAD_DATASET_HIDDEN_DIR_NAME = ".datalad"
@@ -59,21 +59,6 @@ def get_extractor_run(path: str, entry: os.DirEntry):
     }
 
 
-def get_dataset_id(path) -> Optional[UUID]:
-    config_file_path = path + "/.datalad/config"
-    try:
-        with open(config_file_path) as f:
-            for line in f.readlines():
-                elements = line.split()
-                if elements[:2] == ["id", "="]:
-                    return UUID(elements[2])
-        print("WARNING: no dataset id in config file: " + config_file_path, file=sys.stderr)
-        return None
-    except:
-        print("WARNING: could not open config file: " + config_file_path, file=sys.stderr)
-        return None
-
-
 def add_metadata_root_record(mapper_family,
                              realm,
                              dataset_tree: DatasetTree,
@@ -82,7 +67,12 @@ def add_metadata_root_record(mapper_family,
 
     dataset_id = get_dataset_id(entry.path)
     if dataset_id is None:
-        print(f"ignoring dataset at path {entry.path},", file=sys.stderr)
+        print(f"could not read id, ignoring dataset at path {entry.path},", file=sys.stderr)
+        return
+
+    dataset_version = get_dataset_version(entry.path)
+    if dataset_id is None:
+        print(f"could not read version, ignoring dataset at path {entry.path},", file=sys.stderr)
         return
 
     file_tree = create_file_tree(
@@ -106,9 +96,9 @@ def add_metadata_root_record(mapper_family,
         mapper_family,
         realm,
         dataset_id,
-        "1234567891123456789212345678931234567894",
-         Connector.from_object(metadata),
-         Connector.from_object(file_tree)
+        dataset_version,
+        Connector.from_object(metadata),
+        Connector.from_object(file_tree)
     )
 
     print(f"writing MRR of {dataset_id} at path {entry.path},", file=sys.stderr)

@@ -24,7 +24,7 @@ class VersionListGitMapper(BaseMapper):
                 pdm_assoc["time_stamp"],
                 pdm_assoc["path"],
                 Connector.from_reference(
-                    Reference.from_json_obj(pdm_assoc["metadata_root"])
+                    Reference.from_json_obj(pdm_assoc["dataset_tree"])
                 )
             )
             for pdm_assoc in json_object
@@ -39,7 +39,7 @@ class VersionListGitMapper(BaseMapper):
                 "primary_data_version": primary_data_version,
                 "time_stamp": version_record.time_stamp,
                 "path": version_record.path,
-                "metadata_root": version_record.mrr_connector.save_object(
+                "dataset_tree": version_record.dataset_tree_connector.save_object(
                     "git",
                     self.realm
                 ).to_json_obj()
@@ -62,7 +62,7 @@ class TreeVersionListGitMapper(VersionListGitMapper):
                 pdm_assoc["time_stamp"],
                 pdm_assoc["path"],
                 Connector.from_reference(
-                    Reference.from_json_obj(pdm_assoc["metadata_root"])
+                    Reference.from_json_obj(pdm_assoc["dataset_tree"])
                 )
             )
             for pdm_assoc in json_object
