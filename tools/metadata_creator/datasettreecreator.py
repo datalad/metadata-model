@@ -59,14 +59,19 @@ def get_extractor_run(path: str, entry: os.DirEntry):
     }
 
 
-def get_dataset_id(path) -> UUID:
+def get_dataset_id(path) -> Optional[UUID]:
     config_file_path = path + "/.datalad/config"
-    with open(config_file_path) as f:
-        for line in f.readlines():
-            elements = line.split()
-            if elements[:2] == ["id", "="]:
-                return UUID(elements[2])
-    raise ValueError("No dataset id in config file: " + config_file_path)
+    try:
+        with open(config_file_path) as f:
+            for line in f.readlines():
+                elements = line.split()
+                if elements[:2] == ["id", "="]:
+                    return UUID(elements[2])
+        print("WARNING: no dataset id in config file: " + config_file_path, file=sys.stderr)
+        return None
+    except:
+        print("WARNING: could not open config file: " + config_file_path, file=sys.stderr)
+        return None
 
 
 def add_metadata_root_record(mapper_family,
@@ -76,6 +81,9 @@ def add_metadata_root_record(mapper_family,
                              entry: os.DirEntry):
 
     dataset_id = get_dataset_id(entry.path)
+    if dataset_id is None:
+        print(f"ignoring dataset at path {entry.path},", file=sys.stderr)
+        return
 
     file_tree = create_file_tree(
         mapper_family,
@@ -104,7 +112,8 @@ def add_metadata_root_record(mapper_family,
     )
 
     print(f"writing MRR of {dataset_id} at path {entry.path},", file=sys.stderr)
-    mrr.save()
+    ref = mrr.save()
+    print(f"done, reference: {ref},", file=sys.stderr)
     print("unloading dataset metadata and filetree,", file=sys.stderr)
     mrr.dataset_level_metadata.purge()
     mrr.file_tree.purge()

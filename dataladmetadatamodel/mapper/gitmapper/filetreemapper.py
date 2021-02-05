@@ -5,6 +5,9 @@ from ..basemapper import BaseMapper
 from ..reference import Reference
 
 
+empty_tree_location = "None"
+
+
 class FileTreeGitMapper(BaseMapper):
 
     def _save_file_tree(self, node: "TreeNode") -> str:
@@ -25,7 +28,10 @@ class FileTreeGitMapper(BaseMapper):
                 dir_entries.append(("100644", "blob", location, name))
             else:
                 dir_entries.append(("040000", "tree", self._save_file_tree(child_node), name))
-        return git_save_tree(self.realm, dir_entries)
+        if dir_entries:
+            return git_save_tree(self.realm, dir_entries)
+        else:
+            return empty_tree_location
 
     def map(self, ref: Reference) -> "FileTree":
         from dataladmetadatamodel.connector import Connector
@@ -33,12 +39,13 @@ class FileTreeGitMapper(BaseMapper):
         from dataladmetadatamodel.treenode import TreeNode
 
         file_tree = FileTree("git", self.realm)
-        for line in git_ls_tree_recursive(self.realm, ref.location):
-            _, _, location, path = line.split()
-            connector = Connector.from_reference(
-                Reference.from_json_str(
-                    git_load_str(self.realm, location)))
-            file_tree.add_node_hierarchy(path, TreeNode(connector))
+        if ref.location != empty_tree_location:
+            for line in git_ls_tree_recursive(self.realm, ref.location):
+                _, _, location, path = line.split()
+                connector = Connector.from_reference(
+                    Reference.from_json_str(
+                        git_load_str(self.realm, location)))
+                file_tree.add_node_hierarchy(path, TreeNode(connector))
         return file_tree
 
     def unmap(self, obj) -> str:

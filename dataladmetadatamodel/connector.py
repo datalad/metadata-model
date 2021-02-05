@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from dataladmetadatamodel.mapper import get_mapper
-from dataladmetadatamodel.mapper.reference import Reference
+from dataladmetadatamodel.mapper.reference import Reference, none_class_name, none_location
 
 
 class ConnectedObject:
@@ -35,17 +35,20 @@ class Connector:
     def from_referenced_object(cls, reference, obj):
         return cls(reference, obj, True, False)
 
-    def load_object(self, family, realm) -> Any:     # TODO: rename to load_object
+    def load_object(self, family, realm) -> Any:
         if not self.is_mapped:
             assert self.reference is not None
-            self.object = get_mapper(
-                self.reference.mapper_family,
-                self.reference.class_name)(realm).map(self.reference)
-            self.object.post_load(family, realm)
+            if self.reference.is_none_reference():
+                self.object = None
+            else:
+                self.object = get_mapper(
+                    self.reference.mapper_family,
+                    self.reference.class_name)(realm).map(self.reference)
+                self.object.post_load(family, realm)
             self.is_mapped = True
         return self.object
 
-    def save_object(self, family, realm, force_write=False) -> Reference:   # TODO: rename to save_object
+    def save_object(self, family, realm, force_write=False) -> Reference:
         if self.is_mapped:
             if self.is_modified or force_write:
                 class_name = type(self.object).__name__
@@ -60,7 +63,9 @@ class Connector:
                 )
                 self.is_modified = False
             return self.reference
-        raise ValueError("No object is loaded or set")
+
+        self.reference = Reference(family, none_class_name, none_location)
+        return self.reference
 
     def set(self, obj):
         self.object = obj
