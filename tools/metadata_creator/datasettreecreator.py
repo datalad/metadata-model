@@ -101,9 +101,13 @@ def add_metadata_root_record(mapper_family,
         Connector.from_object(file_tree)
     )
 
+    print(f"dataset_level_metadata connector {mrr.dataset_level_metadata}", file=sys.stderr)
+    print(f"file_tree connector {mrr.file_tree}", file=sys.stderr)
     print(f"writing MRR of {dataset_id} at path {entry.path},", file=sys.stderr)
     ref = mrr.save()
     print(f"done, reference: {ref},", file=sys.stderr)
+    print(f"post save: dataset_level_metadata connector {mrr.dataset_level_metadata}", file=sys.stderr)
+    print(f"post save: file_tree connector {mrr.file_tree}", file=sys.stderr)
     print("unloading dataset metadata and filetree,", file=sys.stderr)
     mrr.dataset_level_metadata.purge()
     mrr.file_tree.purge()

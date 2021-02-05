@@ -62,9 +62,9 @@ class Connector:
                     )(realm).unmap(self.object)
                 )
                 self.is_modified = False
-            return self.reference
-
-        self.reference = Reference(family, none_class_name, none_location)
+        else:
+            if self.reference is None:
+                self.reference = Reference(family, none_class_name, none_location)
         return self.reference
 
     def set(self, obj):
