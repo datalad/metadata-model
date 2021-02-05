@@ -37,7 +37,7 @@ def read_datasets(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[st
 
     if has_datalad_dir(path):
         path_entry = tuple(filter(lambda e: path.endswith(e.name), os.scandir(path + "/..")))[0]
-        yield ".", path_entry
+        yield "", path_entry
 
     entries = list(os.scandir(path))
     while entries:
