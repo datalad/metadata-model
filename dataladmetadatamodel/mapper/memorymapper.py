@@ -35,3 +35,6 @@ class MemoryMapper(_BaseMapper):
 
 
 MEMORY_MAPPER_FAMILY = defaultdict(MemoryMapper)
+
+
+MEMORY_MAPPER_LOCATIONS = ("0", "1")
