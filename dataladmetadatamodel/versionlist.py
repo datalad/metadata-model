@@ -109,7 +109,7 @@ class TreeVersionList(VersionList):
             "TreeVersionList",
             get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))
 
-    def get_dataset_tree(self, primary_data_version: str):
+    def get_dataset_tree(self, primary_data_version: str) -> Tuple[str, DatasetTree]:
         time_stamp, _, dataset_tree = super().get_dataset_tree(primary_data_version)
         return time_stamp, dataset_tree
 
