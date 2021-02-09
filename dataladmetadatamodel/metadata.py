@@ -138,6 +138,9 @@ class MetadataInstanceSet:
         for metadata_instance in initial_metadata_instances or []:
             self.add_metadata_instance(metadata_instance)
 
+    def __iter__(self):
+        yield from self.instance_set.values()
+
     def add_metadata_instance(self, metadata_instance: MetadataInstance):
         if metadata_instance.configuration not in self.parameter_set:
             self.parameter_set.append(metadata_instance.configuration)
@@ -269,7 +272,7 @@ class Metadata(ConnectedObject):
             obj["realm"]
         )
 
-        for format_name, instance_set_json_str in obj["instance_sets"]:
-            metadata.instance_sets[format_name] = MetadataInstanceSet.from_json_str(instance_set_json_str)
+        for format_name, instance_set_json_obj in obj["instance_sets"].items():
+            metadata.instance_sets[format_name] = MetadataInstanceSet.from_json_obj(instance_set_json_obj)
 
         return metadata
