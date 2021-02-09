@@ -36,8 +36,8 @@ def _get_locations(mapper_family: str):
 
 
 def get_uuid_set_location(mapper_family: str):
-    return _get_locations(mapper_family)[0]
+    return _get_locations(mapper_family)[1]
 
 
 def get_tree_version_list_location(mapper_family: str):
-    return _get_locations(mapper_family)[1]
+    return _get_locations(mapper_family)[0]
