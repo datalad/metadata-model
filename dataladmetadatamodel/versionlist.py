@@ -110,4 +110,11 @@ class TreeVersionList(VersionList):
             get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))
 
     def get_dataset_tree(self, primary_data_version: str):
-        return super().get_dataset_tree(primary_data_version)
+        time_stamp, _, dataset_tree = super().get_dataset_tree(primary_data_version)
+        return time_stamp, dataset_tree
+
+    def set_dataset_tree(self,
+                         primary_data_version: str,
+                         time_stamp: str,
+                         dataset_tree: DatasetTree):
+        return super().set_dataset_tree(primary_data_version, time_stamp, "", dataset_tree)
