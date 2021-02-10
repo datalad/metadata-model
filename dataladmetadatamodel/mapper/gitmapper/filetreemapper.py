@@ -41,7 +41,7 @@ class FileTreeGitMapper(BaseMapper):
         file_tree = FileTree("git", self.realm)
         if ref.location != empty_tree_location:
             for line in git_ls_tree_recursive(self.realm, ref.location):
-                _, _, location, path = line.split()
+                location, path = line[12:52], line[53:]
                 connector = Connector.from_reference(
                     Reference.from_json_str(
                         git_load_str(self.realm, location)))
