@@ -50,9 +50,9 @@ class FileTree(ConnectedObject, TreeNode):
             "FileTree",
             get_mapper(self.mapper_family, "FileTree")(self.realm).unmap(self))
 
-    def get_paths_recursive(
-            self,
-            show_intermediate: Optional[bool] = False) -> Generator[Tuple[str, Connector], None, None]:
+    def get_paths_recursive(self,
+                            show_intermediate: Optional[bool] = False
+                            ) -> Generator[Tuple[str, Connector], None, None]:
 
         for name, tree_node in super().get_paths_recursive(show_intermediate):
             yield name, tree_node.value

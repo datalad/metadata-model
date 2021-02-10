@@ -89,7 +89,10 @@ def add_metadata_root_record(mapper_family,
             "datasetcreator.py",
             "support@datalad.org",
             ExtractorConfiguration("1.2.3", {"ds_parameter_a": "ds_value_a"}),
-            {"info": "fake metadata for dataset-test-extractor", "path": path}
+            {
+                "info": "fake metadata for dataset-test-extractor",
+                "path": path
+            }
         )
 
     mrr = MetadataRootRecord(

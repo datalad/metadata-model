@@ -11,6 +11,7 @@ from tools.metadata_creator.utils import get_dataset_version
 def create_tree_version_list(mapper_family: str,
                              realm: str,
                              path: str,
+                             parameter: Optional[dict] = None
                              ) -> Optional[TreeVersionList]:
 
     version = get_dataset_version(path)
@@ -20,11 +21,11 @@ def create_tree_version_list(mapper_family: str,
     tree_version_list.set_dataset_tree(
         version,
         str(time.time()),
-        path,
         create_dataset_tree(
             mapper_family,
             realm,
-            path
+            path,
+            parameter
         )
     )
     return tree_version_list
