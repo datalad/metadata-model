@@ -28,7 +28,7 @@ class TreeNode:
                            new_node: "TreeNode",
                            allow_leaf_node_conversion: bool = False):
         self._add_node_hierarchy(
-            path.split("/"),
+            path.lstrip("/").split("/"),
             new_node,
             allow_leaf_node_conversion
         )
