@@ -10,7 +10,7 @@ from .versionlistmapper import TreeVersionListGitMapper
 from .versionlistmapper import VersionListGitMapper
 
 
-GIT_MAPPER_FAMILY = {
+GIT_MAPPER_FAMILY_MEMBERS = {
     "DatasetTree": DatasetTreeGitMapper,
     "FileTree": FileTreeGitMapper,
     "Metadata": MetadataGitMapper,
@@ -21,3 +21,10 @@ GIT_MAPPER_FAMILY = {
     "UUIDSet": UUIDSetGitMapper,
     "VersionList": VersionListGitMapper
 }
+
+
+TREE_VERSION_LIST_REFERENCE = "refs/datalad/dataset-tree"
+UUID_SET_REFERENCE = "refs/datalad/dataset-set"
+
+
+GIT_MAPPER_LOCATIONS = (TREE_VERSION_LIST_REFERENCE, UUID_SET_REFERENCE)

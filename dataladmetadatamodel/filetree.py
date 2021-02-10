@@ -1,5 +1,6 @@
 from typing import Generator, Optional, Tuple
 
+from . import JSONObject
 from .connector import ConnectedObject, Connector
 from .mapper import get_mapper
 from .metadata import ExtractorConfiguration, Metadata
@@ -23,7 +24,10 @@ class FileTree(ConnectedObject, TreeNode):
         self.add_node_hierarchy(path, TreeNode())
 
     def add_metadata(self, path: str, metadata: Optional[Metadata] = None):
-        self.add_node_hierarchy(path, TreeNode(value=Connector.from_object(metadata)))
+        if path == "":
+            self.value = metadata
+        else:
+            self.add_node_hierarchy(path, TreeNode(value=Connector.from_object(metadata)))
 
     def get_metadata(self, path: str):
         return self.get_node_at_path(path).value.load_object(self.mapper_family, self.realm)
@@ -49,9 +53,9 @@ class FileTree(ConnectedObject, TreeNode):
             "FileTree",
             get_mapper(self.mapper_family, "FileTree")(self.realm).unmap(self))
 
-    def get_paths_recursive(
-            self,
-            show_intermediate: Optional[bool] = False) -> Generator[Tuple[str, Connector], None, None]:
+    def get_paths_recursive(self,
+                            show_intermediate: Optional[bool] = False
+                            ) -> Generator[Tuple[str, Connector], None, None]:
 
         for name, tree_node in super().get_paths_recursive(show_intermediate):
             yield name, tree_node.value
@@ -65,7 +69,7 @@ class FileTree(ConnectedObject, TreeNode):
                           author_name: str,
                           author_email: str,
                           configuration: ExtractorConfiguration,
-                          metadata_location: str):
+                          metadata_location: JSONObject):
 
         try:
             metadata = self.get_metadata(path)
@@ -79,4 +83,5 @@ class FileTree(ConnectedObject, TreeNode):
             author_name,
             author_email,
             configuration,
-            metadata_location)
+            metadata_location
+        )

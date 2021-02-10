@@ -1,22 +1,19 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from .connector import ConnectedObject, Connector
+from .datasettree import DatasetTree
 from .mapper import get_mapper
-from .text import Text
 from .mapper.reference import Reference
-
-
-MetadataRootRecord = Text
 
 
 class VersionRecord:
     def __init__(self,
                  time_stamp: str,
                  path: Optional[str],
-                 mrr_connector: Connector):
+                 dataset_tree_connector: Connector):
         self.time_stamp = time_stamp
         self.path = path
-        self.mrr_connector = mrr_connector
+        self.dataset_tree_connector = dataset_tree_connector
 
 
 class VersionList(ConnectedObject):
@@ -31,8 +28,8 @@ class VersionList(ConnectedObject):
     def _get_version_record(self, primary_data_version) -> VersionRecord:
         return self.version_set[primary_data_version]
 
-    def _get_mrr_connector(self, primary_data_version) -> Connector:
-        return self._get_version_record(primary_data_version).mrr_connector
+    def _get_dst_connector(self, primary_data_version) -> Connector:
+        return self._get_version_record(primary_data_version).dataset_tree_connector
 
     def save(self, force_write: bool = False) -> Reference:
         """
@@ -42,7 +39,7 @@ class VersionList(ConnectedObject):
         of the connectors with the appropriate class mapper.
         """
         for primary_data_version, version_record in self.version_set.items():
-            version_record.mrr_connector.save_object(self.mapper_family, self.realm, force_write)
+            version_record.dataset_tree_connector.save_object(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,
             "VersionList",
@@ -51,22 +48,22 @@ class VersionList(ConnectedObject):
     def versions(self):
         return self.version_set.keys()
 
-    def set_metadata_root_record(self,
-                                 primary_data_version: str,
-                                 time_stamp: str,
-                                 path: str,
-                                 metadata_root_record: MetadataRootRecord):
+    def set_dataset_tree(self,
+                         primary_data_version: str,
+                         time_stamp: str,
+                         path: str,
+                         dataset_tree: DatasetTree):
         """
-        Set a new or updated metadata root record.
+        Set a new or updated dataset tree.
         Existing references are deleted.
         The entry is marked as dirty.
         """
         self.version_set[primary_data_version] = VersionRecord(
             time_stamp,
             path,
-            Connector.from_object(metadata_root_record))
+            Connector.from_object(dataset_tree))
 
-    def get_metadata_root_record(self, primary_data_version: str):
+    def get_dataset_tree(self, primary_data_version: str) -> Tuple[str, str, DatasetTree]:
         """
         Get the metadata root record, its timestamp and path for the given version.
         If it is not mapped yet, it will be mapped.
@@ -75,21 +72,21 @@ class VersionList(ConnectedObject):
         return (
             version_record.time_stamp,
             version_record.path,
-            version_record.mrr_connector.load_object(
+            version_record.dataset_tree_connector.load_object(
                 self.mapper_family,
                 self.realm))
 
-    def unget_metadata_root_record(self,
-                                   primary_data_version: str,
-                                   force_write: bool = False):
+    def unget_dataset_tree(self,
+                           primary_data_version: str,
+                           force_write: bool = False):
         """
         Remove a metadata record from memory. First, persist the
         current status, if it was changed or if force_write
         is true.
         """
-        mrr_connector = self._get_mrr_connector(primary_data_version)
-        mrr_connector.save_object(self.mapper_family, self.realm, force_write)
-        mrr_connector.purge()
+        dst_connector = self._get_dst_connector(primary_data_version)
+        dst_connector.save_object(self.mapper_family, self.realm, force_write)
+        dst_connector.purge()
 
 
 class TreeVersionList(VersionList):
@@ -99,13 +96,25 @@ class TreeVersionList(VersionList):
     update a reference, if mapping an TreeVersionList instance.
     """
     def save(self, force_write: bool = False) -> Reference:
-        # Save all metadata root records that are connected
+
+        # Save all dataset tree connectors that are mapped
         for primary_data_version, version_record in self.version_set.items():
-            version_record.mrr_connector.save_object(self.mapper_family, self.realm, force_write)
+            version_record.dataset_tree_connector.save_object(
+                self.mapper_family,
+                self.realm,
+                force_write)
+
         return Reference(
             self.mapper_family,
             "TreeVersionList",
             get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))
 
-    def get_dataset_tree(self, primary_data_version: str):
-        return super().get_metadata_root_record(primary_data_version)
+    def get_dataset_tree(self, primary_data_version: str) -> Tuple[str, DatasetTree]:
+        time_stamp, _, dataset_tree = super().get_dataset_tree(primary_data_version)
+        return time_stamp, dataset_tree
+
+    def set_dataset_tree(self,
+                         primary_data_version: str,
+                         time_stamp: str,
+                         dataset_tree: DatasetTree):
+        return super().set_dataset_tree(primary_data_version, time_stamp, "", dataset_tree)

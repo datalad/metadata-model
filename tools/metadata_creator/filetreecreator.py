@@ -1,9 +1,8 @@
-import json
 import os
 from typing import Generator, Optional, Tuple
 
 from dataladmetadatamodel.filetree import FileTree
-from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
+from dataladmetadatamodel.metadata import ExtractorConfiguration
 
 
 DATALAD_DATASET_HIDDEN_DIR_NAME = ".datalad"
@@ -12,38 +11,38 @@ DATALAD_DATASET_HIDDEN_DIR_NAME = ".datalad"
 def is_dataset_dir(entry: os.DirEntry) -> bool:
     return any(
         filter(
-            lambda x: x.is_dir(follow_symlinks=False)
-                      and x.name == DATALAD_DATASET_HIDDEN_DIR_NAME,
+            lambda x: x.is_dir(follow_symlinks=False) and x.name == DATALAD_DATASET_HIDDEN_DIR_NAME,
             os.scandir(entry.path)))
 
 
 def should_follow(entry: os.DirEntry, ignore_dot_dirs) -> bool:
     return entry.is_dir(follow_symlinks=False) \
-           and not entry.name.startswith(".") or ignore_dot_dirs is False \
+           and (not entry.name.startswith(".") or ignore_dot_dirs is False) \
            and not is_dataset_dir(entry)
 
 
 def read_files(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, os.DirEntry], None, None]:
     """ Return all sub-entries of path that are files """
+
     entries = list(os.scandir(path))
     while entries:
         entry = entries.pop()
         if should_follow(entry, ignore_dot_dirs):
             entries.extend(list(os.scandir(entry.path)))
         else:
-            if not entry.is_dir():
-                yield entry.path, entry
+            if not entry.is_dir() and not entry.name.startswith("."):
+                yield entry.path[len(path) + 1:], entry
 
 
 def get_extractor_run(path: str, entry: os.DirEntry):
     stat = entry.stat(follow_symlinks=False)
-    return json.dumps({
+    return {
         "path": path,
         "size": stat.st_size,
         "atime": stat.st_atime,
         "ctime": stat.st_ctime,
         "mtime": stat.st_mtime,
-    })
+    }
 
 
 def create_file_tree(mapper_family: str,

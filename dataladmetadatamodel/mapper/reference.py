@@ -2,6 +2,10 @@ import json
 from typing import Optional
 
 
+none_class_name = "*None*"
+none_location = "*None*"
+
+
 class Reference:
     def __init__(self,
                  mapper_family: str,
@@ -19,6 +23,9 @@ class Reference:
             f"Reference(mapper_family='{self.mapper_family}', "
             f"class_name='{self.class_name}', "
             f"location={repr(self.location)})")
+
+    def is_none_reference(self) -> bool:
+        return self.location == none_location
 
     def to_json_str(self):
         return json.dumps(self.to_json_obj())
@@ -48,3 +55,7 @@ class Reference:
             obj["class_name"],
             obj["location"]
         )
+
+    @classmethod
+    def get_none_reference(cls, mapper_family: str, class_name: str) -> "Reference":
+        return cls(mapper_family, class_name, none_location)

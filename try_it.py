@@ -20,11 +20,33 @@ uuid_1 = UUID("00000000000000000000000000000001")
 uuid_2 = UUID("00000000000000000000000000000002")
 
 
+try_create_uuid_set = True
+try_create_tree_version_list = True
 try_metadata_objects = True
 try_dataset_tree = True
 try_tree = True
 try_read = True
 try_write = False
+
+
+if try_create_uuid_set:
+
+    if not try_create_tree_version_list:
+        exit(0)
+
+
+if try_create_tree_version_list:
+    from tools.metadata_creator.treeversionlistcreator import create_tree_version_list
+    tvl = create_tree_version_list(
+        "git",
+        "/home/cristian/tmp/mm2",
+        "/home/cristian/datalad/datasets.datalad.org",
+        {
+            "p1": "v1"
+        }
+    )
+    tvl.save()
+    exit(0)
 
 
 if try_metadata_objects:
@@ -152,7 +174,7 @@ if try_read:
 
     loaded_uuid_set: UUIDSet = c.load_object(MAPPER_FAMILY, REALM)
     version_list_uuid_0 = loaded_uuid_set.get_version_list(uuid_0)
-    mrr = version_list_uuid_0.get_metadata_root_record("pd-version-1.1")
+    mrr = version_list_uuid_0.get_dataset_tree("pd-version-1.1")
 
     print(loaded_uuid_set)
     print(mrr)
