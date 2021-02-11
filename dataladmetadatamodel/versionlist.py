@@ -1,8 +1,9 @@
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 from .connector import ConnectedObject, Connector
 from .datasettree import DatasetTree
 from .mapper import get_mapper
+from .metadatarootrecord import MetadataRootRecord
 from .mapper.reference import Reference
 
 
@@ -48,11 +49,11 @@ class VersionList(ConnectedObject):
     def versions(self):
         return self.version_set.keys()
 
-    def set_dataset_tree(self,
-                         primary_data_version: str,
-                         time_stamp: str,
-                         path: str,
-                         dataset_tree: DatasetTree):
+    def set_versioned_element(self,
+                              primary_data_version: str,
+                              time_stamp: str,
+                              path: str,
+                              element: Union[DatasetTree, MetadataRootRecord]):
         """
         Set a new or updated dataset tree.
         Existing references are deleted.
@@ -61,11 +62,14 @@ class VersionList(ConnectedObject):
         self.version_set[primary_data_version] = VersionRecord(
             time_stamp,
             path,
-            Connector.from_object(dataset_tree))
+            Connector.from_object(element))
 
-    def get_dataset_tree(self, primary_data_version: str) -> Tuple[str, str, DatasetTree]:
+    def get_versioned_element(self,
+                              primary_data_version: str
+                              ) -> Tuple[str, str, Union[DatasetTree, MetadataRootRecord]]:
         """
-        Get the metadata root record, its timestamp and path for the given version.
+        Get the dataset tree or metadata root record,
+        its timestamp and path for the given version.
         If it is not mapped yet, it will be mapped.
         """
         version_record = self._get_version_record(primary_data_version)
@@ -110,11 +114,17 @@ class TreeVersionList(VersionList):
             get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))
 
     def get_dataset_tree(self, primary_data_version: str) -> Tuple[str, DatasetTree]:
-        time_stamp, _, dataset_tree = super().get_dataset_tree(primary_data_version)
+        time_stamp, _, dataset_tree = super().get_versioned_element(
+            primary_data_version)
         return time_stamp, dataset_tree
 
     def set_dataset_tree(self,
                          primary_data_version: str,
                          time_stamp: str,
                          dataset_tree: DatasetTree):
-        return super().set_dataset_tree(primary_data_version, time_stamp, "", dataset_tree)
+
+        return super().set_versioned_element(
+            primary_data_version,
+            time_stamp,
+            "",
+            dataset_tree)
