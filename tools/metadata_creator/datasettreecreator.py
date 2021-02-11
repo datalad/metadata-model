@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from typing import Generator, Optional, Tuple
+from typing import Optional
 
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
@@ -9,43 +9,9 @@ from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
 from tools.metadata_creator.filetreecreator import create_file_tree
-from tools.metadata_creator.utils import get_dataset_id, get_dataset_version
-
-
-DATALAD_DATASET_HIDDEN_DIR_NAME = ".datalad"
-
-
-def has_datalad_dir(path: str) -> bool:
-    return any(
-        filter(
-            lambda e: e.is_dir(follow_symlinks=False) and e.name == DATALAD_DATASET_HIDDEN_DIR_NAME,
-            os.scandir(path)))
-
-
-def is_dataset_dir(entry: os.DirEntry) -> bool:
-    return entry.is_dir(follow_symlinks=False) and has_datalad_dir(entry.path)
-
-
-def should_follow(entry: os.DirEntry, ignore_dot_dirs) -> bool:
-    return (
-        entry.is_dir(follow_symlinks=False)
-        and not entry.name.startswith(".") or ignore_dot_dirs is False)
-
-
-def read_datasets(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, os.DirEntry], None, None]:
-    """ Return all datasets und path """
-
-    if has_datalad_dir(path):
-        path_entry = tuple(filter(lambda e: path.endswith(e.name), os.scandir(path + "/..")))[0]
-        yield "", path_entry
-
-    entries = list(os.scandir(path))
-    while entries:
-        entry = entries.pop()
-        if is_dataset_dir(entry):
-            yield entry.path[len(path) + 1:], entry
-        if should_follow(entry, ignore_dot_dirs):
-            entries.extend(list(os.scandir(entry.path)))
+from tools.metadata_creator.utils import get_dataset_id, \
+    get_dataset_version, has_datalad_dir, is_dataset_dir, read_datasets, \
+    should_follow
 
 
 def get_extractor_run(path: str, entry: os.DirEntry):

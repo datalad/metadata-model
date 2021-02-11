@@ -9,6 +9,7 @@ from dataladmetadatamodel.versionlist import VersionList
 from dataladmetadatamodel.mapper.reference import Reference
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.datasettree import DatasetTree
+from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 
 MAPPER_FAMILY = "git"
@@ -37,15 +38,30 @@ if try_create_uuid_set:
 
 if try_create_tree_version_list:
     from tools.metadata_creator.treeversionlistcreator import create_tree_version_list
+    from tools.metadata_creator.uuidsetcreator import create_uuid_set
+
+    realm = "/home/cristian/tmp/mm2"
+    dataset_path = "/home/cristian/datalad/datasets.datalad.org"
+    #dataset_path = "/home/cristian/datalad/tset1"
     tvl = create_tree_version_list(
         "git",
-        "/home/cristian/tmp/mm2",
-        "/home/cristian/datalad/datasets.datalad.org",
+        realm,
+        dataset_path,
         {
             "p1": "v1"
         }
     )
     tvl.save()
+    uuids = create_uuid_set(
+        "git",
+        realm,
+        dataset_path,
+        {
+            "p2": "v2"
+        }
+    )
+    uuids.save()
+    flush_object_references(realm)
     exit(0)
 
 
