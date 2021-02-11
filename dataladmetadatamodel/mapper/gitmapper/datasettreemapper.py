@@ -1,4 +1,6 @@
 
+from . import GitReference
+from .objectreference import add_tree_reference
 from .gitbackend.subprocess import git_ls_tree_recursive, git_save_tree
 from .metadatarootrecordmapper import MetadataRootRecordGitMapper
 from ..basemapper import BaseMapper
@@ -66,4 +68,6 @@ class DatasetTreeGitMapper(BaseMapper):
         from dataladmetadatamodel.datasettree import DatasetTree
 
         assert isinstance(obj, DatasetTree)
-        return self._save_dataset_tree(obj)
+        dataset_tree_hash = self._save_dataset_tree(obj)
+        add_tree_reference(self.realm, GitReference.DATASET_TREE, dataset_tree_hash)
+        return dataset_tree_hash

@@ -1,5 +1,6 @@
 
-
+from . import GitReference
+from .objectreference import add_tree_reference
 from .gitbackend.subprocess import git_load_str, git_ls_tree_recursive, git_save_str, git_save_tree
 from ..basemapper import BaseMapper
 from ..reference import Reference
@@ -53,4 +54,6 @@ class FileTreeGitMapper(BaseMapper):
         from dataladmetadatamodel.filetree import FileTree
 
         assert isinstance(obj, FileTree)
-        return self._save_file_tree(obj)
+        file_tree_hash = self._save_file_tree(obj)
+        add_tree_reference(self.realm, GitReference.FILE_TREE, file_tree_hash)
+        return file_tree_hash

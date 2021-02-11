@@ -1,3 +1,4 @@
+import enum
 
 from .datasettreemapper import DatasetTreeGitMapper
 from .filetreemapper import FileTreeGitMapper
@@ -8,6 +9,14 @@ from .textmapper import TextGitMapper
 from .uuidsetmapper import UUIDSetGitMapper
 from .versionlistmapper import TreeVersionListGitMapper
 from .versionlistmapper import VersionListGitMapper
+
+
+class GitReference(enum.Enum):
+    TREE_VERSION_LIST = "refs/datalad/dataset-tree"
+    UUID_SET = "refs/datalad/dataset-set"
+    DATASET_TREE = "refs/datalad/object-references/dataset-tree"
+    METADATA = "refs/datalad/object-references/metadata"
+    FILE_TREE = "refs/datalad/object-references/file-tree"
 
 
 GIT_MAPPER_FAMILY_MEMBERS = {
