@@ -3,6 +3,7 @@ from .datasettreemapper import DatasetTreeGitMapper
 from .filetreemapper import FileTreeGitMapper
 from .metadatamapper import MetadataGitMapper
 from .metadatarootrecordmapper import MetadataRootRecordGitMapper
+from .filetreemapper import GitReference
 from .referencemapper import ReferenceGitMapper
 from .textmapper import TextGitMapper
 from .uuidsetmapper import UUIDSetGitMapper
@@ -23,8 +24,7 @@ GIT_MAPPER_FAMILY_MEMBERS = {
 }
 
 
-TREE_VERSION_LIST_REFERENCE = "refs/datalad/dataset-tree"
-UUID_SET_REFERENCE = "refs/datalad/dataset-set"
-
-
-GIT_MAPPER_LOCATIONS = (TREE_VERSION_LIST_REFERENCE, UUID_SET_REFERENCE)
+GIT_MAPPER_LOCATIONS = (
+    GitReference.TREE_VERSION_LIST.value,
+    GitReference.UUID_SET.value
+)

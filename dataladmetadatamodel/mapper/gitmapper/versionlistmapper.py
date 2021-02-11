@@ -1,5 +1,6 @@
 from typing import Any
 
+from .objectreference import GitReference
 from .gitbackend.subprocess import git_load_json, git_save_json, git_update_ref
 from ..basemapper import BaseMapper
 from ..reference import Reference
@@ -71,8 +72,7 @@ class TreeVersionListGitMapper(VersionListGitMapper):
 
     def unmap(self, obj: Any) -> str:
         # Import in method to prevent recursive imports
-        from . import TREE_VERSION_LIST_REFERENCE
 
         location = super().unmap(obj)
-        git_update_ref(self.realm, TREE_VERSION_LIST_REFERENCE, location)
-        return TREE_VERSION_LIST_REFERENCE
+        git_update_ref(self.realm, GitReference.TREE_VERSION_LIST.value, location)
+        return GitReference.TREE_VERSION_LIST.value
