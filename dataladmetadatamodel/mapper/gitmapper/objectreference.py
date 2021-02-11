@@ -1,4 +1,5 @@
 import enum
+from typing import Dict, List, Tuple
 
 from .gitbackend.subprocess import git_ls_tree, git_update_ref, git_save_tree
 
@@ -11,27 +12,45 @@ class GitReference(enum.Enum):
     FILE_TREE = "refs/datalad/object-references/file-tree"
 
 
+CACHED_OBJECT_REFERENCES: Dict[str, List[Tuple[str, str, str, str]]] = dict()
+
+
 def add_object_reference(realm: str,
                          git_reference: GitReference,
                          flag: str,
                          object_type: str,
                          object_hash: str):
-    try:
-        existing_tree_entries = [
-            tuple(line.split())
-            for line in git_ls_tree(realm, git_reference.value)
-        ]
-    except RuntimeError:
-        existing_tree_entries = []
 
-    existing_tree_entries.append((
+    if git_reference.value not in CACHED_OBJECT_REFERENCES:
+        CACHED_OBJECT_REFERENCES[git_reference.value] = []
+
+    CACHED_OBJECT_REFERENCES[git_reference.value].append((
         flag,
         object_type,
         object_hash,
         "object_reference:" + object_hash
     ))
-    tree_hash = git_save_tree(realm, existing_tree_entries)
-    git_update_ref(realm, git_reference.value, tree_hash)
+
+
+def flush_object_references(realm: str):
+    global CACHED_OBJECT_REFERENCES
+
+    for git_reference, cached_tree_entries in CACHED_OBJECT_REFERENCES.items():
+        # TODO: a single loop should be guarded against modification
+        #  by other processes.
+        try:
+            existing_tree_entries = [
+                tuple(line.split())
+                for line in git_ls_tree(realm, git_reference)
+            ]
+        except RuntimeError:
+            existing_tree_entries = []
+
+        existing_tree_entries.extend(cached_tree_entries)
+        tree_hash = git_save_tree(realm, existing_tree_entries)
+        git_update_ref(realm, git_reference, tree_hash)
+
+    CACHED_OBJECT_REFERENCES = dict()
 
 
 def add_tree_reference(realm: str,
