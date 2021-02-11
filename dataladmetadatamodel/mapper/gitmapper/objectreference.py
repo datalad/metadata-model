@@ -1,6 +1,14 @@
+import enum
 
-from . import GitReference
-from .gitbackend.subprocess import git_ls_tree, git_save_tree
+from .gitbackend.subprocess import git_ls_tree, git_update_ref, git_save_tree
+
+
+class GitReference(enum.Enum):
+    TREE_VERSION_LIST = "refs/datalad/dataset-tree-version-list"
+    UUID_SET = "refs/datalad/dataset-uuid-set"
+    DATASET_TREE = "refs/datalad/object-references/dataset-tree"
+    METADATA = "refs/datalad/object-references/metadata"
+    FILE_TREE = "refs/datalad/object-references/file-tree"
 
 
 def add_object_reference(realm: str,
@@ -22,7 +30,8 @@ def add_object_reference(realm: str,
         object_hash,
         "object_reference:" + object_hash
     ))
-    git_save_tree(realm, existing_tree_entries)
+    tree_hash = git_save_tree(realm, existing_tree_entries)
+    git_update_ref(realm, git_reference.value, tree_hash)
 
 
 def add_tree_reference(realm: str,

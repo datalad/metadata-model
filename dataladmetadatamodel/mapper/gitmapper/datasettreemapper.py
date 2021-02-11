@@ -1,6 +1,5 @@
 
-from . import GitReference
-from .objectreference import add_tree_reference
+from .objectreference import GitReference, add_tree_reference
 from .gitbackend.subprocess import git_ls_tree_recursive, git_save_tree
 from .metadatarootrecordmapper import MetadataRootRecordGitMapper
 from ..basemapper import BaseMapper

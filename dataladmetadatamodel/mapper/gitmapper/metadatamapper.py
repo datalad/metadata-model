@@ -1,6 +1,5 @@
 
-from . import GitReference
-from .objectreference import add_blob_reference
+from .objectreference import GitReference, add_blob_reference
 from .gitbackend.subprocess import git_load_str, git_save_str
 from ..basemapper import BaseMapper
 from ..reference import Reference
