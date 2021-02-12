@@ -1,6 +1,7 @@
 import os
 import sys
 from typing import Optional, Generator, Tuple
+from pathlib import Path
 from uuid import UUID
 
 from tools.metadata_creator.execute import checked_execute
@@ -52,7 +53,9 @@ def get_dataset_version(path) -> Optional[str]:
 
 
 def read_datasets(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, os.DirEntry], None, None]:
-    """ Return all datasets und path """
+    """ Return all datasets and paths """
+
+    path = path.rstrip("/")
 
     if has_datalad_dir(path):
         path_entry = tuple(filter(lambda e: path.endswith(e.name), os.scandir(path + "/..")))[0]

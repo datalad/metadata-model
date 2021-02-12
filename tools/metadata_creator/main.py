@@ -1,37 +1,76 @@
 import logging
 
 import click
+import dataclasses
 
-from .create import create_metadata_from_dataset
+from tools.metadata_creator.mirror import create_metadata_from_dataset
 
 
 MDC_LOGGER = logging.getLogger("metadata_creator")
 
 
-@click.command()
+@dataclasses.dataclass
+class MDCContext:
+    mapper_family: str
+
+
+@click.group()
+@click.pass_context
 @click.option("--verbose", is_flag=True, default=False, help="Increase progress output")
 @click.option("--quiet", is_flag=True, default=False, help="Do not write progress output")
 @click.option("--mapper-family", type=click.Choice(["git", "memory"]), default="git")
-@click.option("--from-dataset", help="Use the given dataset as pattern to create the metadata")
-@click.argument("realm", nargs=-1)
-@click.argument("dataset_path", nargs=-1)
-def mdc(verbose, quiet, mapper_family, realm, from_dataset):
+def mdc(ctx, verbose, quiet, mapper_family):
     """
-    Create test metadata
+    This tool uses the datalad metadata model API and creates
+    algorithmically generated metadata structures. This is
+    mainly to demonstrate and debug the datalad metadata model
+    implementations.
 
-    This tools algorithmically creates metadata models and
-    maps them onto a gitbackend. The currently supported backends
+    All metadata is algorithmically created or taken from the
+    command arguments. No extractors are executed.
+
+    By default the git-backend is used to persist models, but any
+    implemented back can be used. The currently supported backends
     are: `git´ and `memory´.
     """
+
     if quiet:
         MDC_LOGGER.setLevel(logging.FATAL)
-        logging.basicConfig(level=logging.FATAL, format="MDC: %(message)s")
+        logging.basicConfig(level=logging.FATAL, format="mdc: %(message)s")
+
     if verbose:
         MDC_LOGGER.setLevel(logging.DEBUG)
-        logging.basicConfig(level=logging.DEBUG, format="MDC: %(message)s")
+        logging.basicConfig(level=logging.DEBUG, format="mdc: %(message)s")
 
-    result = create_metadata_from_dataset(mapper_family, realm, from_dataset)
-    print(result)
+    ctx.obj = MDCContext(mapper_family=mapper_family)
+    MDC_LOGGER.debug(f"context object: {ctx.obj}")
+
+
+@mdc.command()
+@click.pass_context
+@click.argument("dataset_path", nargs=1)
+@click.argument("realm", nargs=1)
+def from_template(ctx, dataset_path, realm):
+    """
+    Create test metadata that mimics the structure of a dataset
+
+    This command will create test metadata the reflects the structure
+    of the given dataset. That is, the dataset tree represent the
+    dataset containment hierarchy, the UUID set represents the UUIDs
+    of the contained datasets and the file trees are modelled after
+    the files in the datasets.
+
+    \b
+    Usage:
+    from-template [DATASET_PATH] [REALM]
+    DATASET_PATH: path of the datalad dataset the should be mimicked
+    REALM: realm in which the metadata should be stored
+    """
+
+    create_metadata_from_dataset(
+        ctx.obj.mapper_family,
+        realm,
+        dataset_path)
 
 
 def main():
