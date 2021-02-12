@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from .create import create_metadata
+from .create import create_metadata_from_dataset
 
 
 MDC_LOGGER = logging.getLogger("metadata_creator")
@@ -12,8 +12,10 @@ MDC_LOGGER = logging.getLogger("metadata_creator")
 @click.option("--verbose", is_flag=True, default=False, help="Increase progress output")
 @click.option("--quiet", is_flag=True, default=False, help="Do not write progress output")
 @click.option("--mapper-family", type=click.Choice(["git", "memory"]), default="git")
+@click.option("--from-dataset", help="Use the given dataset as pattern to create the metadata")
 @click.argument("realm", nargs=-1)
-def mdc(verbose, quiet, mapper_family, realm):
+@click.argument("dataset_path", nargs=-1)
+def mdc(verbose, quiet, mapper_family, realm, from_dataset):
     """
     Create test metadata
 
@@ -28,13 +30,7 @@ def mdc(verbose, quiet, mapper_family, realm):
         MDC_LOGGER.setLevel(logging.DEBUG)
         logging.basicConfig(level=logging.DEBUG, format="MDC: %(message)s")
 
-    ctx.obj = {
-        "mapper_family": mapper_family,
-        "realm": realm
-    }
-    MDC_LOGGER.debug(f"context object: {ctx.obj}")
-
-    result = create_metadata(mapper_family, realm)
+    result = create_metadata_from_dataset(mapper_family, realm, from_dataset)
     print(result)
 
 

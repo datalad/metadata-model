@@ -21,7 +21,7 @@ uuid_1 = UUID("00000000000000000000000000000001")
 uuid_2 = UUID("00000000000000000000000000000002")
 
 
-try_create_uuid_set = True
+try_create_metadata_from_dataset = True
 try_create_tree_version_list = True
 try_metadata_objects = True
 try_dataset_tree = True
@@ -30,10 +30,19 @@ try_read = True
 try_write = False
 
 
-if try_create_uuid_set:
+if try_create_metadata_from_dataset:
+    from tools.metadata_creator.mirror import create_metadata_from_dataset
 
-    if not try_create_tree_version_list:
-        exit(0)
+    realm = "/home/cristian/tmp/mm3"
+    dataset_path = "/home/cristian/datalad/datasets.datalad.org"
+    #dataset_path = "/home/cristian/datalad/tset1"
+
+    result = create_metadata_from_dataset(
+        "git",
+        realm, dataset_path
+    )
+    print(result)
+    exit(0)
 
 
 if try_create_tree_version_list:
