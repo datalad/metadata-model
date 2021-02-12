@@ -3,10 +3,10 @@ import logging
 import click
 import dataclasses
 
-from tools.metadata_creator.mirror import create_metadata_from_dataset
+from tools.metadata_creator.mimic import create_metadata_from_dataset
 
 
-MDC_LOGGER = logging.getLogger("metadata_creator")
+mdc_logger = logging.getLogger("metadata_creator")
 
 
 @dataclasses.dataclass
@@ -37,15 +37,15 @@ def mdc(ctx, verbose, quiet, mapper_family):
     """
 
     if quiet:
-        MDC_LOGGER.setLevel(logging.FATAL)
+        mdc_logger.setLevel(logging.FATAL)
         logging.basicConfig(level=logging.FATAL, format="mdc: %(message)s")
 
     if verbose:
-        MDC_LOGGER.setLevel(logging.DEBUG)
+        mdc_logger.setLevel(logging.DEBUG)
         logging.basicConfig(level=logging.DEBUG, format="mdc: %(message)s")
 
     ctx.obj = MDCContext(mapper_family=mapper_family)
-    MDC_LOGGER.debug(f"context object: {ctx.obj}")
+    mdc_logger.debug(f"context object: {ctx.obj}")
 
 
 @mdc.command()

@@ -31,7 +31,7 @@ try_write = False
 
 
 if try_create_metadata_from_dataset:
-    from tools.metadata_creator.mirror import create_metadata_from_dataset
+    from tools.metadata_creator.mimic import create_metadata_from_dataset
 
     realm = "/home/cristian/tmp/mm3"
     dataset_path = "/home/cristian/datalad/datasets.datalad.org"
