@@ -21,6 +21,8 @@ class MDCContext:
 @click.option("--mapper-family", type=click.Choice(["git", "memory"]), default="git")
 def mdc(ctx, verbose, quiet, mapper_family):
     """
+    MetaData Creator
+
     This tool uses the datalad metadata model API and creates
     algorithmically generated metadata structures. This is
     mainly to demonstrate and debug the datalad metadata model
