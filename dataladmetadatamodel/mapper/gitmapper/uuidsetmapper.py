@@ -6,6 +6,7 @@ from .gitbackend.subprocess import git_ls_tree, git_save_tree, git_update_ref
 from ..basemapper import BaseMapper
 from ..reference import Reference
 
+
 class UUIDSetGitMapper(BaseMapper):
 
     def map(self, ref: Reference) -> Any:

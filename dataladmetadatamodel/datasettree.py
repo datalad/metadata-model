@@ -1,10 +1,8 @@
 import enum
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
-from . import JSONObject
 from .connector import ConnectedObject
 from .mapper import get_mapper
-from .metadata import ExtractorConfiguration, Metadata
 from .metadatarootrecord import MetadataRootRecord
 from .treenode import TreeNode
 from .mapper.reference import Reference

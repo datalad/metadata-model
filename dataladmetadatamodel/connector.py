@@ -15,7 +15,7 @@ class ConnectedObject:
 class Connector:
     def __init__(self,
                  reference: Optional[Reference],
-                 obj: ConnectedObject,
+                 obj: Optional[ConnectedObject],
                  is_mapped: bool,
                  is_modified: bool):
         self.reference = reference
