@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 import setuptools
 
 
@@ -9,10 +10,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="datalad-metadata-model",
-    version="0.1.0",
-    author="Christian Mönch",
+    version="0.0.1",
+    author="The Datalad Team",
     author_email="christian.moench@web.de",
-    description="Metadata model for datalad",
+    description="Datalad Metadata Model",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/christian-monch/metadata-model",
