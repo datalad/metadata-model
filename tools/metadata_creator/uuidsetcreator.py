@@ -14,7 +14,7 @@ from tools.metadata_creator.utils import get_dataset_id, get_dataset_version, re
 def create_uuid_set(mapper_family: str,
                     realm: str,
                     path: str,
-                    parameter: Optional[dict] = None
+                    parameter_set_count: int
                     ) -> Optional[UUIDSet]:
 
     uuid_set = UUIDSet(mapper_family, realm)
@@ -41,7 +41,8 @@ def create_uuid_set(mapper_family: str,
                 dataset_id,
                 version,
                 dir_entry.path,
-                path
+                path,
+                parameter_set_count
             )
         )
 

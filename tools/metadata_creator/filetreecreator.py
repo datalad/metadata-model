@@ -1,5 +1,5 @@
 import os
-from typing import Generator, Optional, Tuple
+from typing import Generator, Tuple
 
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import ExtractorConfiguration

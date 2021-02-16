@@ -7,9 +7,9 @@ from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
-from tools.metadata_creator.datasettreecreator import read_datasets
 from tools.metadata_creator.filetreecreator import create_file_tree
-from tools.metadata_creator.utils import get_dataset_id, get_dataset_version
+from tools.metadata_creator.utils import get_dataset_id, get_dataset_version, \
+    read_datasets
 
 
 mdc_logger = logging.getLogger("metadata_creator")

@@ -1,7 +1,6 @@
 import os
 import sys
 from typing import Optional, Generator, Tuple
-from pathlib import Path
 from uuid import UUID
 
 from tools.metadata_creator.execute import checked_execute
