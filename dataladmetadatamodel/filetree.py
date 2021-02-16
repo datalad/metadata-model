@@ -44,6 +44,9 @@ class FileTree(ConnectedObject, TreeNode):
         with the class mapper.
         """
         for _, metadata_connector in self.get_paths_recursive(False):
+            if metadata_connector is None:
+                metadata_connector = Connector.from_reference(
+                    Reference.get_none_reference(self.mapper_family, "Metadata"))
             metadata_connector.save_object(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,
