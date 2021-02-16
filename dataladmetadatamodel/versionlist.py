@@ -11,10 +11,10 @@ class VersionRecord:
     def __init__(self,
                  time_stamp: str,
                  path: Optional[str],
-                 dataset_tree_connector: Connector):
+                 element_connector: Connector):
         self.time_stamp = time_stamp
         self.path = path
-        self.dataset_tree_connector = dataset_tree_connector
+        self.element_connector = element_connector
 
 
 class VersionList(ConnectedObject):
@@ -30,7 +30,7 @@ class VersionList(ConnectedObject):
         return self.version_set[primary_data_version]
 
     def _get_dst_connector(self, primary_data_version) -> Connector:
-        return self._get_version_record(primary_data_version).dataset_tree_connector
+        return self._get_version_record(primary_data_version).element_connector
 
     def save(self, force_write: bool = False) -> Reference:
         """
@@ -40,11 +40,17 @@ class VersionList(ConnectedObject):
         of the connectors with the appropriate class mapper.
         """
         for primary_data_version, version_record in self.version_set.items():
-            version_record.dataset_tree_connector.save_object(self.mapper_family, self.realm, force_write)
+            version_record.element_connector.save_object(
+                self.mapper_family,
+                self.realm,
+                force_write)
+
         return Reference(
             self.mapper_family,
             "VersionList",
-            get_mapper(self.mapper_family, "VersionList")(self.realm).unmap(self))
+            get_mapper(
+                self.mapper_family,
+                "VersionList")(self.realm).unmap(self))
 
     def versions(self):
         return self.version_set.keys()
@@ -76,7 +82,7 @@ class VersionList(ConnectedObject):
         return (
             version_record.time_stamp,
             version_record.path,
-            version_record.dataset_tree_connector.load_object(
+            version_record.element_connector.load_object(
                 self.mapper_family,
                 self.realm))
 
@@ -103,7 +109,7 @@ class TreeVersionList(VersionList):
 
         # Save all dataset tree connectors that are mapped
         for primary_data_version, version_record in self.version_set.items():
-            version_record.dataset_tree_connector.save_object(
+            version_record.element_connector.save_object(
                 self.mapper_family,
                 self.realm,
                 force_write)
