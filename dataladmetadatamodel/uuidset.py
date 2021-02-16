@@ -45,7 +45,7 @@ class UUIDSet(ConnectedObject):
         """
         self.uuid_set[uuid] = Connector.from_object(version_list)
 
-    def get_version_list(self, uuid):
+    def get_version_list(self, uuid) -> VersionList:
         """
         Get the version list for uuid. If it is not mapped yet,
         it will be mapped.
