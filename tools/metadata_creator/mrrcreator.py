@@ -32,17 +32,22 @@ def create_metadata_root_record(mapper_family,
     )
 
     metadata = Metadata(mapper_family, realm)
-    metadata.add_extractor_run(
-            time.time(),
-            "dataset-test-extractor",
-            "datasetcreator.py",
-            "support@datalad.org",
-            ExtractorConfiguration("1.2.3", {"ds_parameter_a": "ds_value_a"}),
-            {
-                "info": "fake metadata for dataset-test-extractor",
-                "path": relative_path
-            }
-        )
+    for count in range(parameter_set_count):
+        parameters = {
+            "ds_parameter_0": f"value_0.{count}",
+            "ds_parameter_1": f"value_1.{count}",
+        }
+        metadata.add_extractor_run(
+                time.time(),
+                "dataset-core-extractor",
+                "datasetcreator.py",
+                "support@datalad.org",
+                ExtractorConfiguration("1.2.3", parameters),
+                {
+                    "info": "test metadata",
+                    "path": relative_path
+                }
+            )
 
     mrr = MetadataRootRecord(
         mapper_family,
