@@ -44,7 +44,7 @@ def create_metadata_root_record(mapper_family,
                 "support@datalad.org",
                 ExtractorConfiguration("1.2.3", parameters),
                 {
-                    "info": "test metadata",
+                    "info": f"dataset-level test metadata for parameter set #{count}",
                     "path": relative_path
                 }
             )

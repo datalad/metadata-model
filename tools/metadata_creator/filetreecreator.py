@@ -34,9 +34,10 @@ def read_files(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, 
                 yield entry.path[len(path) + 1:], entry
 
 
-def get_extractor_run(path: str, entry: os.DirEntry):
+def get_extractor_run(path: str, entry: os.DirEntry, parameter_set_count: int):
     stat = entry.stat(follow_symlinks=False)
     return {
+        "info": f"file-level test metadata for parameter set #{parameter_set_count}",
         "path": path,
         "size": stat.st_size,
         "atime": stat.st_atime,
@@ -71,8 +72,8 @@ def update_file_tree(mapper_family: str,
     for path, entry in read_files(root_dir):
         for count in range(parameter_set_count):
             parameters = {
-                "parameter_0": f"value_0.{count}",
-                "parameter_1": f"value_1.{count}"
+                "fs_parameter_0": f"value_0.{count}",
+                "fs_parameter_1": f"value_1.{count}"
             }
             file_tree.add_extractor_run(
                 mapper_family,
@@ -86,4 +87,4 @@ def update_file_tree(mapper_family: str,
                     "1.0.0",
                     parameters
                 ),
-                get_extractor_run(path, entry))
+                get_extractor_run(path, entry, count))
