@@ -68,8 +68,6 @@ of your choice, change into it and fetch all remote references
 
 ```
 git clone https://github.com/christian-monch/datalad-metadata-demo-2.git
-cd datalad-metadata-demo-2
-
 ```
 
 Change into the directory and fetch some remote references
@@ -87,7 +85,7 @@ git fetch origin refs/datalad/object-references/metadata:refs/datalad/object-ref
 
 Now you are all set to give it a try. Execute:
 ```
-datalad --f json_pp meta-dump --realm $DIR_WITH_METADATA_REPO/datalad-metadata-demo-2
+datalad -f json_pp meta-dump -r
 ```
 
 That should output a few JSON objects describing datasets and files.
