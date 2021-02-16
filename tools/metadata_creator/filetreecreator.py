@@ -48,10 +48,17 @@ def get_extractor_run(path: str, entry: os.DirEntry):
 def create_file_tree(mapper_family: str,
                      realm: str,
                      root_dir: str,
-                     parameter: Optional[dict] = None) -> FileTree:
+                     parameter_set_count: int
+                     ) -> FileTree:
 
     file_tree = FileTree(mapper_family, realm)
-    update_file_tree(mapper_family, realm, file_tree, root_dir, parameter)
+    update_file_tree(
+        mapper_family,
+        realm,
+        file_tree,
+        root_dir,
+        parameter_set_count
+    )
     return file_tree
 
 
@@ -59,19 +66,24 @@ def update_file_tree(mapper_family: str,
                      realm: str,
                      file_tree: FileTree,
                      root_dir: str,
-                     parameter: Optional[dict] = None):
+                     parameter_set_count: int):
 
     for path, entry in read_files(root_dir):
-        file_tree.add_extractor_run(
-            mapper_family,
-            realm,
-            path,
-            None,
-            "file-core-extractor",
-            "metadata_creator script",
-            "support@datalad.org",
-            ExtractorConfiguration(
-                "1.0.0",
-                parameter or {}
-            ),
-            get_extractor_run(path, entry))
+        for count in range(parameter_set_count):
+            parameters = {
+                "parameter_0": f"value_0.{count}",
+                "parameter_1": f"value_1.{count}"
+            }
+            file_tree.add_extractor_run(
+                mapper_family,
+                realm,
+                path,
+                None,
+                "file-core-extractor",
+                "metadata_creator script",
+                "support@datalad.org",
+                ExtractorConfiguration(
+                    "1.0.0",
+                    parameters
+                ),
+                get_extractor_run(path, entry))

@@ -14,12 +14,14 @@ mdc_logger = logging.getLogger("metadata_creator")
 def create_metadata_from_dataset(mapper: str,
                                  realm: str,
                                  dataset_path: str,
+                                 parameter_set_count: int
                                  ):
 
     metadata_root_records = create_mrrs_from_dataset(
         mapper,
         realm,
-        dataset_path)
+        dataset_path,
+        parameter_set_count)
 
     uuid_set = create_uuid_set_for_mrrs(
         mapper,

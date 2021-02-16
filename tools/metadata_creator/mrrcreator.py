@@ -21,13 +21,14 @@ def create_metadata_root_record(mapper_family,
                                 dataset_version: str,
                                 dataset_path: str,
                                 relative_path: str,
+                                parameter_set_count: int
                                 ) -> Optional[MetadataRootRecord]:
 
     file_tree = create_file_tree(
         mapper_family,
         realm,
         dataset_path,
-        {"ft_parameter_1": "ft_value_1"}
+        parameter_set_count
     )
 
     metadata = Metadata(mapper_family, realm)
@@ -73,7 +74,8 @@ def get_dataset_id_version(path: str) -> Tuple[Optional[UUID], Optional[str]]:
 
 def create_mrrs_from_dataset(mapper: str,
                              realm: str,
-                             root_path: str
+                             root_path: str,
+                             parameter_set_count: int
                              ) -> Dict[Tuple[UUID, str, str], MetadataRootRecord]:
 
     result = dict()
@@ -92,7 +94,8 @@ def create_mrrs_from_dataset(mapper: str,
             dataset_id,
             dataset_version,
             dataset_path,
-            relative_path)
+            relative_path,
+            parameter_set_count)
 
         result[(dataset_id, dataset_version, relative_path)] = mrr
 

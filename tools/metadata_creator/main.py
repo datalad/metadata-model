@@ -52,7 +52,8 @@ def mdc(ctx, verbose, quiet, mapper_family):
 @click.pass_context
 @click.argument("dataset_path", nargs=1)
 @click.argument("realm", nargs=1)
-def from_template(ctx, dataset_path, realm):
+@click.option("-p", "--parameter-set-count", type=int, default=1)
+def from_template(ctx, dataset_path, realm, parameter_set_count):
     """
     Create test metadata that mimics the structure of a dataset
 
@@ -72,7 +73,8 @@ def from_template(ctx, dataset_path, realm):
     create_metadata_from_dataset(
         ctx.obj.mapper_family,
         realm,
-        dataset_path)
+        dataset_path,
+        parameter_set_count)
 
 
 def main():
