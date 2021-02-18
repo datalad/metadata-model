@@ -22,16 +22,17 @@ class DatasetTreeGitMapper(BaseMapper):
 
             assert isinstance(node.value, MetadataRootRecord)
             location = self._unmap_metadata_root_record(node.value)
-            dir_entries.append(("100644", "blob", location, DATALAD_ROOT_RECORD_NAME))
+            dir_entries.append(
+                ("100644", "blob", location, DATALAD_ROOT_RECORD_NAME))
 
         for name, child_node in node.child_nodes.items():
-            dir_entries.append(("040000", "tree", self._save_dataset_tree(child_node), name))
-
+            dir_entries.append(
+                ("040000", "tree", self._save_dataset_tree(child_node), name))
         return git_save_tree(self.realm, dir_entries)
 
     def _map_metadata_root_record(self, location: str) -> "MetadataRootRecord":
         return MetadataRootRecordGitMapper(self.realm).map(
-            Reference("git", "MetadataRootRecord", location)
+            Reference("git", self.realm, "MetadataRootRecord", location)
         )
 
     def map(self, ref: Reference) -> "DatasetTree":

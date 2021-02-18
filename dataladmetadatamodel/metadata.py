@@ -1,3 +1,4 @@
+import copy
 import json
 import time
 from typing import Dict, Generator, Iterable, List, Optional, Tuple
@@ -233,8 +234,11 @@ class Metadata(ConnectedObject):
     def save(self) -> Reference:
         return Reference(
             self.mapper_family,
+            self.realm,
             "Metadata",
-            get_mapper(self.mapper_family, "Metadata")(self.realm).unmap(self))
+            get_mapper(
+                self.mapper_family,
+                "Metadata")(self.realm).unmap(self))
 
     def extractors(self) -> Generator[str, None, None]:
         yield from self.instance_sets.keys()
@@ -276,3 +280,18 @@ class Metadata(ConnectedObject):
             metadata.instance_sets[format_name] = MetadataInstanceSet.from_json_obj(instance_set_json_obj)
 
         return metadata
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None) -> "Metadata":
+
+        new_mapper_family = new_mapper_family or self.mapper_family
+        new_realm = new_realm or self.realm
+
+        copied_metadata = Metadata(new_mapper_family, new_realm)
+        for extractor_name, instance_set in self.instance_sets.items():
+            copied_metadata.instance_sets[extractor_name] = \
+                copy.deepcopy(instance_set)
+            del instance_set
+
+        return copied_metadata

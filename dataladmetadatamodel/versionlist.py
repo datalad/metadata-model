@@ -47,6 +47,7 @@ class VersionList(ConnectedObject):
 
         return Reference(
             self.mapper_family,
+            self.realm,
             "VersionList",
             get_mapper(
                 self.mapper_family,
@@ -86,9 +87,10 @@ class VersionList(ConnectedObject):
                 self.mapper_family,
                 self.realm))
 
-    def unget_dataset_tree(self,
-                           primary_data_version: str,
-                           force_write: bool = False):
+    def unget_versioned_element(self,
+                                primary_data_version: str,
+                                force_write: bool = False
+                                ):
         """
         Remove a metadata record from memory. First, persist the
         current status, if it was changed or if force_write
@@ -97,6 +99,27 @@ class VersionList(ConnectedObject):
         dst_connector = self._get_dst_connector(primary_data_version)
         dst_connector.save_object(self.mapper_family, self.realm, force_write)
         dst_connector.purge()
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None
+                 ) -> "VersionList":
+
+        new_mapper_family = new_mapper_family or self.mapper_family
+        new_realm = new_realm or self.realm
+
+        copied_version_list = VersionList(new_mapper_family, new_realm)
+
+        for primary_data_version, version_record in self.version_set.items():
+
+            copied_version_list.set_versioned_element(
+                primary_data_version,
+                version_record.time_stamp,
+                version_record.path,
+                version_record.element_connector.deepcopy(
+                    new_mapper_family, new_realm))
+
+        return copied_version_list
 
 
 class TreeVersionList(VersionList):
@@ -116,8 +139,11 @@ class TreeVersionList(VersionList):
 
         return Reference(
             self.mapper_family,
+            self.realm,
             "TreeVersionList",
-            get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))
+            get_mapper(
+                self.mapper_family,
+                "TreeVersionList")(self.realm).unmap(self))
 
     def get_dataset_tree(self, primary_data_version: str) -> Tuple[str, DatasetTree]:
         time_stamp, _, dataset_tree = super().get_versioned_element(
@@ -127,10 +153,18 @@ class TreeVersionList(VersionList):
     def set_dataset_tree(self,
                          primary_data_version: str,
                          time_stamp: str,
-                         dataset_tree: DatasetTree):
+                         dataset_tree: DatasetTree
+                         ):
 
         return super().set_versioned_element(
             primary_data_version,
             time_stamp,
             "",
             dataset_tree)
+
+    def unget_dataset_tree(self,
+                           primary_data_version: str,
+                           force_write: bool = False
+                           ):
+
+        super().unget_versioned_element(primary_data_version, force_write)
