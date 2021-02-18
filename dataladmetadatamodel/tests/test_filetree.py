@@ -41,6 +41,29 @@ class TestFileTree(unittest.TestCase):
 
 class TestDeepCopy(unittest.TestCase):
 
+    def _compare_file_trees(self, a: FileTree, b: FileTree):
+        a_entries = list(a.get_paths_recursive())
+        b_entries = list(b.get_paths_recursive())
+
+        # Compare paths
+        self.assertListEqual(
+            list(map(lambda x: x[0], a_entries)),
+            list(map(lambda x: x[0], b_entries)))
+
+        # Compare metadata elements
+        for a_connector, b_connector in zip(
+                map(lambda x: x[1], a_entries),
+                map(lambda x: x[1], b_entries)):
+
+            a_metadata = a_connector.load_object(a_connector.reference.mapper_family, a_connector.reference.realm)
+            b_metadata = b_connector.load_object(b_connector.reference.mapper_family, b_connector.reference.realm)
+
+            self.assertEqual(a_metadata.instance_sets, b_metadata.instance_sets)
+
+            a_connector.purge()
+            b_connector.purge()
+
+
     def test_copy_from_memory(self):
         with \
                 tempfile.TemporaryDirectory() as original_dir, \
@@ -57,7 +80,7 @@ class TestDeepCopy(unittest.TestCase):
 
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
 
-            self.assertEqual(file_tree, file_tree_copy)
+            self._compare_file_trees(file_tree, file_tree_copy)
 
     def test_copy_from_backend(self):
         with \
@@ -76,7 +99,9 @@ class TestDeepCopy(unittest.TestCase):
 
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
 
-            self.assertEqual(file_tree, file_tree_copy)
+            self._compare_file_trees(file_tree, file_tree_copy)
+
+
 
 
 if __name__ == '__main__':
