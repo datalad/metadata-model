@@ -75,4 +75,3 @@ def assert_dataset_trees_equal(test_case: unittest.TestCase,
         # in memory and we don't want to write it to a backend
         a_connector.purge(unsafe)
         b_connector.purge()
-
