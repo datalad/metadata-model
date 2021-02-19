@@ -35,7 +35,7 @@ class Connector:
     def from_referenced_object(cls, reference, obj):
         return cls(reference, obj, True, False)
 
-    def load_object(self, mapper_family, realm) -> Any:
+    def load_object(self) -> Any:
         if not self.is_mapped:
             assert self.reference is not None
             if self.reference.is_none_reference():
@@ -43,9 +43,12 @@ class Connector:
             else:
                 self.object = get_mapper(
                     self.reference.mapper_family,
-                    self.reference.class_name)(realm).map(self.reference)
-                self.object.post_load(mapper_family, realm)
+                    self.reference.class_name)(self.reference.realm).map(self.reference)
+                self.object.post_load(
+                    self.reference.mapper_family,
+                    self.reference.realm)
             self.is_mapped = True
+            self.is_modified = False
         return self.object
 
     def save_object(self, mapper_family, realm, force_write=False) -> Reference:
@@ -68,6 +71,7 @@ class Connector:
                 self.reference = Reference.get_none_reference(
                     mapper_family,
                     realm)
+                self.is_modified = False
         return self.reference
 
     def set(self, obj):
@@ -76,9 +80,9 @@ class Connector:
         self.is_mapped = True
         self.is_modified = True
 
-    def purge(self):
-        if self.is_mapped and self.is_modified:
-            raise ValueError("Cannot purge unsaved modified object")
+    def purge(self, unsafe: Optional[bool] = False):
+        if self.is_mapped and self.is_modified and unsafe is False:
+            raise ValueError("Cannot purge unsaved, modified object")
         self.object = None
         self.is_mapped = False
         self.is_modified = False
@@ -101,9 +105,7 @@ class Connector:
             original_object = self.object
             purge_original = False
         else:
-            original_object = self.load_object(
-                self.reference.mapper_family,
-                self.reference.realm)
+            original_object = self.load_object()
             purge_original = True
 
         copied_object = original_object.deepcopy(

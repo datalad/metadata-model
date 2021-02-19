@@ -46,13 +46,13 @@ class MetadataRootRecord(ConnectedObject):
         self.file_tree = Connector.from_object(file_tree)
 
     def get_file_tree(self):
-        return self.file_tree.load_object(self.mapper_family, self.realm)
+        return self.file_tree.load_object()
 
     def set_dataset_level_metadata(self, dataset_level_metadata: ConnectedObject):
         self.dataset_level_metadata = Connector.from_object(dataset_level_metadata)
 
     def get_dataset_level_metadata(self):
-        return self.dataset_level_metadata.load_object(self.mapper_family, self.realm)
+        return self.dataset_level_metadata.load_object()
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,

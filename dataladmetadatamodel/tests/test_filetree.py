@@ -5,6 +5,7 @@ import unittest
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
+from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 
 class TestFileTree(unittest.TestCase):
@@ -41,7 +42,7 @@ class TestFileTree(unittest.TestCase):
 
 class TestDeepCopy(unittest.TestCase):
 
-    def _compare_file_trees(self, a: FileTree, b: FileTree):
+    def _compare_file_trees(self, a: FileTree, b: FileTree, unsafe: bool):
         a_entries = list(a.get_paths_recursive())
         b_entries = list(b.get_paths_recursive())
 
@@ -55,14 +56,15 @@ class TestDeepCopy(unittest.TestCase):
                 map(lambda x: x[1], a_entries),
                 map(lambda x: x[1], b_entries)):
 
-            a_metadata = a_connector.load_object(a_connector.reference.mapper_family, a_connector.reference.realm)
-            b_metadata = b_connector.load_object(b_connector.reference.mapper_family, b_connector.reference.realm)
+            a_metadata = a_connector.load_object()
+            b_metadata = b_connector.load_object()
 
             self.assertEqual(a_metadata.instance_sets, b_metadata.instance_sets)
 
-            a_connector.purge()
+            # Use unsafe purge for a, because it might just exist
+            # in memory and we don't want to write it to a backend
+            a_connector.purge(unsafe)
             b_connector.purge()
-
 
     def test_copy_from_memory(self):
         with \
@@ -80,7 +82,7 @@ class TestDeepCopy(unittest.TestCase):
 
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
 
-            self._compare_file_trees(file_tree, file_tree_copy)
+            self._compare_file_trees(file_tree, file_tree_copy, True)
 
     def test_copy_from_backend(self):
         with \
@@ -96,12 +98,12 @@ class TestDeepCopy(unittest.TestCase):
                 file_tree.add_metadata(path, Metadata("git", original_dir))
                 file_tree.unget_metadata(path)
             file_tree.save()
+            flush_object_references(original_dir)
 
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
+            flush_object_references(copy_dir)
 
-            self._compare_file_trees(file_tree, file_tree_copy)
-
-
+            self._compare_file_trees(file_tree, file_tree_copy, False)
 
 
 if __name__ == '__main__':

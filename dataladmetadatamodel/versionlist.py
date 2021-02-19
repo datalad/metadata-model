@@ -83,9 +83,7 @@ class VersionList(ConnectedObject):
         return (
             version_record.time_stamp,
             version_record.path,
-            version_record.element_connector.load_object(
-                self.mapper_family,
-                self.realm))
+            version_record.element_connector.load_object())
 
     def unget_versioned_element(self,
                                 primary_data_version: str,
