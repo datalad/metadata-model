@@ -7,6 +7,8 @@ from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
+from .utils import assert_file_trees_equal
+
 
 class TestFileTree(unittest.TestCase):
     def test_add_metadata(self):
@@ -42,30 +44,6 @@ class TestFileTree(unittest.TestCase):
 
 class TestDeepCopy(unittest.TestCase):
 
-    def _compare_file_trees(self, a: FileTree, b: FileTree, unsafe: bool):
-        a_entries = list(a.get_paths_recursive())
-        b_entries = list(b.get_paths_recursive())
-
-        # Compare paths
-        self.assertListEqual(
-            list(map(lambda x: x[0], a_entries)),
-            list(map(lambda x: x[0], b_entries)))
-
-        # Compare metadata elements
-        for a_connector, b_connector in zip(
-                map(lambda x: x[1], a_entries),
-                map(lambda x: x[1], b_entries)):
-
-            a_metadata = a_connector.load_object()
-            b_metadata = b_connector.load_object()
-
-            self.assertEqual(a_metadata.instance_sets, b_metadata.instance_sets)
-
-            # Use unsafe purge for a, because it might just exist
-            # in memory and we don't want to write it to a backend
-            a_connector.purge(unsafe)
-            b_connector.purge()
-
     def test_copy_from_memory(self):
         with \
                 tempfile.TemporaryDirectory() as original_dir, \
@@ -82,7 +60,7 @@ class TestDeepCopy(unittest.TestCase):
 
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
 
-            self._compare_file_trees(file_tree, file_tree_copy, True)
+            assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 
     def test_copy_from_backend(self):
         with \
@@ -103,7 +81,7 @@ class TestDeepCopy(unittest.TestCase):
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
             flush_object_references(copy_dir)
 
-            self._compare_file_trees(file_tree, file_tree_copy, False)
+            assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 
 
 if __name__ == '__main__':
