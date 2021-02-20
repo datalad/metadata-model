@@ -67,9 +67,7 @@ class MetadataRootRecord(ConnectedObject):
             new_realm,
             self.dataset_identifier,
             self.dataset_version,
-            self.file_tree.deepcopy(new_mapper_family, new_realm),
-            self.dataset_level_metadata.deepcopy(
-                new_mapper_family,
-                new_realm))
+            self.dataset_level_metadata.deepcopy(new_mapper_family, new_realm),
+            self.file_tree.deepcopy(new_mapper_family, new_realm))
 
         return copied_metadata_root_record
