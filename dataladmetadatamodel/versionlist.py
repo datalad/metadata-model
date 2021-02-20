@@ -7,7 +7,7 @@ from .metadatarootrecord import MetadataRootRecord
 from .mapper.reference import Reference
 
 
-class VersionRecord:
+class VersionRecord():
     def __init__(self,
                  time_stamp: str,
                  path: Optional[str],
@@ -15,6 +15,17 @@ class VersionRecord:
         self.time_stamp = time_stamp
         self.path = path
         self.element_connector = element_connector
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None
+                 ) -> "VersionRecord":
+
+        return VersionRecord(
+            self.time_stamp,
+            self.path,
+            self.element_connector.deepcopy(new_mapper_family, new_realm)
+        )
 
 
 class VersionList(ConnectedObject):
@@ -110,12 +121,15 @@ class VersionList(ConnectedObject):
 
         for primary_data_version, version_record in self.version_set.items():
 
+            metadata_root_record = version_record.element_connector.load_object()
+
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 version_record.path,
-                version_record.element_connector.deepcopy(
-                    new_mapper_family, new_realm))
+                metadata_root_record.deepcopy(new_mapper_family, new_realm))
+
+            version_record.element_connector.purge()
 
         return copied_version_list
 

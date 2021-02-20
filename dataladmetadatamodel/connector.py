@@ -12,7 +12,7 @@ class ConnectedObject:
         pass
 
 
-class Connector:
+class Connector(ConnectedObject):
     def __init__(self,
                  reference: Optional[Reference],
                  obj: Optional[ConnectedObject],
