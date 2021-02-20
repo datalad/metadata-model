@@ -6,6 +6,9 @@ from uuid import UUID
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
+
+from .utils import assert_dataset_trees_equal
 
 
 uuid_0 = UUID("00000000000000000000000000000000")
@@ -66,9 +69,13 @@ class TestDeepCopy(unittest.TestCase):
             dataset_tree.add_dataset("/a/b/d", MetadataRootRecord("git", original_dir))
             dataset_tree.add_dataset("/a/x", MetadataRootRecord("git", original_dir))
 
-            file_tree_copy = dataset_tree.deepcopy("git", copy_dir)
+            dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
 
-            self._compare_file_trees(dataset_tree, file_tree_copy, True)
+            assert_dataset_trees_equal(
+                self,
+                dataset_tree,
+                dataset_tree_copy,
+                True)
 
     def test_copy_from_backend(self):
         with \
@@ -79,17 +86,16 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", copy_dir])
 
             paths = ["", "a/b/c/d", "a/b/d", "a/x"]
-            file_tree = FileTree("git", original_dir)
+            dataset_tree = DatasetTree("git", original_dir)
             for path in paths:
-                file_tree.add_metadata(path, Metadata("git", original_dir))
-                file_tree.unget_metadata(path)
-            file_tree.save()
+                dataset_tree.add_dataset(path, MetadataRootRecord("git", original_dir))
+            dataset_tree.save()
             flush_object_references(original_dir)
 
-            file_tree_copy = file_tree.deepcopy("git", copy_dir)
+            dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
             flush_object_references(copy_dir)
 
-            self._compare_file_trees(file_tree, file_tree_copy, False)
+            assert_dataset_trees_equal(self, dataset_tree, dataset_tree_copy, False)
 
 
 if __name__ == '__main__':

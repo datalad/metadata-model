@@ -1,13 +1,33 @@
-import subprocess
-import tempfile
 import unittest
+from typing import Any
 
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.filetree import FileTree
-from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
-from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
+
+
+def assert_equal(test_case: unittest.TestCase,
+                 object_a: Any,
+                 object_b: Any,
+                 _: bool,
+                 ):
+    test_case.assertEqual(object_a, object_b)
+
+
+def assert_connector_objects_equal(test_case: unittest.TestCase,
+                                   a_connector: Connector,
+                                   b_connector: Connector,
+                                   a_purge_unsafe: bool,
+                                   equality_asserter):
+
+    a_object = a_connector.load_object()
+    b_object = b_connector.load_object()
+
+    equality_asserter(test_case, a_object, b_object, a_purge_unsafe)
+
+    a_object.purge(a_purge_unsafe)
+    b_object.purge()
 
 
 def assert_file_trees_equal(test_case: unittest.TestCase,
@@ -29,16 +49,13 @@ def assert_file_trees_equal(test_case: unittest.TestCase,
             map(lambda x: x[1], a_entries),
             map(lambda x: x[1], b_entries)):
 
-        a_metadata = a_connector.load_object()
-        b_metadata = b_connector.load_object()
-
-        # TODO: proper metadata comparison
-        test_case.assertEqual(a_metadata.instance_sets, b_metadata.instance_sets)
-
-        # Use unsafe purge for a, because it might just exist
-        # in memory and we don't want to write it to a backend
-        a_connector.purge(unsafe)
-        b_connector.purge()
+        # TODO: proper metadata comparison instead of assertEqual
+        assert_connector_objects_equal(
+            test_case,
+            a_connector,
+            b_connector,
+            unsafe,
+            assert_equal)
 
 
 def assert_dataset_trees_equal(test_case: unittest.TestCase,
@@ -55,23 +72,42 @@ def assert_dataset_trees_equal(test_case: unittest.TestCase,
         list(map(lambda x: x[0], a_entries)),
         list(map(lambda x: x[0], b_entries)))
 
-    # Compare metadata elements
+    # Compare metadata_root_records
     for a_connector, b_connector in zip(
             map(lambda x: x[1], a_entries),
             map(lambda x: x[1], b_entries)):
 
-        a_metadata_root_record = a_connector.load_object()
-        b_metadata_root_record = b_connector.load_object()
+        assert_connector_objects_equal(
+            test_case,
+            a_connector,
+            b_connector,
+            unsafe,
+            assert_mrrs_equal)
 
-        test_case.assertEqual(
-            a_metadata_root_record,
-            b_metadata_root_record)
 
-        # TODO: proper metadata root record comparison, i.e.
-        #  load file trees, compare them and purge them, and
-        #  load dataset-level metadata, compare them and purge them.
+def assert_mrrs_equal(test_case: unittest.TestCase,
+                      a: MetadataRootRecord,
+                      b: MetadataRootRecord,
+                      unsafe: bool
+                      ):
 
-        # Use unsafe purge for a, because it might just exist
-        # in memory and we don't want to write it to a backend
-        a_connector.purge(unsafe)
-        b_connector.purge()
+    # Compare dataset level metadata
+    assert_connector_objects_equal(
+        test_case,
+        a.dataset_level_metadata,
+        b.dataset_level_metadata,
+        unsafe,
+        assert_equal)
+
+    # Compare file trees
+    assert_connector_objects_equal(
+        test_case,
+        a.file_tree,
+        b.file_tree,
+        unsafe,
+        assert_file_trees_equal
+    )
+
+    # Compare the metadata remainder
+    test_case.assertEqual(a.dataset_identifier, b.dataset_identifier)
+    test_case.assertEqual(a.dataset_version, b.dataset_version)
