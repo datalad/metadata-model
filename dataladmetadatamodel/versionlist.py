@@ -180,3 +180,27 @@ class TreeVersionList(VersionList):
                            ):
 
         super().unget_versioned_element(primary_data_version, force_write)
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None
+                 ) -> "TreeVersionList":
+
+        new_mapper_family = new_mapper_family or self.mapper_family
+        new_realm = new_realm or self.realm
+
+        copied_version_list = TreeVersionList(new_mapper_family, new_realm)
+
+        for primary_data_version, version_record in self.version_set.items():
+
+            metadata_root_record = version_record.element_connector.load_object()
+
+            copied_version_list.set_versioned_element(
+                primary_data_version,
+                version_record.time_stamp,
+                version_record.path,
+                metadata_root_record.deepcopy(new_mapper_family, new_realm))
+
+            version_record.element_connector.purge()
+
+        return copied_version_list
