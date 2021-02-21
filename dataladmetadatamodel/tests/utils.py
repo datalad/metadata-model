@@ -15,6 +15,15 @@ def assert_equal(test_case: unittest.TestCase,
     test_case.assertEqual(object_a, object_b)
 
 
+def assert_metadata_equal(test_case: unittest.TestCase,
+                          object_a: Any,
+                          object_b: Any,
+                          _: bool,
+                          ):
+
+    test_case.assertEqual(object_a, object_b)
+
+
 def assert_connector_objects_equal(test_case: unittest.TestCase,
                                    a_connector: Connector,
                                    b_connector: Connector,
@@ -26,8 +35,8 @@ def assert_connector_objects_equal(test_case: unittest.TestCase,
 
     equality_asserter(test_case, a_object, b_object, a_purge_unsafe)
 
-    a_object.purge(a_purge_unsafe)
-    b_object.purge()
+    a_connector.purge(a_purge_unsafe)
+    b_connector.purge()
 
 
 def assert_file_trees_equal(test_case: unittest.TestCase,

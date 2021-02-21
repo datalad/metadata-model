@@ -52,8 +52,8 @@ class TestInstanceSetBase(unittest.TestCase):
         )
 
         self.assertDictEqual(
-            self.metadata_instance_set.instance_set,
-            instance_set.instance_set
+            self.metadata_instance_set.instances,
+            instance_set.instances
         )
 
 
