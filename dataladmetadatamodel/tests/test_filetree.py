@@ -10,27 +10,29 @@ from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_r
 from .utils import assert_file_trees_equal, create_file_tree_with_metadata
 
 
-default_paths = ["", "a/b/c", "a/b/a", "b", "c/d/e", "a/x"]
+default_paths = ["a/b/c", "a/b/a", "b", "c/d/e", "a/x"]
 
 
 class TestFileTree(unittest.TestCase):
 
     def test_add_metadata(self):
 
-        metadata_node = Metadata("git", "/tmp")
         file_tree = create_file_tree_with_metadata(
             "git",
             "/tmp",
             default_paths,
-            metadata_node)
+            [Metadata("git", f"/tmp/{p}") for p in default_paths])
 
         returned_entries = tuple(file_tree.get_paths_recursive())
 
         returned_paths = [entry[0] for entry in returned_entries]
         self.assertEqual(sorted(default_paths), sorted(returned_paths))
 
-        returned_metadata = set([entry[1].object for entry in returned_entries])
-        self.assertEqual(returned_metadata, {metadata_node})
+        for returned_path, returned_metadata in [
+                (entry[0], entry[1].object)
+                for entry in returned_entries]:
+
+            self.assertEqual(returned_metadata, Metadata("git", f"/tmp/{returned_path}"))
 
     def test_root_node(self):
         file_tree = FileTree("git", "/tmp")

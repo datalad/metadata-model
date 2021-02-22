@@ -85,11 +85,10 @@ class DatasetTree(ConnectedObject, TreeNode):
             new_mapper_family or self.mapper_family,
             new_realm or self.realm)
 
-        for path, node in self.get_paths_recursive(False):
-            assert node.value is not None
-            assert isinstance(node.value, MetadataRootRecord)
-
-            copied_value = node.value.deepcopy(new_mapper_family, new_realm)
-            copied_dataset_tree.add_dataset(path, copied_value)
+        for path, node in self.get_paths_recursive(True):
+            if node.value is not None:
+                assert isinstance(node.value, MetadataRootRecord)
+                copied_value = node.value.deepcopy(new_mapper_family, new_realm)
+                copied_dataset_tree.add_dataset(path, copied_value)
 
         return copied_dataset_tree

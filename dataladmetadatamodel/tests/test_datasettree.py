@@ -8,10 +8,11 @@ from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
-from .utils import assert_dataset_trees_equal
+from .utils import assert_dataset_trees_equal, create_dataset_tree
 
 
-default_paths = ["", "d1", "d1/d1.1", "d2", "d2/d2.1/d2.1.1", "d3/d3.1"]
+file_test_paths = ["", "a/b/c", "a/b/a", "b", "c/d/e", "a/x"]
+dataset_test_paths = ["", "d1", "d1/d1.1", "d2", "d2/d2.1/d2.1.1", "d3/d3.1"]
 
 
 uuid_0 = UUID("00000000000000000000000000000000")
@@ -66,13 +67,14 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
 
-            dataset_tree = DatasetTree("git", original_dir)
-            dataset_tree.add_dataset("", MetadataRootRecord("git", original_dir))
-            dataset_tree.add_dataset("/a/b/c/d", MetadataRootRecord("git", original_dir))
-            dataset_tree.add_dataset("/a/b/d", MetadataRootRecord("git", original_dir))
-            dataset_tree.add_dataset("/a/x", MetadataRootRecord("git", original_dir))
+            dataset_tree = create_dataset_tree(
+                "git",
+                original_dir,
+                dataset_test_paths,
+                file_test_paths)
 
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
+            flush_object_references(copy_dir)
 
             assert_dataset_trees_equal(
                 self,
@@ -88,17 +90,23 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
 
-            paths = ["", "a/b/c/d", "a/b/d", "a/x"]
-            dataset_tree = DatasetTree("git", original_dir)
-            for path in paths:
-                dataset_tree.add_dataset(path, MetadataRootRecord("git", original_dir))
+            dataset_tree = create_dataset_tree(
+                "git",
+                original_dir,
+                dataset_test_paths,
+                file_test_paths)
+
             dataset_tree.save()
             flush_object_references(original_dir)
 
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
             flush_object_references(copy_dir)
 
-            assert_dataset_trees_equal(self, dataset_tree, dataset_tree_copy, False)
+            assert_dataset_trees_equal(
+                self,
+                dataset_tree,
+                dataset_tree_copy,
+                False)
 
 
 if __name__ == '__main__':
