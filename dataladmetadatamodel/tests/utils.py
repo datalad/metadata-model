@@ -1,9 +1,10 @@
 import unittest
-from typing import Any
+from typing import Any, List
 
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.filetree import FileTree
+from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
 
@@ -120,3 +121,30 @@ def assert_mrrs_equal(test_case: unittest.TestCase,
     # Compare the metadata remainder
     test_case.assertEqual(a.dataset_identifier, b.dataset_identifier)
     test_case.assertEqual(a.dataset_version, b.dataset_version)
+
+
+def create_file_tree_with_metadata(backend: str,
+                                   realm: str,
+                                   paths: List[str],
+                                   metadata_node: Metadata
+                                   ) -> FileTree:
+
+    file_tree = FileTree(backend, realm)
+    for path in paths:
+        file_tree.add_metadata(path, metadata_node)
+
+    return file_tree
+
+
+def xcreate_file_tree(backend: str,
+                     realm: str,
+                     paths: List[str],
+                     metadata_node: Metadata
+                     ) -> FileTree:
+
+    file_tree = FileTree(backend, realm)
+    for path in paths:
+        file_tree.add_metadata(path, metadata_node)
+
+    return file_tree
+

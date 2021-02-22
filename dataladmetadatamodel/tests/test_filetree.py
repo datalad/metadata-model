@@ -7,23 +7,27 @@ from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
-from .utils import assert_file_trees_equal
+from .utils import assert_file_trees_equal, create_file_tree_with_metadata
+
+
+default_paths = ["", "a/b/c", "a/b/a", "b", "c/d/e", "a/x"]
 
 
 class TestFileTree(unittest.TestCase):
+
     def test_add_metadata(self):
 
-        paths = ["a/b/c", "a/b/a", "b", "c/d/e"]
-
-        file_tree = FileTree("git", "/tmp")
         metadata_node = Metadata("git", "/tmp")
-        for path in paths:
-            file_tree.add_metadata(path, metadata_node)
+        file_tree = create_file_tree_with_metadata(
+            "git",
+            "/tmp",
+            default_paths,
+            metadata_node)
 
         returned_entries = tuple(file_tree.get_paths_recursive())
 
         returned_paths = [entry[0] for entry in returned_entries]
-        self.assertEqual(sorted(paths), sorted(returned_paths))
+        self.assertEqual(sorted(default_paths), sorted(returned_paths))
 
         returned_metadata = set([entry[1].object for entry in returned_entries])
         self.assertEqual(returned_metadata, {metadata_node})
@@ -51,6 +55,7 @@ class TestDeepCopy(unittest.TestCase):
 
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
+
 
             file_tree = FileTree("git", original_dir)
             file_tree.add_metadata("", Metadata("git", original_dir))

@@ -11,6 +11,9 @@ from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_r
 from .utils import assert_dataset_trees_equal
 
 
+default_paths = ["", "d1", "d1/d1.1", "d2", "d2/d2.1/d2.1.1", "d3/d3.1"]
+
+
 uuid_0 = UUID("00000000000000000000000000000000")
 
 
