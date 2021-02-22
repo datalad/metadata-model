@@ -67,6 +67,20 @@ class VersionList(ConnectedObject):
     def versions(self):
         return self.version_set.keys()
 
+    def get_versioned_element(self,
+                              primary_data_version: str
+                              ) -> Tuple[str, str, Union[DatasetTree, MetadataRootRecord]]:
+        """
+        Get the dataset tree or metadata root record,
+        its timestamp and path for the given version.
+        If it is not mapped yet, it will be mapped.
+        """
+        version_record = self._get_version_record(primary_data_version)
+        return (
+            version_record.time_stamp,
+            version_record.path,
+            version_record.element_connector.load_object())
+
     def set_versioned_element(self,
                               primary_data_version: str,
                               time_stamp: str,
@@ -81,20 +95,6 @@ class VersionList(ConnectedObject):
             time_stamp,
             path,
             Connector.from_object(element))
-
-    def get_versioned_element(self,
-                              primary_data_version: str
-                              ) -> Tuple[str, str, Union[DatasetTree, MetadataRootRecord]]:
-        """
-        Get the dataset tree or metadata root record,
-        its timestamp and path for the given version.
-        If it is not mapped yet, it will be mapped.
-        """
-        version_record = self._get_version_record(primary_data_version)
-        return (
-            version_record.time_stamp,
-            version_record.path,
-            version_record.element_connector.load_object())
 
     def unget_versioned_element(self,
                                 primary_data_version: str,
@@ -111,7 +111,8 @@ class VersionList(ConnectedObject):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None
+                 new_realm: Optional[str] = None,
+                 path_prefix: Optional[str] = None
                  ) -> "VersionList":
 
         new_mapper_family = new_mapper_family or self.mapper_family
@@ -126,7 +127,11 @@ class VersionList(ConnectedObject):
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
-                version_record.path,
+                (
+                    version_record.path
+                    if path_prefix is None
+                    else path_prefix + "/" + version_record.path
+                ),
                 metadata_root_record.deepcopy(new_mapper_family, new_realm))
 
             version_record.element_connector.purge()
@@ -183,7 +188,8 @@ class TreeVersionList(VersionList):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None
+                 new_realm: Optional[str] = None,
+                 path_prefix: Optional[str] = None
                  ) -> "TreeVersionList":
 
         new_mapper_family = new_mapper_family or self.mapper_family
@@ -198,7 +204,11 @@ class TreeVersionList(VersionList):
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
-                version_record.path,
+                (
+                    version_record.path
+                    if path_prefix is None
+                    else path_prefix + "/" + version_record.path
+                ),
                 metadata_root_record.deepcopy(new_mapper_family, new_realm))
 
             version_record.element_connector.purge()
