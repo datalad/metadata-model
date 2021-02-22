@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from uuid import UUID
 
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
@@ -59,22 +59,26 @@ def create_uuid_set_for_mrrs(mapper_family: str,
                              metadata_root_records: Dict[Tuple[UUID, str, str], MetadataRootRecord]
                              ) -> UUIDSet:
 
+    uuid_version_list = dict()
     uuid_set = UUIDSet(mapper_family, realm)
 
-    version_list = VersionList(mapper_family, realm)
     for id_version_path, metadata_root_record in metadata_root_records.items():
 
-        dataset_id, dataset_version, relative_path = id_version_path
+        uuid, dataset_version, relative_path = id_version_path
+
+        version_list = uuid_version_list.get(
+            uuid,
+            VersionList(mapper_family, realm))
+
         version_list.set_versioned_element(
             dataset_version,
             str(time.time()),
             relative_path,
             metadata_root_record
         )
+        uuid_version_list[uuid] = version_list
 
-        uuid_set.set_version_list(
-            dataset_id,
-            version_list
-        )
+    for uuid, version_list in uuid_version_list.items():
+        uuid_set.set_version_list(uuid, version_list)
 
     return uuid_set

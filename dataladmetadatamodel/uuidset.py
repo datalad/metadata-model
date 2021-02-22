@@ -59,7 +59,10 @@ class UUIDSet(ConnectedObject):
         current status, if it was changed or force_write
         is true.
         """
-        self.uuid_set[uuid].unmap(self.mapper_family, self.realm, force_write)
+        self.uuid_set[uuid].save_object(
+            self.mapper_family,
+            self.realm,
+            force_write)
         self.uuid_set[uuid].purge()
 
     def deepcopy(self,
