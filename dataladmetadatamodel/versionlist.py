@@ -1,5 +1,6 @@
 from typing import Dict, Optional, Tuple, Union
 
+from . import join_paths
 from .connector import ConnectedObject, Connector
 from .datasettree import DatasetTree
 from .mapper import get_mapper
@@ -127,15 +128,7 @@ class VersionList(ConnectedObject):
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
-                (
-                    version_record.path
-                    if path_prefix is None
-                    else path_prefix + (
-                        "/"
-                        if (path_prefix != "" and version_record.path != "")
-                        else ""
-                    ) + version_record.path
-                ),
+                join_paths(path_prefix, version_record.path),
                 metadata_root_record.deepcopy(new_mapper_family, new_realm))
 
             version_record.element_connector.purge()
@@ -208,15 +201,7 @@ class TreeVersionList(VersionList):
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
-                (
-                    version_record.path
-                    if path_prefix is None
-                    else path_prefix + (
-                        "/"
-                        if (path_prefix != "" and version_record.path != "")
-                        else ""
-                    ) + version_record.path
-                ),
+                join_paths(path_prefix, version_record.path),
                 metadata_root_record.deepcopy(new_mapper_family, new_realm))
 
             version_record.element_connector.purge()

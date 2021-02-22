@@ -1,5 +1,6 @@
-
 from typing import Any, Generator, List, Optional, Tuple
+
+from . import sanitize_path
 
 
 class TreeNode:
@@ -29,7 +30,7 @@ class TreeNode:
                            new_node: "TreeNode",
                            allow_leaf_node_conversion: bool = False):
 
-        path = self.sanitize_path(path)
+        path = sanitize_path(path)
         if self.is_root_path(path):
             self.value = new_node.value
             return
@@ -85,14 +86,6 @@ class TreeNode:
         for child_name, child_node in self.child_nodes.items():
             for name, tree_node in child_node.get_paths_recursive(show_intermediate):
                 yield child_name + ("/" + name if name else ""), tree_node
-
-    @staticmethod
-    def sanitize_path(path: str) -> str:
-        """ remove leading / and collapse repeated / """
-        path = path.lstrip("/")
-        while path.find("//") >= 0:
-            path = path.replace("//", "/")
-        return path
 
     @staticmethod
     def is_root_path(path: str) -> bool:
