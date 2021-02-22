@@ -130,7 +130,11 @@ class VersionList(ConnectedObject):
                 (
                     version_record.path
                     if path_prefix is None
-                    else path_prefix + "/" + version_record.path
+                    else path_prefix + (
+                        "/"
+                        if (path_prefix != "" and version_record.path != "")
+                        else ""
+                    ) + version_record.path
                 ),
                 metadata_root_record.deepcopy(new_mapper_family, new_realm))
 
@@ -207,7 +211,11 @@ class TreeVersionList(VersionList):
                 (
                     version_record.path
                     if path_prefix is None
-                    else path_prefix + "/" + version_record.path
+                    else path_prefix + (
+                        "/"
+                        if (path_prefix != "" and version_record.path != "")
+                        else ""
+                    ) + version_record.path
                 ),
                 metadata_root_record.deepcopy(new_mapper_family, new_realm))
 
