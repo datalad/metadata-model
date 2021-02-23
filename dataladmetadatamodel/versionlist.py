@@ -103,8 +103,9 @@ class VersionList(ConnectedObject):
                                 ):
         """
         Remove a metadata record from memory. First, persist the
-        current status, if it was changed or if force_write
-        is true.
+        current status via save_object ---which will write it to
+        the backend, if it was changed or if force_write
+        is true--- then purge it from memory.
         """
         dst_connector = self._get_dst_connector(primary_data_version)
         dst_connector.save_object(self.mapper_family, self.realm, force_write)

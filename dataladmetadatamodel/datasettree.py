@@ -49,6 +49,34 @@ class DatasetTree(ConnectedObject, TreeNode):
         else:
             dataset_node.value = metadata_root_record
 
+    def add_subtree(self,
+                    subtree: "DatasetTree",
+                    subtree_path: str):
+
+        assert subtree.mapper_family == self.mapper_family
+        assert subtree.realm == self.realm
+
+        sub_node = TreeNode(subtree.value)
+        for path, node in subtree.child_nodes.items():
+            sub_node.add_node(path, node)
+
+        self.add_node_hierarchy(
+            subtree_path,
+            sub_node,
+            allow_leaf_node_conversion=True)
+
+    def delete_subtree(self,
+                       subtree_path: str):
+        if subtree_path == "":
+            raise ValueError("cannot delete root tree node")
+        all_nodes_in_path = self.get_all_nodes_in_path(subtree_path)
+        if all_nodes_in_path is None:
+            raise ValueError(f"no subtree at path {subtree_path}")
+
+        _, containing_node = all_nodes_in_path[-2]
+        name_to_delete, _ = all_nodes_in_path[-1]
+        del containing_node.child_nodes[name_to_delete]
+
     def get_metadata_root_record(self, path: str):
         return self.get_node_at_path(path).value
 
