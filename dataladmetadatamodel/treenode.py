@@ -1,5 +1,6 @@
-
 from typing import Any, Generator, List, Optional, Tuple
+
+from . import sanitize_path
 
 
 class TreeNode:
@@ -8,17 +9,25 @@ class TreeNode:
         self.child_nodes = dict()
         self.value = value
 
+    def __contains__(self, path: str) -> bool:
+        return self.get_node_at_path(path) is not None
+
     def is_leaf_node(self):
         return len(self.child_nodes) == 0
 
     def add_node(self, name: str, new_node: "TreeNode"):
         self.add_nodes([(name, new_node)])
 
-    def add_nodes(self, new_nodes: List[Tuple[str, "TreeNode"]]):
+    def add_nodes(self,
+                  new_nodes: List[Tuple[str, "TreeNode"]]
+                  ):
+
         new_names = set(map(lambda new_entry: new_entry[0], new_nodes))
         duplicated_names = set(self.child_nodes.keys()) & new_names
+
         if duplicated_names:
             raise ValueError("Name(s) already exist(s): " + ", ".join(duplicated_names))
+
         self.child_nodes = {
             **self.child_nodes,
             **dict(new_nodes)
@@ -29,7 +38,7 @@ class TreeNode:
                            new_node: "TreeNode",
                            allow_leaf_node_conversion: bool = False):
 
-        path = self.sanitize_path(path)
+        path = sanitize_path(path)
         if self.is_root_path(path):
             self.value = new_node.value
             return
@@ -63,7 +72,10 @@ class TreeNode:
     def get_sub_node(self, name: str):
         return self.child_nodes[name]
 
-    def get_node_at_path(self, path: str = "") -> Optional["TreeNode"]:
+    def get_node_at_path(self,
+                         path: str = ""
+                         ) -> Optional["TreeNode"]:
+
         """ Simple linear path-search """
         path_elements = path.split("/") if path != "" else []
         current_node = self
@@ -73,6 +85,21 @@ class TreeNode:
             except KeyError:
                 return None
         return current_node
+
+    def get_all_nodes_in_path(self,
+                              path: str = ""
+                              ) -> Optional[List[Tuple[str, "TreeNode"]]]:
+
+        result = [("", self)]
+        path_elements = path.split("/") if path != "" else []
+        current_node = self
+        for element in path_elements:
+            try:
+                current_node = current_node.get_sub_node(element)
+                result.append((element, current_node))
+            except KeyError:
+                return None
+        return result
 
     def get_paths(self) -> Generator[str, None, None]:
         yield from self.child_nodes.keys()
@@ -85,14 +112,6 @@ class TreeNode:
         for child_name, child_node in self.child_nodes.items():
             for name, tree_node in child_node.get_paths_recursive(show_intermediate):
                 yield child_name + ("/" + name if name else ""), tree_node
-
-    @staticmethod
-    def sanitize_path(path: str) -> str:
-        """ remove leading / and collapse repeated / """
-        path = path.lstrip("/")
-        while path.find("//") >= 0:
-            path = path.replace("//", "/")
-        return path
 
     @staticmethod
     def is_root_path(path: str) -> bool:

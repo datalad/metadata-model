@@ -27,14 +27,16 @@ class FileTree(ConnectedObject, TreeNode):
         self.add_node_hierarchy(path, TreeNode(value=Connector.from_object(metadata)))
 
     def get_metadata(self, path: str):
-        return self.get_node_at_path(path).value.load_object(self.mapper_family, self.realm)
+        return self.get_node_at_path(path).value.load_object(
+            self.mapper_family,
+            self.realm)
 
     def set_metadata(self, path: str, metadata: Metadata):
         self.get_node_at_path(path).value.set(metadata)
 
     def unget_metadata(self, path: str, force_write: bool = False):
         value = self.get_node_at_path(path).value
-        value.unmap(self.mapper_family, self.realm, force_write)
+        value.save_object(self.mapper_family, self.realm, force_write)
         value.purge()
 
     def save(self, force_write: bool = False) -> Reference:
@@ -46,12 +48,15 @@ class FileTree(ConnectedObject, TreeNode):
         for _, metadata_connector in self.get_paths_recursive(False):
             if metadata_connector is None:
                 metadata_connector = Connector.from_reference(
-                    Reference.get_none_reference(self.mapper_family, "Metadata"))
+                    Reference.get_none_reference(self.mapper_family, self.realm))
             metadata_connector.save_object(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,
+            self.realm,
             "FileTree",
-            get_mapper(self.mapper_family, "FileTree")(self.realm).unmap(self))
+            get_mapper(
+                self.mapper_family,
+                "FileTree")(self.realm).unmap(self))
 
     def get_paths_recursive(self,
                             show_intermediate: Optional[bool] = False
@@ -85,3 +90,26 @@ class FileTree(ConnectedObject, TreeNode):
             configuration,
             metadata_location
         )
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None) -> "FileTree":
+
+        copied_file_tree = FileTree(
+            new_mapper_family or self.mapper_family,
+            new_realm or self.realm)
+
+        for path, connector in self.get_paths_recursive(True):
+            if connector is not None:
+                copied_connector = connector.deepcopy(
+                    new_mapper_family,
+                    new_realm)
+            else:
+                copied_connector = None
+
+            copied_file_tree.add_node_hierarchy(
+                path,
+                TreeNode(value=copied_connector),
+                allow_leaf_node_conversion=True)
+
+        return copied_file_tree

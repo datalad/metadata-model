@@ -1,5 +1,5 @@
 import enum
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from .connector import ConnectedObject
 from .mapper import get_mapper
@@ -36,12 +36,46 @@ class DatasetTree(ConnectedObject, TreeNode):
     def add_directory(self, name):
         self.add_node(name, TreeNode())
 
-    def add_dataset(self, path, metadata_root_record: MetadataRootRecord):
+    def add_dataset(self,
+                    path: str,
+                    metadata_root_record: MetadataRootRecord):
+
         dataset_node = self.get_node_at_path(path)
         if dataset_node is None:
-            self.add_node_hierarchy(path, TreeNode(metadata_root_record), allow_leaf_node_conversion=True)
+            self.add_node_hierarchy(
+                path,
+                TreeNode(metadata_root_record),
+                allow_leaf_node_conversion=True)
         else:
             dataset_node.value = metadata_root_record
+
+    def add_subtree(self,
+                    subtree: "DatasetTree",
+                    subtree_path: str):
+
+        assert subtree.mapper_family == self.mapper_family
+        assert subtree.realm == self.realm
+
+        sub_node = TreeNode(subtree.value)
+        for path, node in subtree.child_nodes.items():
+            sub_node.add_node(path, node)
+
+        self.add_node_hierarchy(
+            subtree_path,
+            sub_node,
+            allow_leaf_node_conversion=True)
+
+    def delete_subtree(self,
+                       subtree_path: str):
+        if subtree_path == "":
+            raise ValueError("cannot delete root tree node")
+        all_nodes_in_path = self.get_all_nodes_in_path(subtree_path)
+        if all_nodes_in_path is None:
+            raise ValueError(f"no subtree at path {subtree_path}")
+
+        _, containing_node = all_nodes_in_path[-2]
+        name_to_delete, _ = all_nodes_in_path[-1]
+        del containing_node.child_nodes[name_to_delete]
 
     def get_metadata_root_record(self, path: str):
         return self.get_node_at_path(path).value
@@ -58,8 +92,11 @@ class DatasetTree(ConnectedObject, TreeNode):
 
         return Reference(
             self.mapper_family,
+            self.realm,
             "DatasetTree",
-            get_mapper(self.mapper_family, "DatasetTree")(self.realm).unmap(self))
+            get_mapper(
+                self.mapper_family,
+                "DatasetTree")(self.realm).unmap(self))
 
     def get_dataset_paths(self) -> List[Tuple[str, MetadataRootRecord]]:
         return [
@@ -67,3 +104,19 @@ class DatasetTree(ConnectedObject, TreeNode):
             for name, node in self.get_paths_recursive(True)
             if node.value is not None
         ]
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None) -> "DatasetTree":
+
+        copied_dataset_tree = DatasetTree(
+            new_mapper_family or self.mapper_family,
+            new_realm or self.realm)
+
+        for path, node in self.get_paths_recursive(True):
+            if node.value is not None:
+                assert isinstance(node.value, MetadataRootRecord)
+                copied_value = node.value.deepcopy(new_mapper_family, new_realm)
+                copied_dataset_tree.add_dataset(path, copied_value)
+
+        return copied_dataset_tree

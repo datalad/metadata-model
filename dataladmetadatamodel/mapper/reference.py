@@ -9,9 +9,11 @@ none_location = "*None*"
 class Reference:
     def __init__(self,
                  mapper_family: str,
+                 realm: str,
                  class_name: str,
                  location: Optional[str] = None):
         self.mapper_family = mapper_family
+        self.realm = realm
         self.class_name = class_name
         self.location = location
 
@@ -21,6 +23,7 @@ class Reference:
     def __repr__(self):
         return (
             f"Reference(mapper_family='{self.mapper_family}', "
+            f"realm='{self.realm}', "
             f"class_name='{self.class_name}', "
             f"location={repr(self.location)})")
 
@@ -38,6 +41,7 @@ class Reference:
             ),
             **dict(
                 mapper_family=self.mapper_family,
+                realm=self.realm,
                 class_name=self.class_name,
                 location=self.location)
         }
@@ -52,10 +56,15 @@ class Reference:
         assert obj["@"]["version"] == "1.0"
         return cls(
             obj["mapper_family"],
+            obj["realm"],
             obj["class_name"],
             obj["location"]
         )
 
     @classmethod
-    def get_none_reference(cls, mapper_family: str, class_name: str) -> "Reference":
-        return cls(mapper_family, class_name, none_location)
+    def get_none_reference(cls,
+                           mapper_family: str,
+                           realm: str
+                           ) -> "Reference":
+
+        return cls(mapper_family, realm, none_class_name, none_location)

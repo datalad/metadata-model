@@ -17,7 +17,7 @@ class UUIDSetGitMapper(BaseMapper):
 
         initial_set = {
             UUID(line.split()[3]): Connector.from_reference(
-                Reference("git", "VersionList", line.split()[2])
+                Reference("git", self.realm, "VersionList", line.split()[2])
             )
             for line in git_ls_tree(self.realm, ref.location)
         }

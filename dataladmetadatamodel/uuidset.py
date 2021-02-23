@@ -29,6 +29,7 @@ class UUIDSet(ConnectedObject):
         self.uuid_set.save_bottom_half(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,
+            self.realm,
             "UUIDSet",
             get_mapper(self.mapper_family, "UUIDSet")(self.realm).unmap(self))
 
@@ -50,7 +51,7 @@ class UUIDSet(ConnectedObject):
         Get the version list for uuid. If it is not mapped yet,
         it will be mapped.
         """
-        return self.uuid_set[uuid].load_object(self.mapper_family, self.realm)
+        return self.uuid_set[uuid].load_object()
 
     def unget_version_list(self, uuid, force_write: bool = False):
         """
@@ -58,5 +59,25 @@ class UUIDSet(ConnectedObject):
         current status, if it was changed or force_write
         is true.
         """
-        self.uuid_set[uuid].unmap(self.mapper_family, self.realm, force_write)
+        self.uuid_set[uuid].save_object(
+            self.mapper_family,
+            self.realm,
+            force_write)
         self.uuid_set[uuid].purge()
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None
+                 ) -> "UUIDSet":
+
+        """ copy a UUID set optionally with a new mapper or a new realm """
+        new_mapper_family = new_mapper_family or self.mapper_family
+        new_realm = new_realm or self.realm
+        copied_uuid_set = UUIDSet(new_mapper_family, new_realm)
+
+        for uuid, version_list_connector in self.uuid_set.items():
+            copied_uuid_set.uuid_set[uuid] = version_list_connector.deepcopy(
+                new_mapper_family,
+                new_realm)
+
+        return copied_uuid_set

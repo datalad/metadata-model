@@ -25,7 +25,7 @@ class MemoryMapper(_BaseMapper):
         print(f"mapper: saving object {obj}: {location}")
         self.objects[self.index] = obj
         self.index += 1
-        return _Reference("memory", type(obj).__name__, location)
+        return _Reference("memory", "memory", type(obj).__name__, location)
 
     @classmethod
     def get_instance(cls):

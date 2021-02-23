@@ -1,3 +1,4 @@
+import copy
 import json
 import time
 from typing import Dict, Generator, Iterable, List, Optional, Tuple
@@ -134,30 +135,30 @@ class MetadataInstanceSet:
                  initial_metadata_instances: Optional[Iterable[MetadataInstance]] = None):
 
         self.parameter_set = list()
-        self.instance_set = dict()
+        self.instances = dict()
         for metadata_instance in initial_metadata_instances or []:
             self.add_metadata_instance(metadata_instance)
 
     def __iter__(self):
-        yield from self.instance_set.values()
+        yield from self.instances.values()
 
     def add_metadata_instance(self, metadata_instance: MetadataInstance):
         if metadata_instance.configuration not in self.parameter_set:
             self.parameter_set.append(metadata_instance.configuration)
         instance_key = self.parameter_set.index(metadata_instance.configuration)
-        self.instance_set[instance_key] = metadata_instance
+        self.instances[instance_key] = metadata_instance
 
     def get_instances(self) -> Generator[MetadataInstance, None, None]:
-        yield from self.instance_set.values()
+        yield from self.instances.values()
 
     def get_configurations(self) -> List[ExtractorConfiguration]:
         return self.parameter_set[:]
 
     def get_instance_for_configuration_index(self, index: int):
-        return self.instance_set[index]
+        return self.instances[index]
 
     def get_instance_for_configuration(self, configuration: ExtractorConfiguration):
-        return self.instance_set[self.parameter_set.index(configuration)]
+        return self.instances[self.parameter_set.index(configuration)]
 
     def to_json_obj(self) -> JSONObject:
         return {
@@ -171,7 +172,7 @@ class MetadataInstanceSet:
             ],
             "instance_set": {
                 instance_key: instance.to_json_obj()
-                for instance_key, instance in self.instance_set.items()
+                for instance_key, instance in self.instances.items()
             }
         }
 
@@ -188,7 +189,7 @@ class MetadataInstanceSet:
             ExtractorConfiguration.from_json_obj(json_obj)
             for json_obj in obj["parameter_set"]
         ]
-        metadata_instance_set.instance_set = {
+        metadata_instance_set.instances = {
             int(configuration_id): MetadataInstance.from_json_obj(json_obj)
             for configuration_id, json_obj in obj["instance_set"].items()
         }
@@ -197,6 +198,10 @@ class MetadataInstanceSet:
     @classmethod
     def from_json_str(cls, json_str: str) -> "MetadataInstanceSet":
         return cls.from_json_obj(json.loads(json_str))
+
+    def __eq__(self, other: "MetadataInstanceSet"):
+        return sorted(self.parameter_set) == sorted(other.parameter_set) \
+               and self.instances == other.instances
 
 
 class Metadata(ConnectedObject):
@@ -233,8 +238,11 @@ class Metadata(ConnectedObject):
     def save(self) -> Reference:
         return Reference(
             self.mapper_family,
+            self.realm,
             "Metadata",
-            get_mapper(self.mapper_family, "Metadata")(self.realm).unmap(self))
+            get_mapper(
+                self.mapper_family,
+                "Metadata")(self.realm).unmap(self))
 
     def extractors(self) -> Generator[str, None, None]:
         yield from self.instance_sets.keys()
@@ -276,3 +284,21 @@ class Metadata(ConnectedObject):
             metadata.instance_sets[format_name] = MetadataInstanceSet.from_json_obj(instance_set_json_obj)
 
         return metadata
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None) -> "Metadata":
+
+        new_mapper_family = new_mapper_family or self.mapper_family
+        new_realm = new_realm or self.realm
+
+        copied_metadata = Metadata(new_mapper_family, new_realm)
+        for extractor_name, instance_set in self.instance_sets.items():
+            copied_metadata.instance_sets[extractor_name] = \
+                copy.deepcopy(instance_set)
+            del instance_set
+
+        return copied_metadata
+
+    def __eq__(self, other):
+        return self.instance_sets == other.instance_sets

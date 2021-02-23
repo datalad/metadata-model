@@ -1,5 +1,6 @@
 from typing import Dict, Optional, Tuple, Union
 
+from . import join_paths
 from .connector import ConnectedObject, Connector
 from .datasettree import DatasetTree
 from .mapper import get_mapper
@@ -7,7 +8,7 @@ from .metadatarootrecord import MetadataRootRecord
 from .mapper.reference import Reference
 
 
-class VersionRecord:
+class VersionRecord():
     def __init__(self,
                  time_stamp: str,
                  path: Optional[str],
@@ -15,6 +16,17 @@ class VersionRecord:
         self.time_stamp = time_stamp
         self.path = path
         self.element_connector = element_connector
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None
+                 ) -> "VersionRecord":
+
+        return VersionRecord(
+            self.time_stamp,
+            self.path,
+            self.element_connector.deepcopy(new_mapper_family, new_realm)
+        )
 
 
 class VersionList(ConnectedObject):
@@ -47,6 +59,7 @@ class VersionList(ConnectedObject):
 
         return Reference(
             self.mapper_family,
+            self.realm,
             "VersionList",
             get_mapper(
                 self.mapper_family,
@@ -54,6 +67,20 @@ class VersionList(ConnectedObject):
 
     def versions(self):
         return self.version_set.keys()
+
+    def get_versioned_element(self,
+                              primary_data_version: str
+                              ) -> Tuple[str, str, Union[DatasetTree, MetadataRootRecord]]:
+        """
+        Get the dataset tree or metadata root record,
+        its timestamp and path for the given version.
+        If it is not mapped yet, it will be mapped.
+        """
+        version_record = self._get_version_record(primary_data_version)
+        return (
+            version_record.time_stamp,
+            version_record.path,
+            version_record.element_connector.load_object())
 
     def set_versioned_element(self,
                               primary_data_version: str,
@@ -70,33 +97,44 @@ class VersionList(ConnectedObject):
             path,
             Connector.from_object(element))
 
-    def get_versioned_element(self,
-                              primary_data_version: str
-                              ) -> Tuple[str, str, Union[DatasetTree, MetadataRootRecord]]:
-        """
-        Get the dataset tree or metadata root record,
-        its timestamp and path for the given version.
-        If it is not mapped yet, it will be mapped.
-        """
-        version_record = self._get_version_record(primary_data_version)
-        return (
-            version_record.time_stamp,
-            version_record.path,
-            version_record.element_connector.load_object(
-                self.mapper_family,
-                self.realm))
-
-    def unget_dataset_tree(self,
-                           primary_data_version: str,
-                           force_write: bool = False):
+    def unget_versioned_element(self,
+                                primary_data_version: str,
+                                force_write: bool = False
+                                ):
         """
         Remove a metadata record from memory. First, persist the
-        current status, if it was changed or if force_write
-        is true.
+        current status via save_object ---which will write it to
+        the backend, if it was changed or if force_write
+        is true--- then purge it from memory.
         """
         dst_connector = self._get_dst_connector(primary_data_version)
         dst_connector.save_object(self.mapper_family, self.realm, force_write)
         dst_connector.purge()
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None,
+                 path_prefix: Optional[str] = None
+                 ) -> "VersionList":
+
+        new_mapper_family = new_mapper_family or self.mapper_family
+        new_realm = new_realm or self.realm
+
+        copied_version_list = VersionList(new_mapper_family, new_realm)
+
+        for primary_data_version, version_record in self.version_set.items():
+
+            metadata_root_record = version_record.element_connector.load_object()
+
+            copied_version_list.set_versioned_element(
+                primary_data_version,
+                version_record.time_stamp,
+                join_paths(path_prefix, version_record.path),
+                metadata_root_record.deepcopy(new_mapper_family, new_realm))
+
+            version_record.element_connector.purge()
+
+        return copied_version_list
 
 
 class TreeVersionList(VersionList):
@@ -116,8 +154,11 @@ class TreeVersionList(VersionList):
 
         return Reference(
             self.mapper_family,
+            self.realm,
             "TreeVersionList",
-            get_mapper(self.mapper_family, "TreeVersionList")(self.realm).unmap(self))
+            get_mapper(
+                self.mapper_family,
+                "TreeVersionList")(self.realm).unmap(self))
 
     def get_dataset_tree(self, primary_data_version: str) -> Tuple[str, DatasetTree]:
         time_stamp, _, dataset_tree = super().get_versioned_element(
@@ -127,10 +168,43 @@ class TreeVersionList(VersionList):
     def set_dataset_tree(self,
                          primary_data_version: str,
                          time_stamp: str,
-                         dataset_tree: DatasetTree):
+                         dataset_tree: DatasetTree
+                         ):
 
         return super().set_versioned_element(
             primary_data_version,
             time_stamp,
             "",
             dataset_tree)
+
+    def unget_dataset_tree(self,
+                           primary_data_version: str,
+                           force_write: bool = False
+                           ):
+
+        super().unget_versioned_element(primary_data_version, force_write)
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None,
+                 path_prefix: Optional[str] = None
+                 ) -> "TreeVersionList":
+
+        new_mapper_family = new_mapper_family or self.mapper_family
+        new_realm = new_realm or self.realm
+
+        copied_version_list = TreeVersionList(new_mapper_family, new_realm)
+
+        for primary_data_version, version_record in self.version_set.items():
+
+            metadata_root_record = version_record.element_connector.load_object()
+
+            copied_version_list.set_versioned_element(
+                primary_data_version,
+                version_record.time_stamp,
+                join_paths(path_prefix, version_record.path),
+                metadata_root_record.deepcopy(new_mapper_family, new_realm))
+
+            version_record.element_connector.purge()
+
+        return copied_version_list
