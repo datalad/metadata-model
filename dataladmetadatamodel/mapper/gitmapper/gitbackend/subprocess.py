@@ -6,13 +6,16 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 def execute_with_output(arguments: Union[str, List[str]],
                         file_descriptor: Any,
-                        stdin_content: Optional[Union[str, bytes]] = None) -> Any:
+                        stdin_content: Optional[Union[str, bytes]] = None
+                        ) -> Any:
 
     return subprocess.run(
         shlex.split(arguments) if isinstance(arguments, str) else arguments,
-        input=stdin_content.encode() if isinstance(stdin_content, str) else stdin_content,
-        stdout=file_descriptor
-    )
+        input=(
+            stdin_content.encode()
+            if isinstance(stdin_content, str)
+            else stdin_content),
+        stdout=file_descriptor)
 
 
 def execute(arguments: Union[str, List[str]],
@@ -20,26 +23,37 @@ def execute(arguments: Union[str, List[str]],
 
     return subprocess.run(
         shlex.split(arguments) if isinstance(arguments, str) else arguments,
-        input=stdin_content.encode() if isinstance(stdin_content, str) else stdin_content,
+        input=(
+            stdin_content.encode()
+            if isinstance(stdin_content, str)
+            else stdin_content),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
 
 
 def checked_execute(arguments: Union[str, List[str]],
-                    stdin_content: Optional[Union[str, bytes]] = None) -> Tuple[List[str], List[str]]:
+                    stdin_content: Optional[Union[str, bytes]] = None
+                    ) -> Tuple[List[str], List[str]]:
 
     result = execute(arguments, stdin_content)
     if result.returncode != 0:
         raise RuntimeError(
-            f"Command failed (exit code: {result.returncode}) {' '.join(arguments)}:\n"
+            f"Command failed (exit code: {result.returncode}) "
+            f"{' '.join(arguments)}:\n"
             f"STDOUT:\n"
             f"{result.stdout.decode()}"
             f"STDERR:\n"
             f"{result.stderr.decode()}")
-    return result.stdout.decode().splitlines(), result.stderr.decode().splitlines()
+    return (
+        result.stdout.decode().splitlines(),
+        result.stderr.decode().splitlines())
 
 
-def git_command_line(repo_dir: str, command: str, arguments: List[str]) -> List[str]:
+def git_command_line(repo_dir: str,
+                     command: str,
+                     arguments: List[str]
+                     ) -> List[str]:
+
     return [
                "git",
                "-P",
@@ -82,7 +96,10 @@ def git_save_json(repo_dir, json_object: Union[Dict, List]) -> str:
     return git_save_str(repo_dir, json.dumps(json_object))
 
 
-def git_save_tree(repo_dir, entry_list: List[Tuple[str, str, str, str]]) -> str:
+def git_save_tree(repo_dir,
+                  entry_list: List[Tuple[str, str, str, str]]
+                  ) -> str:
+
     tree_spec = "\n".join([
         f"{flag} {node_type} {object_hash}\t{name}"
         for flag, node_type, object_hash, name in entry_list
