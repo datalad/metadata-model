@@ -109,5 +109,89 @@ class TestDeepCopy(unittest.TestCase):
                 False)
 
 
+class TestSubTreeManipulation(unittest.TestCase):
+    def get_mrr(
+            self,
+            mapper: str,
+            realm: str) -> MetadataRootRecord:
+
+        return MetadataRootRecord(
+            mapper, realm, uuid_0, "00112233",
+            Connector.from_object(None),
+            Connector.from_object(None))
+
+    def test_subtree_adding(self):
+        mrr_1 = self.get_mrr("memory", "")
+        mrr_2 = self.get_mrr("memory", "")
+
+        tree = DatasetTree("memory", "")
+        tree.add_dataset("a/b/c", mrr_1)
+
+        subtree = DatasetTree("memory", "")
+        subtree.add_dataset("d/e/f", mrr_2)
+
+        tree.add_subtree(subtree, "a/x")
+
+        node = tree.get_node_at_path("a/b/c")
+        self.assertIsNotNone(node)
+        self.assertEqual(node.value, mrr_1)
+
+        node = tree.get_node_at_path("a/x/d/e/f")
+        self.assertIsNotNone(node)
+        self.assertEqual(node.value, mrr_2)
+
+    def test_subtree_adding_with_conversion(self):
+        mrr_1 = self.get_mrr("memory", "")
+        mrr_2 = self.get_mrr("memory", "")
+
+        tree = DatasetTree("memory", "")
+        tree.add_dataset("a/b/c", mrr_1)
+
+        subtree = DatasetTree("memory", "")
+        subtree.add_dataset("e/f", mrr_2)
+
+        tree.add_subtree(subtree, "a/b/c/d")
+
+        node = tree.get_node_at_path("a/b/c")
+        self.assertIsNotNone(node)
+        self.assertEqual(node.value, mrr_1)
+
+        node = tree.get_node_at_path("a/b/c/d/e/f")
+        self.assertIsNotNone(node)
+        self.assertEqual(node.value, mrr_2)
+
+    def test_subtree_adding_on_existing_path(self):
+        tree = DatasetTree("memory", "")
+        tree.add_dataset("a/b/c/d", self.get_mrr("memory", ""))
+
+        subtree = DatasetTree("memory", "")
+        subtree.add_dataset("e/f", self.get_mrr("memory", ""))
+
+        self.assertRaises(
+            ValueError,
+            tree.add_subtree,
+            subtree, "a/b/c/d")
+
+    def test_subtree_deletion(self):
+        mrr_1 = self.get_mrr("memory", "")
+        mrr_2 = self.get_mrr("memory", "")
+
+        tree = DatasetTree("memory", "")
+        tree.add_dataset("a/b/c", mrr_1)
+        tree.add_dataset("a/b/c/d/e/f", mrr_2)
+
+        self.assertIsNotNone(tree.get_node_at_path("a/b/c/d/e/f"))
+        tree.delete_subtree("a/b/c/d/e/f")
+        self.assertIsNone(tree.get_node_at_path("a/b/c/d/e/f"))
+        self.assertIsNotNone(tree.get_node_at_path("a/b/c/d/e"))
+
+        self.assertIsNotNone(tree.get_node_at_path("a/b/c/d/e"))
+        tree.delete_subtree("a/b/c")
+        self.assertIsNotNone(tree.get_node_at_path("a/b"))
+        self.assertIsNone(tree.get_node_at_path("a/b/c"))
+        self.assertIsNone(tree.get_node_at_path("a/b/c/d"))
+        self.assertIsNone(tree.get_node_at_path("a/b/c/d/e"))
+
+
 if __name__ == '__main__':
     unittest.main()
