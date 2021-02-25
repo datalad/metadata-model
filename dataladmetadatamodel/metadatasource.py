@@ -20,6 +20,7 @@ import tempfile
 from typing import Any, List, Optional, Union
 
 from . import JSONObject
+from .text import Text
 
 
 TempRepositoryObject = tempfile.TemporaryDirectory()
@@ -103,7 +104,7 @@ class GitRunner:
 TempRepoGitRunner = GitRunner(None, TempRepository)
 
 
-class MetadataSourceKey(enum.Enum):
+class MetadataSourceKey(str, enum.Enum):
     TYPE = "type"
 
 
@@ -197,3 +198,45 @@ class GitMetadataSource(MetadataSource):
             "git_repository_url": self.git_repository_url,
             "object_reference": self.object_reference
         }
+
+
+class ImmediateMetadataSource(MetadataSource):
+    def __init__(self,
+                 content: Union[str, bytes]
+                 ):
+        self.git_repository_path = git_repository_path
+        self.content = content
+
+        self.text_object = Text("git", git_repository_path)
+            self.git_repository_path = git_repository_path
+        self.object_reference = object_reference
+        self.git_runner = GitRunner(None, self.git_repository_path)
+
+    def write_object_to(self, file_descriptor):
+        self.git_runner.checked_run(
+            "cat-file",
+            ["blob", self.object_reference],
+            None,
+            file_descriptor)
+
+    def copy_object_to(self, destination: str):
+        """
+        copy an object from the LocalGitMetadataSource
+        instance into a local repository.
+        """
+        destination_runner = GitRunner(None, destination)
+        destination_runner.checked_run(
+            "fetch",
+            [self.git_repository_path, self.object_reference])
+
+    def to_json_obj(self) -> JSONObject:
+        return {
+            "@": dict(
+                type="LocalGitMetadataSource",
+                version="1.0"
+            ),
+            "git_repository_path": self.git_repository_path,
+            "object_reference": self.object_reference
+        }
+
+
