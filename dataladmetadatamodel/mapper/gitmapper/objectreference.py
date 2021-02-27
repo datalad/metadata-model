@@ -1,6 +1,7 @@
 import enum
 from typing import Dict, List, Tuple
 
+from .utils import lock_backend, unlock_backend
 from .gitbackend.subprocess import git_ls_tree, git_update_ref, git_save_tree
 
 
@@ -36,8 +37,7 @@ def flush_object_references(realm: str):
     global CACHED_OBJECT_REFERENCES
 
     for git_reference, cached_tree_entries in CACHED_OBJECT_REFERENCES.items():
-        # TODO: a single loop should be guarded against modification
-        #  by other processes.
+        lock_backend(realm)
         try:
             existing_tree_entries = [
                 tuple(line.split())
@@ -45,10 +45,13 @@ def flush_object_references(realm: str):
             ]
         except RuntimeError:
             existing_tree_entries = []
+        finally:
+            unlock_backend(realm)
 
         existing_tree_entries.extend(cached_tree_entries)
         tree_hash = git_save_tree(realm, existing_tree_entries)
         git_update_ref(realm, git_reference, tree_hash)
+        unlock_backend()
 
     CACHED_OBJECT_REFERENCES = dict()
 
