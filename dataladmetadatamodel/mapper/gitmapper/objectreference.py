@@ -51,7 +51,7 @@ def flush_object_references(realm: str):
         existing_tree_entries.extend(cached_tree_entries)
         tree_hash = git_save_tree(realm, existing_tree_entries)
         git_update_ref(realm, git_reference, tree_hash)
-        unlock_backend()
+        unlock_backend(realm)
 
     CACHED_OBJECT_REFERENCES = dict()
 
