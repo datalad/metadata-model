@@ -6,26 +6,33 @@ from ..basemapper import BaseMapper
 from ..reference import Reference
 
 
-class MetadataRootRecordGitMapper(BaseMapper):
+class Strings:
+    GIT = "git"
+    DATASET_IDENTIFIER = "dataset_identifier"
+    DATASET_VERSION = "dataset_version"
+    DATASET_LEVEL_METADATA = "dataset_level_metadata"
+    FILE_TREE = "file_tree"
 
+
+class MetadataRootRecordGitMapper(BaseMapper):
     def map(self, ref: Reference) -> Any:
         from dataladmetadatamodel.connector import Connector
         from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
         assert isinstance(ref, Reference)
-        assert ref.mapper_family == "git"
+        assert ref.mapper_family == Strings.GIT
 
         json_object = git_load_json(self.realm, ref.location)
         return MetadataRootRecord(
-            "git",
+            Strings.GIT,
             self.realm,
-            UUID(json_object["dataset_identifier"]),
-            json_object["dataset_version"],
+            UUID(json_object[Strings.DATASET_IDENTIFIER]),
+            json_object[Strings.DATASET_VERSION],
             Connector.from_reference(
-                Reference.from_json_obj(json_object["dataset_level_metadata"])
+                Reference.from_json_obj(json_object[Strings.DATASET_LEVEL_METADATA])
             ),
             Connector.from_reference(
-                Reference.from_json_obj(json_object["file_level_metadata"])
+                Reference.from_json_obj(json_object[Strings.FILE_TREE])
             )
         )
 
@@ -33,14 +40,14 @@ class MetadataRootRecordGitMapper(BaseMapper):
         from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
         assert isinstance(obj, MetadataRootRecord)
         json_object = {
-            "dataset_identifier": str(obj.dataset_identifier),
-            "dataset_version": str(obj.dataset_version),
-            "dataset_level_metadata": obj.dataset_level_metadata.save_object(
-                "git",
+            Strings.DATASET_IDENTIFIER: str(obj.dataset_identifier),
+            Strings.DATASET_VERSION: str(obj.dataset_version),
+            Strings.DATASET_LEVEL_METADATA: obj.dataset_level_metadata.save_object(
+                Strings.GIT,
                 self.realm
             ).to_json_obj(),
-            "file_level_metadata": obj.file_tree.save_object(
-                "git",
+            Strings.FILE_TREE: obj.file_tree.save_object(
+                Strings.GIT,
                 self.realm
             ).to_json_obj()
         }
