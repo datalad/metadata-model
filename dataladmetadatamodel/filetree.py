@@ -26,10 +26,12 @@ class FileTree(ConnectedObject, TreeNode):
     def add_metadata(self, path: str, metadata: Optional[Metadata] = None):
         self.add_node_hierarchy(path, TreeNode(value=Connector.from_object(metadata)))
 
-    def get_metadata(self, path: str):
-        return self.get_node_at_path(path).value.load_object(
-            self.mapper_family,
-            self.realm)
+    def get_metadata(self, path: str) -> Optional[Metadata]:
+        if path in self:
+            return self.get_node_at_path(path).value.load_object(
+                self.mapper_family,
+                self.realm)
+        return None
 
     def set_metadata(self, path: str, metadata: Metadata):
         self.get_node_at_path(path).value.set(metadata)
