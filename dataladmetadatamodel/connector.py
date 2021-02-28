@@ -55,16 +55,19 @@ class Connector(ConnectedObject):
         if self.is_mapped:
             if self.is_modified or force_write:
                 class_name = type(self.object).__name__
-                self.object.pre_save(mapper_family, realm)
-                self.reference = Reference(
-                    mapper_family,
-                    realm,
-                    class_name,
-                    get_mapper(
+                if self.object is None:
+                    self.reference = Reference.get_none_reference(mapper_family, realm)
+                else:
+                    self.object.pre_save(mapper_family, realm)
+                    self.reference = Reference(
                         mapper_family,
-                        class_name
-                    )(realm).unmap(self.object)
-                )
+                        realm,
+                        class_name,
+                        get_mapper(
+                            mapper_family,
+                            class_name
+                        )(realm).unmap(self.object)
+                    )
                 self.is_modified = False
         else:
             if self.reference is None:
