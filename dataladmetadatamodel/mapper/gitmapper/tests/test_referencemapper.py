@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest import mock
 
@@ -8,18 +9,39 @@ from ..referencemapper import ReferenceGitMapper
 test_realm_name = "ewkd0iasd"
 
 
-class MyTestCase(unittest.TestCase):
+class TestReferenceMapper(unittest.TestCase):
 
-    def test_none_reference_handling(self):
+    def test_none_reference_unmapping(self):
         with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_save_str") as save:
 
             none_reference = Reference.get_none_reference("git", test_realm_name)
             ReferenceGitMapper(test_realm_name).unmap(none_reference)
+            representation = save.call_args[0][1]
             self.assertEqual(
-                save.call_args,
-                mock.call(
-                    test_realm_name,
-                    '{"@": {"type": "Reference", "version": "1.0"}, "mapper_family": "git", "realm": "ewkd0iasd", "class_name": "*None*", "location": "*None*"}'))
+                json.loads(representation),
+                {
+                    "@": {"type": "Reference", "version": "1.0"},
+                    "mapper_family": "git",
+                    "realm": test_realm_name,
+                    "class_name": "*None*",
+                    "location": "*None*"
+                }
+            )
+
+    def test_none_reference_mapping(self):
+
+        with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_load_str") as load:
+            load.return_value = json.dumps(
+                {
+                    "@": {"type": "Reference", "version": "1.0"},
+                    "mapper_family": "git",
+                    "realm": test_realm_name,
+                    "class_name": "*None*",
+                    "location": "*None*"
+                })
+            loaded_ref = ReferenceGitMapper(test_realm_name).map(
+                Reference("git", test_realm_name, "Reference", "ignored due to patch"))
+            self.assertTrue(loaded_ref.is_none_reference())
 
 
 if __name__ == '__main__':

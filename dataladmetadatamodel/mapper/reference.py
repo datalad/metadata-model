@@ -28,7 +28,7 @@ class Reference:
             f"location={repr(self.location)})")
 
     def is_none_reference(self) -> bool:
-        return self.location == none_location
+        return self.location == none_location and self.class_name == none_class_name
 
     def to_json_str(self):
         return json.dumps(self.to_json_obj())
