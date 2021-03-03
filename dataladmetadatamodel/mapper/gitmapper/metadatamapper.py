@@ -18,9 +18,5 @@ class MetadataGitMapper(BaseMapper):
         assert isinstance(obj, Metadata)
 
         metadata_object_hash = git_save_str(self.realm, obj.to_json())
-        add_blob_reference(
-            self.realm,
-            GitReference.METADATA,
-            metadata_object_hash
-        )
+        add_blob_reference(GitReference.METADATA, metadata_object_hash)
         return metadata_object_hash

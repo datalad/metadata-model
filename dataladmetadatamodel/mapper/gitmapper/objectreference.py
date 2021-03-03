@@ -16,8 +16,7 @@ class GitReference(enum.Enum):
 CACHED_OBJECT_REFERENCES: Dict[str, List[Tuple[str, str, str, str]]] = dict()
 
 
-def add_object_reference(realm: str,
-                         git_reference: GitReference,
+def add_object_reference(git_reference: GitReference,
                          flag: str,
                          object_type: str,
                          object_hash: str):
@@ -56,31 +55,14 @@ def flush_object_references(realm: str):
     CACHED_OBJECT_REFERENCES = dict()
 
 
-def add_tree_reference(realm: str,
-                       git_reference: GitReference,
-                       object_hash: str):
-
-    add_object_reference(
-        realm,
-        git_reference,
-        "040000",
-        "tree",
-        object_hash
-    )
+def add_tree_reference(git_reference: GitReference, object_hash: str):
+    add_object_reference(git_reference, "040000", "tree", object_hash)
 
 
-def add_blob_reference(realm: str,
-                       git_reference: GitReference,
-                       object_hash: str):
-
-    add_object_reference(
-        realm,
-        git_reference,
-        "100644",
-        "blob",
-        object_hash
-    )
+def add_blob_reference(git_reference: GitReference, object_hash: str):
+    add_object_reference(git_reference, "100644", "blob", object_hash)
 
 
 def remove_object_reference(*args, **kwargs):
+    # TODO: implement this function
     raise NotImplementedError

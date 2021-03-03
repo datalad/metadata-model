@@ -69,5 +69,5 @@ class DatasetTreeGitMapper(BaseMapper):
 
         assert isinstance(obj, DatasetTree)
         dataset_tree_hash = self._save_dataset_tree(obj)
-        add_tree_reference(self.realm, GitReference.DATASET_TREE, dataset_tree_hash)
+        add_tree_reference(GitReference.DATASET_TREE, dataset_tree_hash)
         return dataset_tree_hash

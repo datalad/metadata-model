@@ -55,5 +55,5 @@ class FileTreeGitMapper(BaseMapper):
         assert isinstance(obj, FileTree)
         file_tree_hash = self._save_file_tree(obj)
         if file_tree_hash != empty_tree_location:
-            add_tree_reference(self.realm, GitReference.FILE_TREE, file_tree_hash)
+            add_tree_reference(GitReference.FILE_TREE, file_tree_hash)
         return file_tree_hash
