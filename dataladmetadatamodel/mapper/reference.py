@@ -4,6 +4,8 @@ from typing import Optional
 
 none_class_name = "*None*"
 none_location = "*None*"
+none_mapper_family_name = "*None*"
+none_realm = "*None*"
 
 
 class Reference:
@@ -62,9 +64,5 @@ class Reference:
         )
 
     @classmethod
-    def get_none_reference(cls,
-                           mapper_family: str,
-                           realm: str
-                           ) -> "Reference":
-
-        return cls(mapper_family, realm, none_class_name, none_location)
+    def get_none_reference(cls) -> "Reference":
+        return cls(none_mapper_family_name, none_realm, none_class_name, none_location)

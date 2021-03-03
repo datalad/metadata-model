@@ -14,15 +14,15 @@ class TestReferenceMapper(unittest.TestCase):
     def test_none_reference_unmapping(self):
         with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_save_str") as save:
 
-            none_reference = Reference.get_none_reference("git", test_realm_name)
+            none_reference = Reference.get_none_reference()
             ReferenceGitMapper(test_realm_name).unmap(none_reference)
             representation = save.call_args[0][1]
             self.assertEqual(
                 json.loads(representation),
                 {
                     "@": {"type": "Reference", "version": "1.0"},
-                    "mapper_family": "git",
-                    "realm": test_realm_name,
+                    "mapper_family": "*None*",
+                    "realm": "*None*",
                     "class_name": "*None*",
                     "location": "*None*"
                 }
@@ -34,8 +34,8 @@ class TestReferenceMapper(unittest.TestCase):
             load.return_value = json.dumps(
                 {
                     "@": {"type": "Reference", "version": "1.0"},
-                    "mapper_family": "git",
-                    "realm": test_realm_name,
+                    "mapper_family": "*None*",
+                    "realm": "*None*",
                     "class_name": "*None*",
                     "location": "*None*"
                 })

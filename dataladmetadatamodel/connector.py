@@ -29,6 +29,9 @@ class Connector(ConnectedObject):
 
     @classmethod
     def from_object(cls, obj):
+        if obj is None:
+            return cls.from_reference(
+                Reference.get_none_reference())
         return cls(None, obj, True, True)
 
     @classmethod
@@ -56,7 +59,7 @@ class Connector(ConnectedObject):
             if self.is_modified or force_write:
                 class_name = type(self.object).__name__
                 if self.object is None:
-                    self.reference = Reference.get_none_reference(mapper_family, realm)
+                    self.reference = Reference.get_none_reference()
                 else:
                     self.object.pre_save(mapper_family, realm)
                     self.reference = Reference(
@@ -71,9 +74,7 @@ class Connector(ConnectedObject):
                 self.is_modified = False
         else:
             if self.reference is None:
-                self.reference = Reference.get_none_reference(
-                    mapper_family,
-                    realm)
+                self.reference = Reference.get_none_reference()
                 self.is_modified = False
         return self.reference
 

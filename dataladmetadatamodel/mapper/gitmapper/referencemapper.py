@@ -11,7 +11,7 @@ class ReferenceGitMapper(BaseMapper):
         assert isinstance(ref, Reference)
         assert ref.mapper_family == "git"
         if ref.is_none_reference():
-            return Reference.get_none_reference("git", self.realm)
+            return Reference.get_none_reference()
         ref_json_str = git_load_str(self.realm, ref.location)
         return Reference.from_json_str(ref_json_str)
 
