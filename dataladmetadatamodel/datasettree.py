@@ -23,6 +23,11 @@ class DatasetTree(ConnectedObject, TreeNode):
         self.mapper_family = mapper_family
         self.realm = realm
 
+    def __contains__(self, path: str) -> bool:
+        # The check for node.value <> None takes care of root paths
+        node = self.get_node_at_path(path)
+        return node is not None and node.value is not None
+
     def node_type(self):
         if self.is_leaf_node():
             assert self.value is not None

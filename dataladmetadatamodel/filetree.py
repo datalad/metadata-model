@@ -17,6 +17,11 @@ class FileTree(ConnectedObject, TreeNode):
         self.mapper_family = mapper_family
         self.realm = realm
 
+    def __contains__(self, path: str) -> bool:
+        # The check for node.value <> None takes care of root paths
+        node = self.get_node_at_path(path)
+        return node is not None and node.value is not None
+
     def add_directory(self, name):
         self.add_node(name, TreeNode())
 
@@ -46,7 +51,7 @@ class FileTree(ConnectedObject, TreeNode):
         for _, metadata_connector in self.get_paths_recursive(False):
             if metadata_connector is None:
                 metadata_connector = Connector.from_reference(
-                    Reference.get_none_reference(self.mapper_family, self.realm))
+                    Reference.get_none_reference())
             metadata_connector.save_object(self.mapper_family, self.realm, force_write)
         return Reference(
             self.mapper_family,
