@@ -13,7 +13,8 @@ class FileTree(ConnectedObject, TreeNode):
                  mapper_family: str,
                  realm: str):
 
-        super(FileTree, self).__init__()
+        ConnectedObject.__init__(self)
+        TreeNode.__init__(self)
         self.mapper_family = mapper_family
         self.realm = realm
 
@@ -23,36 +24,43 @@ class FileTree(ConnectedObject, TreeNode):
         return node is not None and node.value is not None
 
     def add_directory(self, name):
+        self.touch()
         self.add_node(name, TreeNode())
 
     def add_file(self, path):
+        self.touch()
         self.add_node_hierarchy(path, TreeNode())
 
     def add_metadata(self, path: str, metadata: Optional[Metadata] = None):
+        self.touch()
         self.add_node_hierarchy(path, TreeNode(value=Connector.from_object(metadata)))
 
     def get_metadata(self, path: str) -> Optional[Metadata]:
         return self.get_node_at_path(path).value.load_object()
 
     def set_metadata(self, path: str, metadata: Metadata):
+        self.touch()
         self.get_node_at_path(path).value.set(metadata)
 
-    def unget_metadata(self, path: str, force_write: bool = False):
+    def unget_metadata(self, path: str):
         value = self.get_node_at_path(path).value
-        value.save_object(self.mapper_family, self.realm, force_write)
+        value.save_object()
         value.purge()
 
-    def save(self, force_write: bool = False) -> Reference:
+    def save(self) -> Reference:
         """
         Persists all file node values, i.e. all mapped metadata,
         if they are mapped or modified Then save the tree itself,
         with the class mapper.
         """
+        self.un_touch()
+
         for _, metadata_connector in self.get_paths_recursive(False):
             if metadata_connector is None:
                 metadata_connector = Connector.from_reference(
                     Reference.get_none_reference())
-            metadata_connector.save_object(self.mapper_family, self.realm, force_write)
+            metadata_connector.save_object()
+
         return Reference(
             self.mapper_family,
             self.realm,
@@ -78,6 +86,8 @@ class FileTree(ConnectedObject, TreeNode):
                           author_email: str,
                           configuration: ExtractorConfiguration,
                           metadata_location: JSONObject):
+
+        self.touch()
 
         try:
             metadata = self.get_metadata(path)

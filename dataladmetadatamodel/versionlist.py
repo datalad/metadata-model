@@ -34,6 +34,8 @@ class VersionList(ConnectedObject):
                  mapper_family: str,
                  realm: str,
                  initial_set: Optional[Dict[str, VersionRecord]] = None):
+
+        super().__init__()
         self.mapper_family = mapper_family
         self.realm = realm
         self.version_set = initial_set or dict()
@@ -44,18 +46,17 @@ class VersionList(ConnectedObject):
     def _get_dst_connector(self, primary_data_version) -> Connector:
         return self._get_version_record(primary_data_version).element_connector
 
-    def save(self, force_write: bool = False) -> Reference:
+    def save(self) -> Reference:
         """
         This method persists the bottom-half of all modified
         connectors by delegating it to the ConnectorDict. Then
         it saves the properties of the VersionList and the top-half
         of the connectors with the appropriate class mapper.
         """
+        self.un_touch()
+
         for primary_data_version, version_record in self.version_set.items():
-            version_record.element_connector.save_object(
-                self.mapper_family,
-                self.realm,
-                force_write)
+            version_record.element_connector.save_object()
 
         return Reference(
             self.mapper_family,
@@ -92,23 +93,23 @@ class VersionList(ConnectedObject):
         Existing references are deleted.
         The entry is marked as dirty.
         """
+        self.touch()
+
         self.version_set[primary_data_version] = VersionRecord(
             time_stamp,
             path,
             Connector.from_object(element))
 
     def unget_versioned_element(self,
-                                primary_data_version: str,
-                                force_write: bool = False
-                                ):
+                                primary_data_version: str):
         """
         Remove a metadata record from memory. First, persist the
         current status via save_object ---which will write it to
-        the backend, if it was changed or if force_write
-        is true--- then purge it from memory.
+        the backend, if it was changed or--- then purge it
+        from memory.
         """
         dst_connector = self._get_dst_connector(primary_data_version)
-        dst_connector.save_object(self.mapper_family, self.realm, force_write)
+        dst_connector.save_object()
         dst_connector.purge()
 
     def deepcopy(self,
@@ -143,14 +144,13 @@ class TreeVersionList(VersionList):
     specific mapping, for example in the git mapper, which will
     update a reference, if mapping an TreeVersionList instance.
     """
-    def save(self, force_write: bool = False) -> Reference:
+    def save(self) -> Reference:
+
+        self.un_touch()
 
         # Save all dataset tree connectors that are mapped
         for primary_data_version, version_record in self.version_set.items():
-            version_record.element_connector.save_object(
-                self.mapper_family,
-                self.realm,
-                force_write)
+            version_record.element_connector.save_object()
 
         return Reference(
             self.mapper_family,
@@ -171,6 +171,8 @@ class TreeVersionList(VersionList):
                          dataset_tree: DatasetTree
                          ):
 
+        self.touch()
+
         return super().set_versioned_element(
             primary_data_version,
             time_stamp,
@@ -178,11 +180,9 @@ class TreeVersionList(VersionList):
             dataset_tree)
 
     def unget_dataset_tree(self,
-                           primary_data_version: str,
-                           force_write: bool = False
-                           ):
+                           primary_data_version: str):
 
-        super().unget_versioned_element(primary_data_version, force_write)
+        super().unget_versioned_element(primary_data_version)
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,

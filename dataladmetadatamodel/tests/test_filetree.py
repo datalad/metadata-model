@@ -21,7 +21,10 @@ class TestFileTree(unittest.TestCase):
             "git",
             "/tmp",
             default_paths,
-            [Metadata("git", f"/tmp/{p}") for p in default_paths])
+            [
+                Metadata("git", f"/tmp/{p}")
+                for p in default_paths
+            ])
 
         returned_entries = tuple(file_tree.get_paths_recursive())
 

@@ -13,20 +13,26 @@ class UUIDSet(ConnectedObject):
                  mapper_family: str,
                  realm: str,
                  initial_set: Optional[Dict[UUID, Connector]] = None):
+
+        super().__init__()
         self.mapper_family = mapper_family
         self.realm = realm
         self.uuid_set = ConnectorDict()
+
         if initial_set:
             self.uuid_set.update(initial_set)
 
-    def save(self, force_write: bool = False) -> Reference:
+    def save(self) -> Reference:
         """
         This method persists the bottom-half of all modified
         connectors by delegating it to the ConnectorDict. Then
         it saves the properties of the UUIDSet and the top-half
         of the connectors with the appropriate class mapper.
         """
-        self.uuid_set.save_bottom_half(self.mapper_family, self.realm, force_write)
+        self.un_touch()
+
+        self.uuid_set.save()
+
         return Reference(
             self.mapper_family,
             self.realm,
@@ -44,6 +50,7 @@ class UUIDSet(ConnectedObject):
         Existing references are deleted.
         The entry is marked as dirty.
         """
+        self.touch()
         self.uuid_set[uuid] = Connector.from_object(version_list)
 
     def get_version_list(self, uuid) -> VersionList:
@@ -53,16 +60,12 @@ class UUIDSet(ConnectedObject):
         """
         return self.uuid_set[uuid].load_object()
 
-    def unget_version_list(self, uuid, force_write: bool = False):
+    def unget_version_list(self, uuid):
         """
         Remove a version list from memory. First, persist the
-        current status, if it was changed or force_write
-        is true.
+        current status, if it was changed.
         """
-        self.uuid_set[uuid].save_object(
-            self.mapper_family,
-            self.realm,
-            force_write)
+        self.uuid_set[uuid].save_object()
         self.uuid_set[uuid].purge()
 
     def deepcopy(self,

@@ -217,6 +217,7 @@ class Metadata(ConnectedObject):
                  mapper_family: str,
                  realm: str):
 
+        super().__init__()
         self.mapper_family = mapper_family
         self.realm = realm
         self.instance_sets: Dict[str, MetadataInstanceSet] = dict()
@@ -236,6 +237,7 @@ class Metadata(ConnectedObject):
         })
 
     def save(self) -> Reference:
+        self.un_touch()
         return Reference(
             self.mapper_family,
             self.realm,
@@ -257,6 +259,8 @@ class Metadata(ConnectedObject):
                           author_email: str,
                           configuration: ExtractorConfiguration,
                           metadata_location: JSONObject):
+
+        self.touch()
 
         instance_set = self.instance_sets.get(extractor_name, MetadataInstanceSet())
         instance_set.add_metadata_instance(

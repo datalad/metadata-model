@@ -7,16 +7,18 @@ half of all its connectors
 """
 from typing import Optional
 
-from .connector import ConnectedObject as _ConnectedObject
+from .connector import ConnectedObject
 
 
-class ConnectorDict(dict, _ConnectedObject):
+class ConnectorDict(dict, ConnectedObject):
     def __init__(self):
-        super(dict, self).__init__()
+        dict.__init__(self)
+        ConnectedObject.__init__(self)
 
-    def save_bottom_half(self, family, realm, force_write: bool = False):
+    def save(self):
+        self.un_touch()
         for key, connector in self.items():
-            connector.save_object(family, realm, force_write)
+            connector.save_object()
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,

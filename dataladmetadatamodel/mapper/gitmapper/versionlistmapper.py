@@ -34,16 +34,15 @@ class VersionListGitMapper(BaseMapper):
 
     def unmap(self, obj: Any) -> str:
         from dataladmetadatamodel.versionlist import VersionList
+
         assert isinstance(obj, VersionList)
         json_object = [
             {
                 "primary_data_version": primary_data_version,
                 "time_stamp": version_record.time_stamp,
                 "path": version_record.path,
-                "dataset_tree": version_record.element_connector.save_object(
-                    "git",
-                    self.realm
-                ).to_json_obj()
+                "dataset_tree":
+                    version_record.element_connector.save_object().to_json_obj()
             }
             for primary_data_version, version_record in obj.version_set.items()
         ]

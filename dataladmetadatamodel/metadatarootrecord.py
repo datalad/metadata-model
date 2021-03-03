@@ -15,6 +15,7 @@ class MetadataRootRecord(ConnectedObject):
                  dataset_level_metadata: Connector,
                  file_tree: Connector):
 
+        super().__init__()
         self.mapper_family = mapper_family
         self.realm = realm
         self.dataset_identifier = dataset_identifier
@@ -22,14 +23,18 @@ class MetadataRootRecord(ConnectedObject):
         self.dataset_level_metadata = dataset_level_metadata
         self.file_tree = file_tree
 
-    def save(self, force_write: bool = False) -> Reference:
+    def save(self) -> Reference:
         """
         This method persists the bottom-half of all modified
         connectors by delegating it to the ConnectorDict. Then
         it saves the properties of the UUIDSet and the top-half
         of the connectors with the appropriate class mapper.
         """
-        self.save_connected_components(force_write)
+        self.un_touch()
+
+        self.file_tree.save_object()
+        self.dataset_level_metadata.save_object()
+
         return Reference(
             self.mapper_family,
             self.realm,
@@ -38,17 +43,15 @@ class MetadataRootRecord(ConnectedObject):
                 self.mapper_family,
                 "MetadataRootRecord")(self.realm).unmap(self))
 
-    def save_connected_components(self, force_write: bool = False):
-        self.file_tree.save_object(self.mapper_family, self.realm, force_write)
-        self.dataset_level_metadata.save_object(self.mapper_family, self.realm, force_write)
-
     def set_file_tree(self, file_tree: ConnectedObject):
+        self.touch()
         self.file_tree = Connector.from_object(file_tree)
 
     def get_file_tree(self):
         return self.file_tree.load_object()
 
     def set_dataset_level_metadata(self, dataset_level_metadata: ConnectedObject):
+        self.touch()
         self.dataset_level_metadata = Connector.from_object(dataset_level_metadata)
 
     def get_dataset_level_metadata(self):

@@ -133,6 +133,8 @@ class LocalGitMetadataSource(MetadataSource):
                  git_repository_path: str,
                  object_reference: str
                  ):
+
+        super().__init__()
         self.git_repository_path = git_repository_path
         self.object_reference = object_reference
         self.git_runner = GitRunner(None, self.git_repository_path)
@@ -171,6 +173,7 @@ class GitMetadataSource(MetadataSource):
                  object_reference: str
                  ):
 
+        super().__init__()
         self.git_repository_url = git_repository_url
         self.object_reference = object_reference
 
@@ -204,13 +207,9 @@ class ImmediateMetadataSource(MetadataSource):
     def __init__(self,
                  content: Union[str, bytes]
                  ):
-        self.git_repository_path = git_repository_path
-        self.content = content
 
-        self.text_object = Text("git", git_repository_path)
-            self.git_repository_path = git_repository_path
-        self.object_reference = object_reference
-        self.git_runner = GitRunner(None, self.git_repository_path)
+        super().__init__()
+        self.content = content
 
     def write_object_to(self, file_descriptor):
         self.git_runner.checked_run(

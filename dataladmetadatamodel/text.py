@@ -16,11 +16,14 @@ class Text(ConnectedObject):
                  mapper_family: str,
                  realm: str,
                  content: str):
+
+        super().__init__()
         self.mapper_family = mapper_family
         self.realm = realm
         self.content = content
 
-    def save(self, force_write: bool = False) -> Reference:
+    def save(self) -> Reference:
+        self.un_touch()
         return Reference(
             self.mapper_family,
             self.realm,

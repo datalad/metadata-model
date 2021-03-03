@@ -19,7 +19,8 @@ class DatasetTree(ConnectedObject, TreeNode):
                  mapper_family: str,
                  realm: str):
 
-        super(DatasetTree, self).__init__()
+        ConnectedObject.__init__(self)
+        TreeNode.__init__(self)
         self.mapper_family = mapper_family
         self.realm = realm
 
@@ -39,11 +40,14 @@ class DatasetTree(ConnectedObject, TreeNode):
                 return NodeType.DATASET
 
     def add_directory(self, name):
+        self.touch()
         self.add_node(name, TreeNode())
 
     def add_dataset(self,
                     path: str,
                     metadata_root_record: MetadataRootRecord):
+
+        self.touch()
 
         dataset_node = self.get_node_at_path(path)
         if dataset_node is None:
@@ -60,6 +64,8 @@ class DatasetTree(ConnectedObject, TreeNode):
 
         assert subtree.mapper_family == self.mapper_family
         assert subtree.realm == self.realm
+
+        self.touch()
 
         sub_node = TreeNode(subtree.value)
         for path, node in subtree.child_nodes.items():
@@ -78,6 +84,8 @@ class DatasetTree(ConnectedObject, TreeNode):
         if all_nodes_in_path is None:
             raise ValueError(f"no subtree at path {subtree_path}")
 
+        self.touch()
+
         _, containing_node = all_nodes_in_path[-2]
         name_to_delete, _ = all_nodes_in_path[-1]
         del containing_node.child_nodes[name_to_delete]
@@ -85,15 +93,17 @@ class DatasetTree(ConnectedObject, TreeNode):
     def get_metadata_root_record(self, path: str):
         return self.get_node_at_path(path).value
 
-    def save(self, force_write: bool = False) -> Reference:
+    def save(self) -> Reference:
         """
         Persists the dataset tree. First save connected
         components in all metadata root records, if they
         are mapped or modified. Then persist the dataset-tree
         itself, with the class mapper.
         """
+        self.un_touch()
+
         for _, file_node in self.get_paths_recursive(False):
-            file_node.value.save(force_write)
+            file_node.value.save()
 
         return Reference(
             self.mapper_family,

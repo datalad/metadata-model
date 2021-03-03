@@ -22,7 +22,7 @@ class FileTreeGitMapper(BaseMapper):
                 #  save-operation, it should probably be called in FileTree
                 #  or TreeNode, but that would require another recursive
                 #  descent.
-                child_node.value.save_object("git", self.realm)
+                child_node.value.save_object()
                 # Save connectors reference.
                 location = git_save_str(self.realm, child_node.value.reference.to_json_str())
                 dir_entries.append(("100644", "blob", location, name))

@@ -1,42 +1,57 @@
 from typing import Any, Optional
 
 from dataladmetadatamodel.mapper import get_mapper
-from dataladmetadatamodel.mapper.reference import Reference, none_class_name, none_location
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class ConnectedObject:
-    def pre_save(self, _family, _realm):
-        pass
+    def __init__(self):
+        self.modified = True
+
+    def is_modified(self) -> bool:
+        return self.modified
+
+    def touch(self):
+        self.modified = True
+
+    def un_touch(self):
+        self.modified = False
+
+    def save(self):
+        raise NotImplementedError
 
     def post_load(self, _family, _realm):
         pass
 
 
-class Connector(ConnectedObject):
+class Connector:
     def __init__(self,
                  reference: Optional[Reference],
                  obj: Optional[ConnectedObject],
-                 is_mapped: bool,
-                 is_modified: bool):
+                 is_mapped: bool):
         self.reference = reference
         self.object = obj
         self.is_mapped = is_mapped
-        self.is_modified = is_modified
 
     @classmethod
     def from_reference(cls, reference):
-        return cls(reference, None, False, False)
+        return cls(reference, None, False)
 
     @classmethod
     def from_object(cls, obj):
         if obj is None:
             return cls.from_reference(
                 Reference.get_none_reference())
-        return cls(None, obj, True, True)
+        return cls(None, obj, True)
 
     @classmethod
     def from_referenced_object(cls, reference, obj):
-        return cls(reference, obj, True, False)
+        return cls(reference, obj, True)
+
+    def is_object_modified(self) -> bool:
+        if self.is_mapped and self.object is not None:
+            return self.object.is_modified()
+        return False
 
     def load_object(self) -> Any:
         if not self.is_mapped:
@@ -50,46 +65,46 @@ class Connector(ConnectedObject):
                 self.object.post_load(
                     self.reference.mapper_family,
                     self.reference.realm)
+                self.object.un_touch()
             self.is_mapped = True
-            self.is_modified = False
         return self.object
 
-    def save_object(self, mapper_family, realm, force_write=False) -> Reference:
+    def save_object(self) -> Reference:
+        """
+        Save the connected object, if it is modified and save the
+        state of the connector itself.
+
+        Saving the connected object is delegated to the object via
+        ConnectedObject.save().
+        """
         if self.is_mapped:
-            if self.is_modified or force_write:
-                class_name = type(self.object).__name__
-                if self.object is None:
-                    self.reference = Reference.get_none_reference()
-                else:
-                    self.object.pre_save(mapper_family, realm)
-                    self.reference = Reference(
-                        mapper_family,
-                        realm,
-                        class_name,
-                        get_mapper(
-                            mapper_family,
-                            class_name
-                        )(realm).unmap(self.object)
-                    )
-                self.is_modified = False
+            if self.object is None:
+                self.reference = Reference.get_none_reference()
+            else:
+                # If there is no reference yet in this connector
+                # or if the object was modified, we have to save it.
+                # (There might be no reference here, because the object
+                # was already saved through another way.)
+                # TODO: can we cache the reference?
+                if self.reference is None or self.is_object_modified():
+                    self.reference = self.object.save()
         else:
             if self.reference is None:
                 self.reference = Reference.get_none_reference()
-                self.is_modified = False
         return self.reference
 
     def set(self, obj):
         self.object = obj
         self.reference = None
         self.is_mapped = True
-        self.is_modified = True
 
     def purge(self, unsafe: Optional[bool] = False):
-        if self.is_mapped and self.is_modified and unsafe is False:
-            raise ValueError("Cannot purge unsaved, modified object")
+        if self.is_object_modified() and unsafe is False:
+            raise ValueError(
+                f"Cannot purge unsaved, modified object of type "
+                f"{type(self.object).__name__}")
         self.object = None
         self.is_mapped = False
-        self.is_modified = False
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
@@ -119,11 +134,8 @@ class Connector(ConnectedObject):
         if purge_original:
             self.purge()
 
-        new_mapper_family = new_mapper_family or self.reference.mapper_family
-        new_realm = new_realm or self.reference.realm
-
         copied_connector = Connector.from_object(copied_object)
-        copied_connector.save_object(new_mapper_family, new_realm)
+        copied_connector.save_object()
         copied_connector.purge()
 
         return copied_connector
@@ -134,13 +146,11 @@ class Connector(ConnectedObject):
     def __repr__(self):
         return (
             f"Connector(reference={repr(self.reference)}, "
-            f"object={repr(self.object)}, is_mapped={repr(self.is_mapped)}, "
-            f"is_modified={self.is_modified})")
+            f"object={repr(self.object)}, is_mapped={repr(self.is_mapped)})")
 
     def __eq__(self, other):
         return (
             type(self) == type(other)
             and self.reference == other.reference
             and self.object == other.object
-            and self.is_mapped == other.is_mapped
-            and self.is_modified == other.is_modified)
+            and self.is_mapped == other.is_mapped)
