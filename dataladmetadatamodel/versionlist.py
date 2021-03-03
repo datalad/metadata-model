@@ -8,7 +8,7 @@ from .metadatarootrecord import MetadataRootRecord
 from .mapper.reference import Reference
 
 
-class VersionRecord():
+class VersionRecord:
     def __init__(self,
                  time_stamp: str,
                  path: Optional[str],
@@ -45,6 +45,17 @@ class VersionList(ConnectedObject):
 
     def _get_dst_connector(self, primary_data_version) -> Connector:
         return self._get_version_record(primary_data_version).element_connector
+
+    def is_modified(self) -> bool:
+        return (
+            super().is_modified()
+            or any(
+                map(
+                    lambda vr: vr.element_connector.is_object_modified(),
+                    self.version_set.values()
+                )
+            )
+        )
 
     def save(self) -> Reference:
         """

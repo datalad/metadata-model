@@ -86,7 +86,7 @@ class Connector:
                 # (There might be no reference here, because the object
                 # was already saved through another way.)
                 # TODO: can we cache the reference?
-                if self.reference is None or self.is_object_modified():
+                if True:   # FIXME: check for modifications self.reference is None or self.is_object_modified():
                     self.reference = self.object.save()
         else:
             if self.reference is None:
