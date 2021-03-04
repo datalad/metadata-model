@@ -44,8 +44,6 @@ def flush_object_references(realm: str):
             ]
         except RuntimeError:
             existing_tree_entries = []
-        finally:
-            unlock_backend(realm)
 
         existing_tree_entries.extend(cached_tree_entries)
         tree_hash = git_save_tree(realm, existing_tree_entries)
