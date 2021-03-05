@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Iterable, Optional, Tuple, Union
 
 from . import join_paths
 from .connector import ConnectedObject, Connector
@@ -77,7 +77,7 @@ class VersionList(ConnectedObject):
                 self.mapper_family,
                 "VersionList")(self.realm).unmap(self))
 
-    def versions(self):
+    def versions(self) -> Iterable:
         return self.version_set.keys()
 
     def get_versioned_element(self,
