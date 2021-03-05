@@ -16,8 +16,19 @@ def join_paths(first: str, second: str) -> str:
 
 
 def sanitize_path(path: str) -> str:
-    """ remove leading and trailing "/", and collapse repeated "/" """
+    """
+    Remove leading "./", leading and trailing "/",
+    and collapse repeated "/"
+    """
+
+    # Remove leading "./"
+    while path.startswith("./"):
+        path = path[2:]
+
+    # Remove leading and trailing "/"
     path = path.lstrip("/").rstrip("/")
+
+    # Collapse repeated "/"
     while path.find("//") >= 0:
         path = path.replace("//", "/")
     return path
