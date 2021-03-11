@@ -52,7 +52,9 @@ class VersionListGitMapper(BaseMapper):
 class TreeVersionListGitMapper(VersionListGitMapper):
     def map(self, ref: Reference) -> Any:
         from dataladmetadatamodel.connector import Connector
-        from dataladmetadatamodel.versionlist import VersionRecord, TreeVersionList
+        from dataladmetadatamodel.versionlist import (
+            TreeVersionList,
+            VersionRecord)
         assert isinstance(ref, Reference)
         assert ref.mapper_family == "git"
 
@@ -73,5 +75,6 @@ class TreeVersionListGitMapper(VersionListGitMapper):
         # Import in method to prevent recursive imports
 
         location = super().unmap(obj)
-        git_update_ref(self.realm, GitReference.TREE_VERSION_LIST.value, location)
+        git_update_ref(
+            self.realm, GitReference.TREE_VERSION_LIST.value, location)
         return GitReference.TREE_VERSION_LIST.value

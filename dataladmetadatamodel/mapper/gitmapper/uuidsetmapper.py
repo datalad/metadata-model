@@ -33,7 +33,12 @@ class UUIDSetGitMapper(BaseMapper):
         assert isinstance(uuid_set, UUIDSet)
 
         top_half = [
-            ("100644", "blob", version_list_connector.reference.location, str(uuid))
+            (
+                "100644",
+                "blob",
+                version_list_connector.reference.location,
+                str(uuid)
+            )
             for uuid, version_list_connector in uuid_set.uuid_set.items()
         ]
         if not top_half:

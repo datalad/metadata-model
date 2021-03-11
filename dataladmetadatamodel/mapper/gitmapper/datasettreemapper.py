@@ -19,7 +19,8 @@ class DatasetTreeGitMapper(BaseMapper):
         dir_entries = []
 
         if node.value is not None:
-            from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+            from dataladmetadatamodel.metadatarootrecord import \
+                MetadataRootRecord
 
             assert isinstance(node.value, MetadataRootRecord)
             location = self._unmap_metadata_root_record(node.value)
@@ -31,7 +32,8 @@ class DatasetTreeGitMapper(BaseMapper):
                 ("040000", "tree", self._save_dataset_tree(child_node), name))
         return git_save_tree(self.realm, dir_entries)
 
-    def _map_metadata_root_record(self, location: str) -> "MetadataRootRecord":
+    def _map_metadata_root_record(self,
+                                  location: str) -> "MetadataRootRecord":
         return MetadataRootRecordGitMapper(self.realm).map(
             Reference("git", self.realm, "MetadataRootRecord", location)
         )
