@@ -61,7 +61,8 @@ class Connector:
             else:
                 self.object = get_mapper(
                     self.reference.mapper_family,
-                    self.reference.class_name)(self.reference.realm).map(self.reference)
+                    self.reference.class_name)(self.reference.realm).map(
+                        self.reference)
                 self.object.post_load(
                     self.reference.mapper_family,
                     self.reference.realm)
@@ -86,7 +87,9 @@ class Connector:
                 # (There might be no reference here, because the object
                 # was already saved through another way.)
                 # TODO: can we cache the reference?
-                if True:   # FIXME: check for modifications self.reference is None or self.is_object_modified():
+                if True:
+                    # FIXME: check for modifications self.reference is None or
+                    #  self.is_object_modified():
                     self.reference = self.object.save()
         else:
             if self.reference is None:

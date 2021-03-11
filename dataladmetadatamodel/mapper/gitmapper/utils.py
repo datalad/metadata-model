@@ -27,27 +27,6 @@ class LockState:
     lock: InterProcessLock
 
 
-def _get_lock_file(realm: str) -> float:
-
-    lock_time = time.time()
-    while True:
-        try:
-            lock_file = open(os.path.join(realm, GIT_MAPPER_LOCK_FILE_NAME, "wx"))
-            break
-        except FileExistsError:
-            time.sleep(.1)
-    lock_time = time.time() - lock_time
-
-    lock_file.write(str(PID) + "\n")
-    lock_file.flush()
-    lock_file.close()
-    return lock_time
-
-
-def _remove_lock_file(realm: str):
-    os.unlink(os.path.join(realm, GIT_MAPPER_LOCK_FILE_NAME))
-
-
 def _get_lock_state(lock_dict: dict, realm: str) -> LockState:
     if realm not in lock_dict:
         lock_dict[realm] = LockState(

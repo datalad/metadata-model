@@ -29,12 +29,10 @@ class MetadataRootRecordGitMapper(BaseMapper):
             UUID(json_object[Strings.DATASET_IDENTIFIER]),
             json_object[Strings.DATASET_VERSION],
             Connector.from_reference(
-                Reference.from_json_obj(json_object[Strings.DATASET_LEVEL_METADATA])
-            ),
+                Reference.from_json_obj(
+                    json_object[Strings.DATASET_LEVEL_METADATA])),
             Connector.from_reference(
-                Reference.from_json_obj(json_object[Strings.FILE_TREE])
-            )
-        )
+                Reference.from_json_obj(json_object[Strings.FILE_TREE])))
 
     def unmap(self, obj) -> str:
         from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord

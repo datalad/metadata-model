@@ -12,7 +12,8 @@ DATALAD_ROOT_RECORD_NAME = ".datalad_metadata_root_record"
 class DatasetTreeGitMapper(BaseMapper):
 
     def _unmap_metadata_root_record(self, metadata_root_record) -> str:
-        return MetadataRootRecordGitMapper(self.realm).unmap(metadata_root_record)
+        return MetadataRootRecordGitMapper(self.realm).unmap(
+            metadata_root_record)
 
     def _save_dataset_tree(self, node: "TreeNode") -> str:
         dir_entries = []

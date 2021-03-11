@@ -1,6 +1,10 @@
 
 from .objectreference import GitReference, add_tree_reference
-from .gitbackend.subprocess import git_load_str, git_ls_tree_recursive, git_save_str, git_save_tree
+from .gitbackend.subprocess import (
+    git_load_str,
+    git_ls_tree_recursive,
+    git_save_str,
+    git_save_tree)
 from ..basemapper import BaseMapper
 from ..reference import Reference
 
@@ -24,10 +28,16 @@ class FileTreeGitMapper(BaseMapper):
                 #  descent.
                 child_node.value.save_object()
                 # Save connectors reference.
-                location = git_save_str(self.realm, child_node.value.reference.to_json_str())
+                location = git_save_str(
+                    self.realm,
+                    child_node.value.reference.to_json_str())
                 dir_entries.append(("100644", "blob", location, name))
             else:
-                dir_entries.append(("040000", "tree", self._save_file_tree(child_node), name))
+                dir_entries.append((
+                    "040000",
+                    "tree",
+                    self._save_file_tree(child_node), name))
+
         if dir_entries:
             return git_save_tree(self.realm, dir_entries)
         else:
