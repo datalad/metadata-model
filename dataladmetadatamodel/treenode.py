@@ -16,6 +16,7 @@ class TreeNode:
         return len(self.child_nodes) == 0
 
     def add_node(self, name: str, new_node: "TreeNode"):
+        assert name != "."
         self.add_nodes([(name, new_node)])
 
     def add_nodes(self,

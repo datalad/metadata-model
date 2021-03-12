@@ -1,7 +1,12 @@
+import logging
+
 from typing import Dict, List, Union
 
 
 JSONObject = Union[int, float, str, List["JSONObject"], Dict[str, "JSONObject"]]
+
+
+logger = logging.getLogger("datalad.metadata.model")
 
 
 def join_paths(first: str, second: str) -> str:
@@ -17,12 +22,17 @@ def join_paths(first: str, second: str) -> str:
 
 def sanitize_path(path: str) -> str:
     """
+    Replace "." with ""
     Remove leading "./", leading and trailing "/",
     and collapse repeated "/"
     """
+    if path == ".":
+        logger.warning("Converting path '.' to ''")
+        return ""
 
     # Remove leading "./"
     while path.startswith("./"):
+        logger.warning(f"Removing leading './' from path {path}")
         path = path[2:]
 
     # Remove leading and trailing "/"
