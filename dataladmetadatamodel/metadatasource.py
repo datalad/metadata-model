@@ -20,7 +20,6 @@ import tempfile
 from typing import Any, List, Optional, Union
 
 from . import JSONObject
-from .text import Text
 
 
 TempRepositoryObject = tempfile.TemporaryDirectory()
@@ -178,7 +177,8 @@ class GitMetadataSource(MetadataSource):
         self.object_reference = object_reference
 
     def write_object_to(self, file_descriptor):
-        # Fetch object into the temporary store
+        # Write an object to a file descripor, usually
+        # the file descriptor will be a temporary store
         raise NotImplementedError
 
         # Write the object from the local store

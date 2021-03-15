@@ -5,14 +5,28 @@ from uuid import UUID
 
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
+from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 from .utils import assert_dataset_trees_equal, create_dataset_tree
 
 
-file_test_paths = ["", "a/b/c", "a/b/a", "b", "c/d/e", "a/x"]
-dataset_test_paths = ["", "d1", "d1/d1.1", "d2", "d2/d2.1/d2.1.1", "d3/d3.1"]
+file_test_paths = [
+    MetadataPath(""),
+    MetadataPath("a/b/c"),
+    MetadataPath("a/b/a"),
+    MetadataPath("b"),
+    MetadataPath("c/d/e"),
+    MetadataPath("a/x")]
+
+dataset_test_paths = [
+    MetadataPath(""),
+    MetadataPath("d1"),
+    MetadataPath("d1/d1.1"),
+    MetadataPath("d2"),
+    MetadataPath("d2/d2.1/d2.1.1"),
+    MetadataPath("d3/d3.1")]
 
 
 uuid_0 = UUID("00000000000000000000000000000000")
@@ -21,7 +35,11 @@ uuid_0 = UUID("00000000000000000000000000000000")
 class TestDatasetTree(unittest.TestCase):
     def test_add_metadata(self):
 
-        paths = ["a/b/c", "a/b/a", "b", "c/d/e"]
+        paths = [
+            MetadataPath("a/b/c"),
+            MetadataPath("a/b/a"),
+            MetadataPath("b"),
+            MetadataPath("c/d/e")]
 
         dataset_tree = DatasetTree("git", "/tmp")
         mrr = MetadataRootRecord(
@@ -47,13 +65,13 @@ class TestDatasetTree(unittest.TestCase):
             Connector.from_object(None),
             Connector.from_object(None)
         )
-        dataset_tree.add_dataset("", mrr)
+        dataset_tree.add_dataset(MetadataPath(""), mrr)
         self.assertEqual(dataset_tree.value, mrr)
 
         returned_entries = tuple(dataset_tree.get_dataset_paths())
         self.assertEqual(len(returned_entries), 1)
 
-        self.assertEqual(returned_entries[0][0], "")
+        self.assertEqual(returned_entries[0][0], MetadataPath(""))
         self.assertEqual(returned_entries[0][1], mrr)
 
 
@@ -125,18 +143,18 @@ class TestSubTreeManipulation(unittest.TestCase):
         mrr_2 = self.get_mrr("memory", "")
 
         tree = DatasetTree("memory", "")
-        tree.add_dataset("a/b/c", mrr_1)
+        tree.add_dataset(MetadataPath("a/b/c"), mrr_1)
 
         subtree = DatasetTree("memory", "")
-        subtree.add_dataset("d/e/f", mrr_2)
+        subtree.add_dataset(MetadataPath("d/e/f"), mrr_2)
 
-        tree.add_subtree(subtree, "a/x")
+        tree.add_subtree(subtree, MetadataPath("a/x"))
 
-        node = tree.get_node_at_path("a/b/c")
+        node = tree.get_node_at_path(MetadataPath("a/b/c"))
         self.assertIsNotNone(node)
         self.assertEqual(node.value, mrr_1)
 
-        node = tree.get_node_at_path("a/x/d/e/f")
+        node = tree.get_node_at_path(MetadataPath("a/x/d/e/f"))
         self.assertIsNotNone(node)
         self.assertEqual(node.value, mrr_2)
 
@@ -145,52 +163,52 @@ class TestSubTreeManipulation(unittest.TestCase):
         mrr_2 = self.get_mrr("memory", "")
 
         tree = DatasetTree("memory", "")
-        tree.add_dataset("a/b/c", mrr_1)
+        tree.add_dataset(MetadataPath("a/b/c"), mrr_1)
 
         subtree = DatasetTree("memory", "")
-        subtree.add_dataset("e/f", mrr_2)
+        subtree.add_dataset(MetadataPath("e/f"), mrr_2)
 
-        tree.add_subtree(subtree, "a/b/c/d")
+        tree.add_subtree(subtree, MetadataPath("a/b/c/d"))
 
-        node = tree.get_node_at_path("a/b/c")
+        node = tree.get_node_at_path(MetadataPath("a/b/c"))
         self.assertIsNotNone(node)
         self.assertEqual(node.value, mrr_1)
 
-        node = tree.get_node_at_path("a/b/c/d/e/f")
+        node = tree.get_node_at_path(MetadataPath("a/b/c/d/e/f"))
         self.assertIsNotNone(node)
         self.assertEqual(node.value, mrr_2)
 
     def test_subtree_adding_on_existing_path(self):
         tree = DatasetTree("memory", "")
-        tree.add_dataset("a/b/c/d", self.get_mrr("memory", ""))
+        tree.add_dataset(MetadataPath("a/b/c/d"), self.get_mrr("memory", ""))
 
         subtree = DatasetTree("memory", "")
-        subtree.add_dataset("e/f", self.get_mrr("memory", ""))
+        subtree.add_dataset(MetadataPath("e/f"), self.get_mrr("memory", ""))
 
         self.assertRaises(
             ValueError,
             tree.add_subtree,
-            subtree, "a/b/c/d")
+            subtree, MetadataPath("a/b/c/d"))
 
     def test_subtree_deletion(self):
         mrr_1 = self.get_mrr("memory", "")
         mrr_2 = self.get_mrr("memory", "")
 
         tree = DatasetTree("memory", "")
-        tree.add_dataset("a/b/c", mrr_1)
-        tree.add_dataset("a/b/c/d/e/f", mrr_2)
+        tree.add_dataset(MetadataPath("a/b/c"), mrr_1)
+        tree.add_dataset(MetadataPath("a/b/c/d/e/f"), mrr_2)
 
-        self.assertIsNotNone(tree.get_node_at_path("a/b/c/d/e/f"))
-        tree.delete_subtree("a/b/c/d/e/f")
-        self.assertIsNone(tree.get_node_at_path("a/b/c/d/e/f"))
-        self.assertIsNotNone(tree.get_node_at_path("a/b/c/d/e"))
+        self.assertIsNotNone(tree.get_node_at_path(MetadataPath("a/b/c/d/e/f")))
+        tree.delete_subtree(MetadataPath("a/b/c/d/e/f"))
+        self.assertIsNone(tree.get_node_at_path(MetadataPath("a/b/c/d/e/f")))
+        self.assertIsNotNone(tree.get_node_at_path(MetadataPath("a/b/c/d/e")))
 
-        self.assertIsNotNone(tree.get_node_at_path("a/b/c/d/e"))
-        tree.delete_subtree("a/b/c")
-        self.assertIsNotNone(tree.get_node_at_path("a/b"))
-        self.assertIsNone(tree.get_node_at_path("a/b/c"))
-        self.assertIsNone(tree.get_node_at_path("a/b/c/d"))
-        self.assertIsNone(tree.get_node_at_path("a/b/c/d/e"))
+        self.assertIsNotNone(tree.get_node_at_path(MetadataPath("a/b/c/d/e")))
+        tree.delete_subtree(MetadataPath("a/b/c"))
+        self.assertIsNotNone(tree.get_node_at_path(MetadataPath("a/b")))
+        self.assertIsNone(tree.get_node_at_path(MetadataPath("a/b/c")))
+        self.assertIsNone(tree.get_node_at_path(MetadataPath("a/b/c/d")))
+        self.assertIsNone(tree.get_node_at_path(MetadataPath("a/b/c/d/e")))
 
 
 if __name__ == '__main__':

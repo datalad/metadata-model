@@ -10,10 +10,10 @@ class MetadataPath(PurePosixPath):
         original_path = PurePosixPath(*args)
         if not original_path.is_absolute():
             return super().__new__(cls, *args)
-        created_path = super().__new__(cls, ("/".join(original_path.parts[1:])))
+        created_path = super().__new__(cls, "/".join(original_path.parts[1:]))
         logger.warning(
-            f"Denied creation of the absolute metadata path: {original_path}, "
-            f"creating {created_path} instead. This is considered an error "
+            f"Denied creation of absolute metadata path: {original_path}, "
+            f"created {created_path} instead. This is considered an error "
             f"in the calling code.")
         return created_path
 

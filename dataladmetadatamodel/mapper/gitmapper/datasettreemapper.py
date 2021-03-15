@@ -40,6 +40,7 @@ class DatasetTreeGitMapper(BaseMapper):
 
     def map(self, ref: Reference) -> "DatasetTree":
         from dataladmetadatamodel.datasettree import DatasetTree
+        from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.treenode import TreeNode
 
         dataset_tree = DatasetTree("git", self.realm)
@@ -50,14 +51,13 @@ class DatasetTreeGitMapper(BaseMapper):
         # add it as value to the hierarchy.
         for line in git_ls_tree_recursive(self.realm, ref.location):
 
-            _, _, location, path = line.split()
-            path_element = path.split("/")
-            assert path_element[-1] == DATALAD_ROOT_RECORD_NAME
+            _, _, location, path_string = line.split()
+            path = MetadataPath(path_string)
+            assert path.name == DATALAD_ROOT_RECORD_NAME
             metadata_root_record = self._map_metadata_root_record(location)
 
-            dataset_path = "/".join(path_element[:-1])
             dataset_tree.add_node_hierarchy(
-                dataset_path,
+                MetadataPath(*path.parts[:-1]),
                 TreeNode(metadata_root_record),
                 allow_leaf_node_conversion=True
             )

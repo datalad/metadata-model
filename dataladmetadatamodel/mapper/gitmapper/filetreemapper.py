@@ -46,6 +46,7 @@ class FileTreeGitMapper(BaseMapper):
     def map(self, ref: Reference) -> "FileTree":
         from dataladmetadatamodel.connector import Connector
         from dataladmetadatamodel.filetree import FileTree
+        from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.treenode import TreeNode
 
         file_tree = FileTree("git", self.realm)
@@ -55,7 +56,9 @@ class FileTreeGitMapper(BaseMapper):
                 connector = Connector.from_reference(
                     Reference.from_json_str(
                         git_load_str(self.realm, location)))
-                file_tree.add_node_hierarchy(path, TreeNode(connector))
+                file_tree.add_node_hierarchy(
+                    MetadataPath(path),
+                    TreeNode(connector))
         return file_tree
 
     def unmap(self, obj) -> str:

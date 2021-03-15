@@ -5,12 +5,21 @@ import unittest
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
-from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
+from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.mapper.gitmapper.objectreference import (
+    flush_object_references
+)
 
 from .utils import assert_file_trees_equal, create_file_tree_with_metadata
 
 
-default_paths = ["a/b/c", "a/b/a", "b", "c/d/e", "a/x"]
+default_paths = [
+    MetadataPath("a/b/c"),
+    MetadataPath("a/b/a"),
+    MetadataPath("b"),
+    MetadataPath("c/d/e"),
+    MetadataPath("a/x")
+]
 
 
 class TestFileTree(unittest.TestCase):
@@ -35,19 +44,21 @@ class TestFileTree(unittest.TestCase):
                 (entry[0], entry[1].object)
                 for entry in returned_entries]:
 
-            self.assertEqual(returned_metadata, Metadata("git", f"/tmp/{returned_path}"))
+            self.assertEqual(
+                returned_metadata,
+                Metadata("git", f"/tmp/{returned_path}"))
 
     def test_root_node(self):
         file_tree = FileTree("git", "/tmp")
         metadata_node = Metadata("git", "/tmp")
-        file_tree.add_metadata("", metadata_node)
+        file_tree.add_metadata(MetadataPath(""), metadata_node)
 
         expected_connector = Connector.from_object(metadata_node)
         self.assertEqual(file_tree.value, expected_connector)
         returned_entries = tuple(file_tree.get_paths_recursive())
 
         self.assertEqual(len(returned_entries), 1)
-        self.assertEqual(returned_entries[0][0], "")
+        self.assertEqual(returned_entries[0][0], MetadataPath(""))
         self.assertEqual(returned_entries[0][1], expected_connector)
 
 
@@ -61,12 +72,19 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
 
-
             file_tree = FileTree("git", original_dir)
-            file_tree.add_metadata("", Metadata("git", original_dir))
-            file_tree.add_metadata("/a/b/c/d", Metadata("git", original_dir))
-            file_tree.add_metadata("/a/b/d", Metadata("git", original_dir))
-            file_tree.add_metadata("/a/x", Metadata("git", original_dir))
+            file_tree.add_metadata(
+                MetadataPath(""),
+                Metadata("git", original_dir))
+            file_tree.add_metadata(
+                MetadataPath("/a/b/c/d"),
+                Metadata("git", original_dir))
+            file_tree.add_metadata(
+                MetadataPath("/a/b/d"),
+                Metadata("git", original_dir))
+            file_tree.add_metadata(
+                MetadataPath("/a/x"),
+                Metadata("git", original_dir))
 
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
 
@@ -80,7 +98,12 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
 
-            paths = ["", "a/b/c/d", "a/b/d", "a/x"]
+            paths = [
+                MetadataPath(""),
+                MetadataPath("a/b/c/d"),
+                MetadataPath("a/b/d"),
+                MetadataPath("a/x")]
+
             file_tree = FileTree("git", original_dir)
             for path in paths:
                 file_tree.add_metadata(path, Metadata("git", original_dir))

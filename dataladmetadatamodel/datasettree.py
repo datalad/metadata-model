@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 
 from .connector import ConnectedObject
 from .mapper import get_mapper
+from .metadatapath import MetadataPath
 from .metadatarootrecord import MetadataRootRecord
 from .treenode import TreeNode
 from .mapper.reference import Reference
@@ -24,7 +25,7 @@ class DatasetTree(ConnectedObject, TreeNode):
         self.mapper_family = mapper_family
         self.realm = realm
 
-    def __contains__(self, path: str) -> bool:
+    def __contains__(self, path: MetadataPath) -> bool:
         # The check for node.value <> None takes care of root paths
         node = self.get_node_at_path(path)
         return node is not None and node.value is not None
@@ -41,10 +42,10 @@ class DatasetTree(ConnectedObject, TreeNode):
 
     def add_directory(self, name):
         self.touch()
-        self.add_node(name, TreeNode())
+        self._add_node(name, TreeNode())
 
     def add_dataset(self,
-                    path: str,
+                    path: MetadataPath,
                     metadata_root_record: MetadataRootRecord):
 
         self.touch()
@@ -60,7 +61,7 @@ class DatasetTree(ConnectedObject, TreeNode):
 
     def add_subtree(self,
                     subtree: "DatasetTree",
-                    subtree_path: str):
+                    subtree_path: MetadataPath):
 
         assert subtree.mapper_family == self.mapper_family
         assert subtree.realm == self.realm
@@ -69,7 +70,7 @@ class DatasetTree(ConnectedObject, TreeNode):
 
         sub_node = TreeNode(subtree.value)
         for path, node in subtree.child_nodes.items():
-            sub_node.add_node(path, node)
+            sub_node._add_node(path, node)
 
         self.add_node_hierarchy(
             subtree_path,
@@ -77,7 +78,7 @@ class DatasetTree(ConnectedObject, TreeNode):
             allow_leaf_node_conversion=True)
 
     def delete_subtree(self,
-                       subtree_path: str):
+                       subtree_path: MetadataPath):
         if subtree_path == "":
             raise ValueError("cannot delete root tree node")
         all_nodes_in_path = self.get_all_nodes_in_path(subtree_path)
@@ -90,7 +91,7 @@ class DatasetTree(ConnectedObject, TreeNode):
         name_to_delete, _ = all_nodes_in_path[-1]
         del containing_node.child_nodes[name_to_delete]
 
-    def get_metadata_root_record(self, path: str):
+    def get_metadata_root_record(self, path: MetadataPath):
         return self.get_node_at_path(path).value
 
     def save(self) -> Reference:
@@ -113,7 +114,11 @@ class DatasetTree(ConnectedObject, TreeNode):
                 self.mapper_family,
                 "DatasetTree")(self.realm).unmap(self))
 
-    def get_dataset_paths(self) -> List[Tuple[str, MetadataRootRecord]]:
+    def get_dataset_paths(self) -> List[
+                                       Tuple[
+                                           MetadataPath,
+                                           MetadataRootRecord
+                                       ]]:
         return [
             (name, node.value)
             for name, node in self.get_paths_recursive(True)

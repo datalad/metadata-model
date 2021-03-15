@@ -1,9 +1,10 @@
-from typing import Generator, Optional, Tuple
+from typing import Iterable, Optional, Tuple
 
 from . import JSONObject
 from .connector import ConnectedObject, Connector
 from .mapper import get_mapper
 from .metadata import ExtractorConfiguration, Metadata
+from .metadatapath import MetadataPath
 from .treenode import TreeNode
 from .mapper.reference import Reference
 
@@ -18,31 +19,35 @@ class FileTree(ConnectedObject, TreeNode):
         self.mapper_family = mapper_family
         self.realm = realm
 
-    def __contains__(self, path: str) -> bool:
+    def __contains__(self, path: MetadataPath) -> bool:
         # The check for node.value <> None takes care of root paths
         node = self.get_node_at_path(path)
         return node is not None and node.value is not None
 
     def add_directory(self, name):
         self.touch()
-        self.add_node(name, TreeNode())
+        self._add_node(name, TreeNode())
 
     def add_file(self, path):
         self.touch()
         self.add_node_hierarchy(path, TreeNode())
 
-    def add_metadata(self, path: str, metadata: Optional[Metadata] = None):
+    def add_metadata(self,
+                     path: MetadataPath,
+                     metadata: Optional[Metadata] = None):
         self.touch()
-        self.add_node_hierarchy(path, TreeNode(value=Connector.from_object(metadata)))
+        self.add_node_hierarchy(
+            path,
+            TreeNode(value=Connector.from_object(metadata)))
 
-    def get_metadata(self, path: str) -> Optional[Metadata]:
+    def get_metadata(self, path: MetadataPath) -> Optional[Metadata]:
         return self.get_node_at_path(path).value.load_object()
 
-    def set_metadata(self, path: str, metadata: Metadata):
+    def set_metadata(self, path: MetadataPath, metadata: Metadata):
         self.touch()
         self.get_node_at_path(path).value.set(metadata)
 
-    def unget_metadata(self, path: str):
+    def unget_metadata(self, path: MetadataPath):
         value = self.get_node_at_path(path).value
         value.save_object()
         value.purge()
@@ -71,7 +76,7 @@ class FileTree(ConnectedObject, TreeNode):
 
     def get_paths_recursive(self,
                             show_intermediate: Optional[bool] = False
-                            ) -> Generator[Tuple[str, Connector], None, None]:
+                            ) -> Iterable[Tuple[MetadataPath, Connector]]:
 
         for name, tree_node in super().get_paths_recursive(show_intermediate):
             yield name, tree_node.value
@@ -122,7 +127,8 @@ class FileTree(ConnectedObject, TreeNode):
 
             copied_file_tree.add_node_hierarchy(
                 path,
-                TreeNode(value=copied_connector),
+                TreeNode(
+                    value=copied_connector),
                 allow_leaf_node_conversion=True)
 
         return copied_file_tree
