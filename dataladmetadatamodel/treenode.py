@@ -87,6 +87,7 @@ class TreeNode:
                                  Tuple[
                                      MetadataPath,
                                      "TreeNode"]]):
+
         for path_node_tuple in new_node_hierarchies:
             self.add_node_hierarchy(*path_node_tuple)
 
