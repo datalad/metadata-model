@@ -1,4 +1,8 @@
 from typing import Dict, List, Union
 
 
-JSONObject = Union[int, float, str, List["JSONObject"], Dict[str, "JSONObject"]]
+JSONObject = Union[
+    None, bool, int, float, str,
+    List["JSONObject"],
+    Dict[str, "JSONObject"]
+]

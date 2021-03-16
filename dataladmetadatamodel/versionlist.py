@@ -1,6 +1,5 @@
 from typing import Dict, Iterable, Optional, Tuple, Union
 
-from . import JSONObject
 from .connector import ConnectedObject, Connector
 from .datasettree import DatasetTree
 from .mapper import get_mapper
@@ -54,10 +53,7 @@ class VersionList(ConnectedObject):
             or any(
                 map(
                     lambda vr: vr.element_connector.is_object_modified(),
-                    self.version_set.values()
-                )
-            )
-        )
+                    self.version_set.values())))
 
     def save(self) -> Reference:
         """
@@ -84,7 +80,8 @@ class VersionList(ConnectedObject):
 
     def get_versioned_element(self,
                               primary_data_version: str
-                              ) -> Tuple[str, str, Union[DatasetTree, MetadataRootRecord]]:
+                              ) -> Tuple[str, MetadataPath, Union[DatasetTree, MetadataRootRecord]]:
+
         """
         Get the dataset tree or metadata root record,
         its timestamp and path for the given version.
@@ -174,7 +171,10 @@ class TreeVersionList(VersionList):
                 self.mapper_family,
                 "TreeVersionList")(self.realm).unmap(self))
 
-    def get_dataset_tree(self, primary_data_version: str) -> Tuple[str, DatasetTree]:
+    def get_dataset_tree(self,
+                         primary_data_version: str
+                         ) -> Tuple[str, DatasetTree]:
+
         time_stamp, _, dataset_tree = super().get_versioned_element(
             primary_data_version)
         return time_stamp, dataset_tree

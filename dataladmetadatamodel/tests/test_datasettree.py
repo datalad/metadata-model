@@ -74,6 +74,27 @@ class TestDatasetTree(unittest.TestCase):
         self.assertEqual(returned_entries[0][0], MetadataPath(""))
         self.assertEqual(returned_entries[0][1], mrr)
 
+    def test_all_nodes_in_path(self):
+        # Ensure that get_all_nodes_in_path returns
+        # all nodes, and that they are in correct order
+        dataset_tree = DatasetTree("git", "/tmp")
+        mrr = MetadataRootRecord(
+            "git", "/tmp", uuid_0, "00112233",
+            Connector.from_object(None),
+            Connector.from_object(None)
+        )
+        for path in dataset_test_paths:
+            dataset_tree.add_dataset(path, mrr)
+
+        for path in dataset_test_paths:
+            all_nodes = list(dataset_tree.get_all_nodes_in_path(path))
+            self.assertEqual(all_nodes[0][0], "")
+            del all_nodes[0]
+            if all_nodes:
+                all_names = tuple(map(lambda nn: nn[0], all_nodes))
+                print(all_names)
+                self.assertEqual(all_names, path.parts)
+
 
 class TestDeepCopy(unittest.TestCase):
 

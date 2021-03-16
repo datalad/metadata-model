@@ -6,6 +6,7 @@ from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
+from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
 
@@ -152,7 +153,7 @@ def assert_mrrs_equal(test_case: unittest.TestCase,
 
 def create_file_tree(backend: str,
                      realm: str,
-                     paths: List[str],
+                     paths: List[MetadataPath],
                      ) -> FileTree:
 
     file_tree = FileTree(backend, realm)
@@ -165,7 +166,7 @@ def create_file_tree(backend: str,
 
 def create_file_tree_with_metadata(backend: str,
                                    realm: str,
-                                   paths: List[str],
+                                   paths: List[MetadataPath],
                                    metadata: List[Metadata]
                                    ) -> FileTree:
 
@@ -180,8 +181,8 @@ def create_file_tree_with_metadata(backend: str,
 
 def create_dataset_tree(backend: str,
                         realm: str,
-                        dataset_paths: List[str],
-                        file_tree_paths: List[str],
+                        dataset_paths: List[MetadataPath],
+                        file_tree_paths: List[MetadataPath],
                         ) -> DatasetTree:
 
     dataset_tree = DatasetTree(backend, realm)
