@@ -3,120 +3,42 @@ A representation of metadata sources.
 
 A MetadataSource objects makes the underlying
 storage system visible. E.g. a MetadataSource
-object for git-stored metadata, bring the
+object for git-stored metadata, supports the
 implementation to read, write, and copy
 this data from, to, and between git
 repositories. (This is in contrast to
 the metadata model classes, that never
-deal with a backend, e.g. a git-repository,
+deals with a backend, e.g. a git-repository,
 for their persistence, instead they are
 mapped by mappers onto a specific backend.)
 """
 import abc
-import enum
 import json
+import logging
 import subprocess
-import tempfile
-from typing import Any, List, Optional, Union
+from copy import deepcopy
+from pathlib import Path
+from typing import IO, Optional
 
 from . import JSONObject
 
 
-TempRepositoryObject = tempfile.TemporaryDirectory()
-TempRepository = TempRepositoryObject.name
-subprocess.run(["git", "init", TempRepository])
-
-
-class GitRunner:
-    def __init__(self,
-                 remote_repository_url: Optional[str],
-                 local_repository_path: Optional[str]
-                 ):
-        self.remote_repository_url = remote_repository_url
-        self.local_repository_path = local_repository_path
-
-    def _assemble_command_line(self,
-                               command: str,
-                               arguments: List[str]
-                               ) -> List[str]:
-        return [
-            "git", "-P", "--git-dir",
-            self.local_repository_path + "/.git",
-            command] + arguments
-
-    def _execute(self,
-                 arguments: List[str],
-                 stdin_content: Optional[Union[str, bytes]] = None,
-                 stdout_descriptor: Optional[Any] = None
-                 ) -> Any:
-
-        return subprocess.run(
-            arguments,
-            **{
-                **{
-                    "input":
-                        stdin_content.encode()
-                        if isinstance(stdin_content, str)
-                        else stdin_content
-                    for _ in [None] if stdin_content is not None
-                },
-                **{
-                    "stdout": stdout_descriptor
-                    for _ in [None] if stdout_descriptor is not None
-                }})
-
-    def run(self,
-            command: str,
-            arguments: List[str],
-            stdin_content: Optional[Union[str, bytes]] = None,
-            stdout_descriptor: Optional[Any] = None
-            ) -> Any:
-
-        return self._execute(
-            self._assemble_command_line(command, arguments),
-            stdin_content,
-            stdout_descriptor)
-
-    def checked_run(self,
-                    command: str,
-                    arguments: List[str],
-                    stdin_content: Optional[Union[str, bytes]] = None,
-                    stdout_descriptor: Optional[Any] = None
-                    ) -> Any:
-
-        result = self.run(
-            command,
-            arguments,
-            stdin_content,
-            stdout_descriptor)
-
-        if result.returncode != 0:
-            raise RuntimeError(
-                f"command failed (exit code: {result.returncode}) "
-                f"{' '.join(arguments)}:\n"
-                f"STDOUT:\n"
-                f"{result.stdout.decode()}"
-                f"STDERR:\n"
-                f"{result.stderr.decode()}")
-
-
-TempRepoGitRunner = GitRunner(None, TempRepository)
-
-
-class MetadataSourceKey(str, enum.Enum):
-    TYPE = "type"
+logger = logging.getLogger("datalad.metadata.model")
 
 
 class MetadataSource(abc.ABC):
     """
     Base class for all metadata source handlers
     """
+
+    TYPE_KEY = "metadata_source_type"
+
     @abc.abstractmethod
     def write_object_to(self, file_descriptor):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def copy_object_to(self, destination: str):
+    def copy_object_to(self, destination: Path):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -126,34 +48,70 @@ class MetadataSource(abc.ABC):
     def to_json_str(self) -> str:
         return json.dumps(self.to_json_obj())
 
+    @staticmethod
+    def from_json_obj(json_obj: JSONObject) -> Optional["MetadataSource"]:
+        source_type = json_obj.get(MetadataSource.TYPE_KEY, None)
+        if source_type is None:
+            logger.error(
+                f"key `{MetadataSource.TYPE_KEY}´ not found in "
+                f"json object: {json.dumps(json_obj)}.")
+            return None
+        if source_type == LocalGitMetadataSource.TYPE:
+            return LocalGitMetadataSource.from_json_obj(json_obj)
+        elif source_type == ImmediateMetadataSource.TYPE:
+            return ImmediateMetadataSource.from_json_obj(json_obj)
+        else:
+            logger.error(f"unknown metadata source type: `{source_type}´")
+            return None
+
+    @staticmethod
+    def from_json_str(json_string: str) -> Optional["MetadataSource"]:
+        return MetadataSource.from_json_obj(json.loads(json_string))
+
 
 class LocalGitMetadataSource(MetadataSource):
+
+    TYPE = "LocalGitMetadataSource"
+
     def __init__(self,
-                 git_repository_path: str,
+                 git_repository_path: Path,
                  object_reference: str
                  ):
 
         super().__init__()
         self.git_repository_path = git_repository_path
         self.object_reference = object_reference
-        self.git_runner = GitRunner(None, self.git_repository_path)
 
-    def write_object_to(self, file_descriptor):
-        self.git_runner.checked_run(
-            "cat-file",
-            ["blob", self.object_reference],
-            None,
-            file_descriptor)
+    def __eq__(self, other):
+        return (
+            isinstance(other, LocalGitMetadataSource)
+            and self.git_repository_path == other.git_repository_path
+            and self.object_reference == other.object_reference)
 
-    def copy_object_to(self, destination: str):
+    def write_object_to(self, file_descriptor: IO):
+        command = f"git --git-dir {self.git_repository_path / '.git'} " \
+                  f"cat-file blob {self.object_reference}"
+        result = subprocess.run(command, stdout=file_descriptor, shell=True)
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"subprocess returned {result.returncode}, "
+                f"command: {command}")
+
+    def copy_object_to(self, destination: Path):
         """
         copy an object from the LocalGitMetadataSource
-        instance into a local repository.
+        instance into the git repository given by
+        destination_repository.
         """
-        destination_runner = GitRunner(None, destination)
-        destination_runner.checked_run(
-            "fetch",
-            [self.git_repository_path, self.object_reference])
+        command = f"git --git-dir {self.git_repository_path / '.git'} " \
+                  f"cat-file blob {self.object_reference}|" \
+                  f"git --git-dir {destination / '.git'} hash-object -w --stdin"
+        copied_object_reference = subprocess.check_output(command, shell=True)
+        assert copied_object_reference.decode().strip() == self.object_reference
+
+    def deepcopy(self, new_realm: str):
+        self.copy_object_to(Path(new_realm))
+        return LocalGitMetadataSource(Path(new_realm), self.object_reference)
 
     def to_json_obj(self) -> JSONObject:
         return {
@@ -161,81 +119,66 @@ class LocalGitMetadataSource(MetadataSource):
                 type="LocalGitMetadataSource",
                 version="1.0"
             ),
-            "git_repository_path": self.git_repository_path,
-            "object_reference": self.object_reference
-        }
+            MetadataSource.TYPE_KEY: LocalGitMetadataSource.TYPE,
+            "git_repository_path": self.git_repository_path.as_posix(),
+            "object_reference": self.object_reference}
 
-
-class GitMetadataSource(MetadataSource):
-    def __init__(self,
-                 git_repository_url: str,
-                 object_reference: str
-                 ):
-
-        super().__init__()
-        self.git_repository_url = git_repository_url
-        self.object_reference = object_reference
-
-    def write_object_to(self, file_descriptor):
-        # Write an object to a file descripor, usually
-        # the file descriptor will be a temporary store
-        raise NotImplementedError
-
-        # Write the object from the local store
-        local_git_metadata_source = LocalGitMetadataSource(
-            TempRepository,
-            self.object_reference)
-        local_git_metadata_source.write_object_to(file_descriptor)
-
-    def copy_object_to(self, destination: str):
-        raise NotImplementedError
-        # If the destination is remote, fetch object into the
-        # temporary store and push it to the destination
-
-    def to_json_obj(self) -> JSONObject:
-        return {
-            "@": dict(
-                type="GitMetadataSource",
-                version="1.0"
-            ),
-            "git_repository_url": self.git_repository_url,
-            "object_reference": self.object_reference
-        }
+    @staticmethod
+    def from_json_obj(json_obj: JSONObject) -> Optional["LocalGitMetadataSource"]:
+        try:
+            assert json_obj["@"]["type"] == "LocalGitMetadataSource"
+            assert json_obj["@"]["version"] == "1.0"
+            assert json_obj[MetadataSource.TYPE_KEY] == LocalGitMetadataSource.TYPE
+            return LocalGitMetadataSource(
+                Path(json_obj["git_repository_path"]),
+                json_obj["object_reference"])
+        except KeyError as key_error:
+            logger.error(
+                f"could not read LocalGitMetadataSource from {json_obj}, "
+                f"reason: {key_error}")
+            return None
 
 
 class ImmediateMetadataSource(MetadataSource):
-    def __init__(self,
-                 content: Union[str, bytes]
-                 ):
 
+    TYPE = "ImmediateMetadataSource"
+
+    def __init__(self, content: JSONObject):
         super().__init__()
         self.content = content
 
-    def write_object_to(self, file_descriptor):
-        self.git_runner.checked_run(
-            "cat-file",
-            ["blob", self.object_reference],
-            None,
-            file_descriptor)
+    def __eq__(self, other):
+        return (
+            isinstance(other, ImmediateMetadataSource)
+            and self.content == other.content)
 
-    def copy_object_to(self, destination: str):
-        """
-        copy an object from the LocalGitMetadataSource
-        instance into a local repository.
-        """
-        destination_runner = GitRunner(None, destination)
-        destination_runner.checked_run(
-            "fetch",
-            [self.git_repository_path, self.object_reference])
+    def copy_object_to(self, destination: Path):
+        pass
+
+    def write_object_to(self, file_descriptor: IO):
+        json.dump(self.content, file_descriptor)
+
+    def deepcopy(self, _: str):
+        return ImmediateMetadataSource(deepcopy(self.content))
 
     def to_json_obj(self) -> JSONObject:
         return {
             "@": dict(
-                type="LocalGitMetadataSource",
+                type="ImmediateMetadataSource",
                 version="1.0"
             ),
-            "git_repository_path": self.git_repository_path,
-            "object_reference": self.object_reference
-        }
+            MetadataSource.TYPE_KEY: ImmediateMetadataSource.TYPE,
+            "content": self.content}
 
-
+    @staticmethod
+    def from_json_obj(json_obj: JSONObject) -> Optional["ImmediateMetadataSource"]:
+        try:
+            assert json_obj["@"]["type"] == "ImmediateMetadataSource"
+            assert json_obj["@"]["version"] == "1.0"
+            assert json_obj[MetadataSource.TYPE_KEY] == ImmediateMetadataSource.TYPE
+            return ImmediateMetadataSource(json_obj["content"])
+        except KeyError as key_error:
+            logger.error(
+                f"could not read ImmediateMetadataSource from {json_obj}, "
+                f"reason: {key_error}")
+            return None
