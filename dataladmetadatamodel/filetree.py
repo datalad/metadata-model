@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, Optional, Tuple, Union
 
 from . import JSONObject
 from .connector import ConnectedObject, Connector
@@ -19,9 +19,12 @@ class FileTree(ConnectedObject, TreeNode):
         self.mapper_family = mapper_family
         self.realm = realm
 
-    def __contains__(self, path: MetadataPath) -> bool:
-        # The check for node.value <> None takes care of root paths
+    def __contains__(self, path: Union[str, MetadataPath]) -> bool:
+        # Allow strings as input as well
+        if isinstance(path, str):
+            path = MetadataPath(path)
         node = self.get_node_at_path(path)
+        # The check for node.value is not None takes care of root paths
         return node is not None and node.value is not None
 
     def add_directory(self, name):
