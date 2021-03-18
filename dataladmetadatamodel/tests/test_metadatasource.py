@@ -142,14 +142,16 @@ class TestDeepCopy(unittest.TestCase):
                 Path(original_dir),
                 object_hash.decode().strip())
 
-            copied_metadata_source = immediate_source.deepcopy(copy_dir)
+            copied_object_reference = immediate_source.copy_object_to(
+                Path(copy_dir))
+
             self.assertEqual(
                 immediate_source.object_reference,
-                copied_metadata_source.object_reference)
+                copied_object_reference)
 
             copied_file_content = subprocess.check_output(
                 f"git --git-dir {copy_dir}/.git cat-file blob "
-                f"{copied_metadata_source.object_reference}",
+                f"{copied_object_reference}",
                 shell=True)
 
             self.assertEqual(

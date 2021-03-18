@@ -98,7 +98,7 @@ class LocalGitMetadataSource(MetadataSource):
                 f"subprocess returned {result.returncode}, "
                 f"command: {command}")
 
-    def copy_object_to(self, destination: Path):
+    def copy_object_to(self, destination_repository: Path) -> str:
         """
         copy an object from the LocalGitMetadataSource
         instance into the git repository given by
@@ -106,13 +106,13 @@ class LocalGitMetadataSource(MetadataSource):
         """
         command = f"git --git-dir {self.git_repository_path / '.git'} " \
                   f"cat-file blob {self.object_reference}|" \
-                  f"git --git-dir {destination / '.git'} hash-object -w --stdin"
-        copied_object_reference = subprocess.check_output(command, shell=True)
-        assert copied_object_reference.decode().strip() == self.object_reference
-
-    def deepcopy(self, new_realm: str):
-        self.copy_object_to(Path(new_realm))
-        return LocalGitMetadataSource(Path(new_realm), self.object_reference)
+                  f"git --git-dir {destination_repository / '.git'} " \
+                  f"hash-object -w --stdin"
+        copied_object_reference = subprocess.check_output(
+            command,
+            shell=True).decode().strip()
+        assert copied_object_reference == self.object_reference
+        return copied_object_reference
 
     def to_json_obj(self) -> JSONObject:
         return {
@@ -159,7 +159,7 @@ class ImmediateMetadataSource(MetadataSource):
     def write_object_to(self, file_descriptor: IO):
         json.dump(self.content, file_descriptor)
 
-    def deepcopy(self, _=None):
+    def deepcopy(self):
         return ImmediateMetadataSource(deepcopy(self.content))
 
     def to_json_obj(self) -> JSONObject:

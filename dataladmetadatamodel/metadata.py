@@ -7,7 +7,7 @@ from . import JSONObject
 from .connector import ConnectedObject
 from .mapper import get_mapper
 from .mapper.reference import Reference
-from .metadatasource import MetadataSource
+from .metadatasource import MetadataSource, LocalGitMetadataSource
 
 
 class ParameterDict(dict):
@@ -296,15 +296,35 @@ class Metadata(ConnectedObject):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None) -> "Metadata":
+                 new_realm: Optional[str] = None,
+                 new_content_repository: Optional[str] = None) -> "Metadata":
+
+        # TODO: pass new_content_repository through from above, because
+        #  the following line will not work, if other backend than git
+        #  are supported, and it might not be what is intended.
+        new_content_repository = new_content_repository or new_realm
 
         new_mapper_family = new_mapper_family or self.mapper_family
         new_realm = new_realm or self.realm
 
         copied_metadata = Metadata(new_mapper_family, new_realm)
         for extractor_name, instance_set in self.instance_sets.items():
+
+            # copy the instance set, i.e. the model object
             copied_metadata.instance_sets[extractor_name] = \
                 copy.deepcopy(instance_set)
+
+            # copy all referenced objects that should be copied, currently
+            # those are git-blobs stored in the local git repository, i.e.
+            # objects that are managed by LocalGitMetadataSource.
+            # TODO: new_content_repository is not nice, since it is specific
+            #  to the LocalGitMetadataSource. This
+            #  probably has to be done nicer.
+            if new_content_repository is not None:
+                for metadata_instance in instance_set.get_instances():
+                    if isinstance(metadata_instance, LocalGitMetadataSource):
+                        metadata_instance.copy_object_to(new_content_repository)
+
             del instance_set
 
         return copied_metadata
