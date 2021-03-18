@@ -7,6 +7,7 @@ from . import JSONObject
 from .connector import ConnectedObject
 from .mapper import get_mapper
 from .mapper.reference import Reference
+from .metadatasource import MetadataSource
 
 
 class ParameterDict(dict):
@@ -74,13 +75,13 @@ class MetadataInstance:
                  author_name,
                  author_email,
                  configuration: ExtractorConfiguration,
-                 metadata_location: JSONObject):
+                 metadata_source: MetadataSource):
 
         self.time_stamp = time_stamp
         self.author_name = author_name
         self.author_email = author_email
         self.configuration = configuration
-        self.metadata_location = metadata_location
+        self.metadata_source = metadata_source
 
     def to_json_obj(self) -> JSONObject:
         return {
@@ -92,7 +93,7 @@ class MetadataInstance:
             "author": self.author_name,
             "author_email": self.author_email,
             "configuration": self.configuration.to_json_obj(),
-            "metadata_location": self.metadata_location
+            "metadata_source": self.metadata_source.to_json_obj()
         }
 
     def to_json_str(self) -> str:
@@ -100,11 +101,11 @@ class MetadataInstance:
 
     def __eq__(self, other):
         return (
-            self.time_stamp == other.time_stamp
-            and self.author_name == other.author_name
-            and self.author_email == other.author_email
-            and self.configuration == other.configuration
-            and self.metadata_location == other.metadata_location
+                self.time_stamp == other.time_stamp
+                and self.author_name == other.author_name
+                and self.author_email == other.author_email
+                and self.configuration == other.configuration
+                and self.metadata_source == other.metadata_source
         )
 
     @classmethod
@@ -116,7 +117,7 @@ class MetadataInstance:
             obj["author"],
             obj["author_email"],
             ExtractorConfiguration.from_json_obj(obj["configuration"]),
-            obj["metadata_location"]
+            MetadataSource.from_json_obj(obj["metadata_source"])
         )
 
     @classmethod
@@ -258,18 +259,21 @@ class Metadata(ConnectedObject):
                           author_name: str,
                           author_email: str,
                           configuration: ExtractorConfiguration,
-                          metadata_location: JSONObject):
+                          metadata_source: MetadataSource):
 
         self.touch()
 
-        instance_set = self.instance_sets.get(extractor_name, MetadataInstanceSet())
+        instance_set = self.instance_sets.get(
+            extractor_name,
+            MetadataInstanceSet())
+
         instance_set.add_metadata_instance(
             MetadataInstance(
                 time_stamp if time_stamp is not None else time.time(),
                 author_name,
                 author_email,
                 configuration,
-                metadata_location))
+                metadata_source))
 
         self.instance_sets[extractor_name] = instance_set
 
@@ -285,7 +289,8 @@ class Metadata(ConnectedObject):
         )
 
         for format_name, instance_set_json_obj in obj["instance_sets"].items():
-            metadata.instance_sets[format_name] = MetadataInstanceSet.from_json_obj(instance_set_json_obj)
+            metadata.instance_sets[format_name] = \
+                MetadataInstanceSet.from_json_obj(instance_set_json_obj)
 
         return metadata
 
