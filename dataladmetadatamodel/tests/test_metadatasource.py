@@ -1,3 +1,5 @@
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -97,16 +99,6 @@ class TestFactoryFails(unittest.TestCase):
         }
         self.assertEqual(MetadataSource.from_json_obj(json_obj), None)
 
-    def test_faulty_local_git_metadata(self):
-        json_obj = {
-            "@": {
-                "type": "LocalGitMetadataSource",
-                "version": "1.0"
-            },
-            MetadataSource.TYPE_KEY: LocalGitMetadataSource.TYPE
-        }
-        self.assertEqual(MetadataSource.from_json_obj(json_obj), None)
-
     def test_faulty_class_type(self):
         json_obj = {
             "@": {
@@ -124,6 +116,45 @@ class TestFactoryFails(unittest.TestCase):
             }
         }
         self.assertEqual(MetadataSource.from_json_obj(json_obj), None)
+
+
+class TestDeepCopy(unittest.TestCase):
+    def test_copy_immediate_source(self):
+        immediate_metadata = ImmediateMetadataSource("test_content")
+        copied_metadata = immediate_metadata.deepcopy()
+        self.assertEqual(immediate_metadata, copied_metadata)
+
+    def test_copy_local_git_source(self):
+        file_content = "Test file content"
+        with \
+                tempfile.TemporaryDirectory() as original_dir, \
+                tempfile.TemporaryDirectory() as copy_dir:
+
+            subprocess.run(["git", "init", original_dir])
+            subprocess.run(["git", "init", copy_dir])
+
+            object_hash = subprocess.check_output(
+                f"echo '{file_content}'|git --git-dir {original_dir}/.git "
+                f"hash-object --stdin -w",
+                shell=True)
+
+            immediate_source = LocalGitMetadataSource(
+                Path(original_dir),
+                object_hash.decode().strip())
+
+            copied_metadata_source = immediate_source.deepcopy(copy_dir)
+            self.assertEqual(
+                immediate_source.object_reference,
+                copied_metadata_source.object_reference)
+
+            copied_file_content = subprocess.check_output(
+                f"git --git-dir {copy_dir}/.git cat-file blob "
+                f"{copied_metadata_source.object_reference}",
+                shell=True)
+
+            self.assertEqual(
+                file_content,
+                copied_file_content.decode().strip())
 
 
 if __name__ == '__main__':

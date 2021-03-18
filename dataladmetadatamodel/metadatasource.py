@@ -78,9 +78,10 @@ class LocalGitMetadataSource(MetadataSource):
                  object_reference: str
                  ):
 
+        assert isinstance(object_reference, str)
         super().__init__()
         self.git_repository_path = git_repository_path
-        self.object_reference = object_reference
+        self.object_reference = object_reference.strip()
 
     def __eq__(self, other):
         return (
@@ -158,7 +159,7 @@ class ImmediateMetadataSource(MetadataSource):
     def write_object_to(self, file_descriptor: IO):
         json.dump(self.content, file_descriptor)
 
-    def deepcopy(self, _: str):
+    def deepcopy(self, _=None):
         return ImmediateMetadataSource(deepcopy(self.content))
 
     def to_json_obj(self) -> JSONObject:
