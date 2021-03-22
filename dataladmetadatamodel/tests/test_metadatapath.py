@@ -1,4 +1,6 @@
 import unittest
+from unittest.mock import patch
+from pathlib import PurePosixPath, PureWindowsPath
 
 from ..metadatapath import MetadataPath
 
@@ -29,6 +31,22 @@ class TestMetadataPath(unittest.TestCase):
         self.assertEqual(
             MetadataPath("/") / MetadataPath("a//") / MetadataPath("/b"),
             MetadataPath("a/b"))
+
+    def test_windows_paths(self):
+        # Enforce windows path interpretation
+        with patch("dataladmetadatamodel.metadatapath.PurePath", new=PureWindowsPath):
+            metadata_path = MetadataPath("a\\b\\c")
+        self.assertEqual(metadata_path, MetadataPath("a/b/c"))
+
+        with patch("dataladmetadatamodel.metadatapath.PurePath", new=PureWindowsPath):
+            metadata_path = MetadataPath("a/b/c")
+        self.assertEqual(metadata_path, MetadataPath("a/b/c"))
+
+    def test_posix_paths(self):
+        # Enforce windows path interpretation
+        with patch("dataladmetadatamodel.metadatapath.PurePath", new=PurePosixPath):
+            metadata_path = MetadataPath("a/b/c")
+        self.assertEqual(metadata_path, MetadataPath("a/b/c"))
 
 
 if __name__ == '__main__':
