@@ -67,8 +67,8 @@ def get_top_nodes_and_metadata_root_record(
     and a given dataset version.
 
     If auto_create is True, create missing entries for the given dataset
-    version, down to and including the metadata root record with an empty
-    empty dataset metadata and an empty file-tree connected to it.
+    version, down to and including the metadata root record with empty
+    dataset metadata and an empty file-tree connected to it.
 
     If auto_create is False and any of the elements: uuid set, version tree
     list, or metadata root record does not exist, (None, None, None) is

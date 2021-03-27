@@ -3,6 +3,8 @@ from typing import Generator, Tuple
 
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import ExtractorConfiguration
+from dataladmetadatamodel.metadatasource import ImmediateMetadataSource, \
+    MetadataSource
 
 
 DATALAD_DATASET_HIDDEN_DIR_NAME = ".datalad"
@@ -34,16 +36,19 @@ def read_files(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, 
                 yield entry.path[len(path) + 1:], entry
 
 
-def get_extractor_run(path: str, entry: os.DirEntry, parameter_set_count: int):
+def get_extractor_run(path: str,
+                      entry: os.DirEntry,
+                      parameter_set_count: int) -> MetadataSource:
+
     stat = entry.stat(follow_symlinks=False)
-    return {
+    return ImmediateMetadataSource({
         "info": f"file-level test metadata for parameter set #{parameter_set_count}",
         "path": path,
         "size": stat.st_size,
         "atime": stat.st_atime,
         "ctime": stat.st_ctime,
-        "mtime": stat.st_mtime,
-    }
+        "mtime": stat.st_mtime
+    })
 
 
 def create_file_tree(mapper_family: str,
