@@ -2,7 +2,9 @@ import unittest
 from typing import Tuple
 
 
-from dataladmetadatamodel.metadata import ExtractorConfiguration, MetadataInstance, MetadataInstanceSet
+from dataladmetadatamodel.metadata import ExtractorConfiguration, \
+    MetadataInstance, MetadataInstanceSet
+from dataladmetadatamodel.metadatasource import ImmediateMetadataSource
 
 
 class TestInstanceSetBase(unittest.TestCase):
@@ -35,7 +37,7 @@ class TestInstanceSetBase(unittest.TestCase):
                 f"{prefix}_name",
                 f"{prefix}_email",
                 extractor_configuration,
-                f"{prefix}_content"
+                ImmediateMetadataSource(f"{prefix}_content")
             )
         )
 
