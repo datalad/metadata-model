@@ -3,7 +3,6 @@ from typing import Iterable, Optional, Tuple, Union
 from .connector import ConnectedObject, Connector
 from .mapper import get_mapper
 from .metadata import ExtractorConfiguration, Metadata
-from .metadatasource import MetadataSource
 from .metadatapath import MetadataPath
 from .treenode import TreeNode
 from .mapper.reference import Reference
@@ -93,7 +92,7 @@ class FileTree(ConnectedObject, TreeNode):
                           author_name: str,
                           author_email: str,
                           configuration: ExtractorConfiguration,
-                          metadata_source: MetadataSource):
+                          metadata_content: ConnectedObject):
 
         self.touch()
 
@@ -109,7 +108,7 @@ class FileTree(ConnectedObject, TreeNode):
             author_name,
             author_email,
             configuration,
-            metadata_source
+            metadata_content
         )
 
     def deepcopy(self,

@@ -7,7 +7,6 @@ from . import JSONObject
 from .connector import ConnectedObject
 from .mapper import get_mapper
 from .mapper.reference import Reference
-from .metadatasource import MetadataSource, LocalGitMetadataSource
 
 
 class ParameterDict(dict):
@@ -75,13 +74,13 @@ class MetadataInstance:
                  author_name,
                  author_email,
                  configuration: ExtractorConfiguration,
-                 metadata_source: MetadataSource):
+                 metadata_content: JSONObject):
 
         self.time_stamp = time_stamp
         self.author_name = author_name
         self.author_email = author_email
         self.configuration = configuration
-        self.metadata_source = metadata_source
+        self.metadata_content = metadata_content
 
     def to_json_obj(self) -> JSONObject:
         return {
@@ -93,7 +92,7 @@ class MetadataInstance:
             "author": self.author_name,
             "author_email": self.author_email,
             "configuration": self.configuration.to_json_obj(),
-            "metadata_source": self.metadata_source.to_json_obj()
+            "metadata_content": self.metadata_content
         }
 
     def to_json_str(self) -> str:
@@ -105,7 +104,7 @@ class MetadataInstance:
                 and self.author_name == other.author_name
                 and self.author_email == other.author_email
                 and self.configuration == other.configuration
-                and self.metadata_source == other.metadata_source
+                and self.metadata_content == other.metadata_content
         )
 
     @classmethod
@@ -117,7 +116,7 @@ class MetadataInstance:
             obj["author"],
             obj["author_email"],
             ExtractorConfiguration.from_json_obj(obj["configuration"]),
-            MetadataSource.from_json_obj(obj["metadata_source"])
+            obj["metadata_content"]
         )
 
     @classmethod
@@ -259,7 +258,7 @@ class Metadata(ConnectedObject):
                           author_name: str,
                           author_email: str,
                           configuration: ExtractorConfiguration,
-                          metadata_source: MetadataSource):
+                          metadata_content: JSONObject):
 
         self.touch()
 
@@ -273,7 +272,7 @@ class Metadata(ConnectedObject):
                 author_name,
                 author_email,
                 configuration,
-                metadata_source))
+                metadata_content))
 
         self.instance_sets[extractor_name] = instance_set
 
@@ -296,13 +295,7 @@ class Metadata(ConnectedObject):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None,
-                 new_content_repository: Optional[str] = None) -> "Metadata":
-
-        # TODO: pass new_content_repository through from above, because
-        #  the following line will not work, if other backend than git
-        #  are supported, and it might not be what is intended.
-        new_content_repository = new_content_repository or new_realm
+                 new_realm: Optional[str] = None) -> "Metadata":
 
         new_mapper_family = new_mapper_family or self.mapper_family
         new_realm = new_realm or self.realm
@@ -313,18 +306,6 @@ class Metadata(ConnectedObject):
             # copy the instance set, i.e. the model object
             copied_metadata.instance_sets[extractor_name] = \
                 copy.deepcopy(instance_set)
-
-            # copy all referenced objects that should be copied, currently
-            # those are git-blobs stored in the local git repository, i.e.
-            # objects that are managed by LocalGitMetadataSource.
-            # TODO: new_content_repository is not nice, since it is specific
-            #  to the LocalGitMetadataSource. This
-            #  probably has to be done nicer.
-            if new_content_repository is not None:
-                for metadata_instance in instance_set.get_instances():
-                    if isinstance(metadata_instance, LocalGitMetadataSource):
-                        metadata_instance.copy_object_to(new_content_repository)
-
             del instance_set
 
         return copied_metadata

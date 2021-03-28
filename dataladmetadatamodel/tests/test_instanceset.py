@@ -4,7 +4,6 @@ from typing import Tuple
 
 from dataladmetadatamodel.metadata import ExtractorConfiguration, \
     MetadataInstance, MetadataInstanceSet
-from dataladmetadatamodel.metadatasource import ImmediateMetadataSource
 
 
 class TestInstanceSetBase(unittest.TestCase):
@@ -37,7 +36,7 @@ class TestInstanceSetBase(unittest.TestCase):
                 f"{prefix}_name",
                 f"{prefix}_email",
                 extractor_configuration,
-                ImmediateMetadataSource(f"{prefix}_content")
+                {"metadata 1": f"{prefix}_content"}
             )
         )
 
