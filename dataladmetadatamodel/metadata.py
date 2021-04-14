@@ -9,6 +9,9 @@ from .mapper import get_mapper
 from .mapper.reference import Reference
 
 
+metadata_instance_json_version = "2.0"
+
+
 class ParameterDict(dict):
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
@@ -86,7 +89,7 @@ class MetadataInstance:
         return {
             "@": dict(
                 type="MetadataInstance",
-                version="1.0"
+                version=metadata_instance_json_version
             ),
             "time_stamp": self.time_stamp,
             "author": self.author_name,
@@ -110,7 +113,11 @@ class MetadataInstance:
     @classmethod
     def from_json_obj(cls, obj: JSONObject) -> "MetadataInstance":
         assert obj["@"]["type"] == "MetadataInstance"
-        assert obj["@"]["version"] == "1.0"
+        if obj["@"]["version"] != metadata_instance_json_version:
+            raise ValueError(
+                f'unsupported metadata version ({obj["@"]["version"]}) in '
+                f'stored MetadataInstance object, expected version is '
+                f'{metadata_instance_json_version}')
         return cls(
             obj["time_stamp"],
             obj["author"],
