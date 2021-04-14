@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from .. import version_string
 from ..metadatasource import MetadataSource, ImmediateMetadataSource,\
     LocalGitMetadataSource
 
@@ -15,7 +16,7 @@ class TestFactory(unittest.TestCase):
         json_obj = {
             "@": {
                 "type": "ImmediateMetadataSource",
-                "version": "1.0"
+                "version": version_string
             },
             MetadataSource.TYPE_KEY: ImmediateMetadataSource.TYPE,
             "content": content_obj
@@ -30,7 +31,7 @@ class TestFactory(unittest.TestCase):
         json_obj = {
             "@": {
                 "type": "LocalGitMetadataSource",
-                "version": "1.0"
+                "version": version_string
             },
             MetadataSource.TYPE_KEY: LocalGitMetadataSource.TYPE,
             "git_repository_path": repository_path,
@@ -64,7 +65,7 @@ class TestFactoryFails(unittest.TestCase):
         json_obj = {
             "@": {
                 "type": "ImmediateMetadataSource",
-                "version": "1.0"
+                "version": version_string
             }
         }
         self.assertEqual(MetadataSource.from_json_obj(json_obj), None)
@@ -73,7 +74,7 @@ class TestFactoryFails(unittest.TestCase):
         json_obj = {
             "@": {
                 "type": "ImmediateMetadataSource",
-                "version": "1.0"
+                "version": version_string
             },
             MetadataSource.TYPE_KEY: "....."
         }
@@ -83,7 +84,7 @@ class TestFactoryFails(unittest.TestCase):
         json_obj = {
             "@": {
                 "type": "LocalGitMetadataSource",
-                "version": "1.0"
+                "version": version_string
             },
             MetadataSource.TYPE_KEY: LocalGitMetadataSource.TYPE
         }
@@ -93,7 +94,7 @@ class TestFactoryFails(unittest.TestCase):
         json_obj = {
             "@": {
                 "type": "ImmediateMetadataSource",
-                "version": "1.0"
+                "version": version_string
             },
             MetadataSource.TYPE_KEY: ImmediateMetadataSource.TYPE
         }
@@ -103,7 +104,7 @@ class TestFactoryFails(unittest.TestCase):
         json_obj = {
             "@": {
                 "type": ".....",
-                "version": "1.0"
+                "version": version_string
             }
         }
         self.assertEqual(MetadataSource.from_json_obj(json_obj), None)
