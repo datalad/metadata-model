@@ -2,6 +2,7 @@ import json
 import unittest
 from unittest import mock
 
+from .... import version_string
 from ...reference import Reference
 from ..referencemapper import ReferenceGitMapper
 
@@ -20,7 +21,7 @@ class TestReferenceMapper(unittest.TestCase):
             self.assertEqual(
                 json.loads(representation),
                 {
-                    "@": {"type": "Reference", "version": "1.0"},
+                    "@": {"type": "Reference", "version": version_string},
                     "mapper_family": "*None*",
                     "realm": "*None*",
                     "class_name": "*None*",
@@ -33,7 +34,7 @@ class TestReferenceMapper(unittest.TestCase):
         with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_load_str") as load:
             load.return_value = json.dumps(
                 {
-                    "@": {"type": "Reference", "version": "1.0"},
+                    "@": {"type": "Reference", "version": version_string},
                     "mapper_family": "*None*",
                     "realm": "*None*",
                     "class_name": "*None*",

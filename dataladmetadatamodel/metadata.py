@@ -3,13 +3,10 @@ import json
 import time
 from typing import Dict, Generator, Iterable, List, Optional, Tuple
 
-from . import JSONObject
+from . import JSONObject, check_serialized_version, version_string
 from .connector import ConnectedObject
 from .mapper import get_mapper
 from .mapper.reference import Reference
-
-
-metadata_instance_json_version = "2.0"
 
 
 class ParameterDict(dict):
@@ -32,7 +29,7 @@ class ExtractorConfiguration:
         return {
             "@": dict(
                 type="ExtractorConfiguration",
-                version="1.0"
+                version=version_string
             ),
             "version": self.version,
             "parameter": self.parameter
@@ -53,7 +50,7 @@ class ExtractorConfiguration:
     @classmethod
     def from_json_obj(cls, obj: JSONObject) -> "ExtractorConfiguration":
         assert obj["@"]["type"] == "ExtractorConfiguration"
-        assert obj["@"]["version"] == "1.0"
+        check_serialized_version(obj)
         return cls(
             obj["version"],
             obj["parameter"]
@@ -89,7 +86,7 @@ class MetadataInstance:
         return {
             "@": dict(
                 type="MetadataInstance",
-                version=metadata_instance_json_version
+                version=version_string
             ),
             "time_stamp": self.time_stamp,
             "author": self.author_name,
@@ -113,11 +110,7 @@ class MetadataInstance:
     @classmethod
     def from_json_obj(cls, obj: JSONObject) -> "MetadataInstance":
         assert obj["@"]["type"] == "MetadataInstance"
-        if obj["@"]["version"] != metadata_instance_json_version:
-            raise ValueError(
-                f'unsupported metadata version ({obj["@"]["version"]}) in '
-                f'stored MetadataInstance object, expected version is '
-                f'{metadata_instance_json_version}')
+        check_serialized_version(obj)
         return cls(
             obj["time_stamp"],
             obj["author"],
@@ -171,7 +164,7 @@ class MetadataInstanceSet:
         return {
             "@": dict(
                 type="MetadataInstanceSet",
-                version="1.0"
+                version=version_string
             ),
             "parameter_set": [
                 configuration.to_json_obj()
@@ -189,7 +182,7 @@ class MetadataInstanceSet:
     @classmethod
     def from_json_obj(cls, obj: JSONObject) -> "MetadataInstanceSet":
         assert obj["@"]["type"] == "MetadataInstanceSet"
-        assert obj["@"]["version"] == "1.0"
+        check_serialized_version(obj)
 
         metadata_instance_set = cls()
         metadata_instance_set.parameter_set = [
@@ -233,7 +226,7 @@ class Metadata(ConnectedObject):
         return json.dumps({
             "@": dict(
                 type="Metadata",
-                version="1.0"
+                version=version_string
             ),
             "mapper_family": self.mapper_family,
             "realm": self.realm,
@@ -287,7 +280,7 @@ class Metadata(ConnectedObject):
     def from_json(cls, json_str: str):
         obj = json.loads(json_str)
         assert obj["@"]["type"] == "Metadata"
-        assert obj["@"]["version"] == "1.0"
+        check_serialized_version(obj)
 
         metadata = cls(
             obj["mapper_family"],

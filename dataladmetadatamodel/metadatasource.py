@@ -20,7 +20,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import IO, Optional
 
-from . import JSONObject
+from . import JSONObject, check_serialized_version, version_string
 
 
 logger = logging.getLogger("datalad.metadata.model")
@@ -118,7 +118,7 @@ class LocalGitMetadataSource(MetadataSource):
         return {
             "@": dict(
                 type="LocalGitMetadataSource",
-                version="1.0"
+                version=version_string
             ),
             MetadataSource.TYPE_KEY: LocalGitMetadataSource.TYPE,
             "git_repository_path": self.git_repository_path.as_posix(),
@@ -128,7 +128,7 @@ class LocalGitMetadataSource(MetadataSource):
     def from_json_obj(json_obj: JSONObject) -> Optional["LocalGitMetadataSource"]:
         try:
             assert json_obj["@"]["type"] == "LocalGitMetadataSource"
-            assert json_obj["@"]["version"] == "1.0"
+            check_serialized_version(json_obj)
             assert json_obj[MetadataSource.TYPE_KEY] == LocalGitMetadataSource.TYPE
             return LocalGitMetadataSource(
                 Path(json_obj["git_repository_path"]),
@@ -166,7 +166,7 @@ class ImmediateMetadataSource(MetadataSource):
         return {
             "@": dict(
                 type="ImmediateMetadataSource",
-                version="1.0"
+                version=version_string
             ),
             MetadataSource.TYPE_KEY: ImmediateMetadataSource.TYPE,
             "content": self.content}
@@ -175,7 +175,7 @@ class ImmediateMetadataSource(MetadataSource):
     def from_json_obj(json_obj: JSONObject) -> Optional["ImmediateMetadataSource"]:
         try:
             assert json_obj["@"]["type"] == "ImmediateMetadataSource"
-            assert json_obj["@"]["version"] == "1.0"
+            check_serialized_version(json_obj)
             assert json_obj[MetadataSource.TYPE_KEY] == ImmediateMetadataSource.TYPE
             return ImmediateMetadataSource(json_obj["content"])
         except KeyError as key_error:

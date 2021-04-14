@@ -1,6 +1,8 @@
 import json
 from typing import Optional
 
+from .. import check_serialized_version, version_string
+
 
 none_class_name = "*None*"
 none_location = "*None*"
@@ -39,7 +41,7 @@ class Reference:
         return {
             "@": dict(
                 type="Reference",
-                version="1.0",
+                version=version_string,
             ),
             **dict(
                 mapper_family=self.mapper_family,
@@ -55,7 +57,7 @@ class Reference:
     @classmethod
     def from_json_obj(cls, obj) -> "Reference":
         assert obj["@"]["type"] == "Reference"
-        assert obj["@"]["version"] == "1.0"
+        check_serialized_version(obj)
         return cls(
             obj["mapper_family"],
             obj["realm"],
