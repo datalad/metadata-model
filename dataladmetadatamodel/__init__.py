@@ -19,5 +19,5 @@ def check_serialized_version(json_object: JSONObject):
     if stored_version != version_string:
         raise ValueError(
             f"Unsupported metadata version ({stored_version}) in "
-            f"stored {stored_class} object, expected version is "
+            f"stored {stored_class} object, expected version: "
             f"{version_string}")
