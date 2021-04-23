@@ -1,4 +1,5 @@
 import enum
+from pathlib import Path
 from typing import Dict, List, Tuple
 
 from .utils import lock_backend, unlock_backend
@@ -32,7 +33,7 @@ def add_object_reference(git_reference: GitReference,
     ))
 
 
-def flush_object_references(realm: str):
+def flush_object_references(realm: Path):
     global CACHED_OBJECT_REFERENCES
 
     for git_reference, cached_tree_entries in CACHED_OBJECT_REFERENCES.items():
@@ -40,14 +41,14 @@ def flush_object_references(realm: str):
         try:
             existing_tree_entries = [
                 tuple(line.split())
-                for line in git_ls_tree(realm, git_reference)
+                for line in git_ls_tree(str(realm), git_reference)
             ]
         except RuntimeError:
             existing_tree_entries = []
 
         existing_tree_entries.extend(cached_tree_entries)
-        tree_hash = git_save_tree(realm, existing_tree_entries)
-        git_update_ref(realm, git_reference, tree_hash)
+        tree_hash = git_save_tree(str(realm), existing_tree_entries)
+        git_update_ref(str(realm), git_reference, tree_hash)
         unlock_backend(realm)
 
     CACHED_OBJECT_REFERENCES = dict()
