@@ -1,6 +1,7 @@
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
 
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.filetree import FileTree
@@ -109,10 +110,10 @@ class TestDeepCopy(unittest.TestCase):
                 file_tree.add_metadata(path, Metadata("git", original_dir))
                 file_tree.unget_metadata(path)
             file_tree.save()
-            flush_object_references(original_dir)
+            flush_object_references(Path(original_dir))
 
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
-            flush_object_references(copy_dir)
+            flush_object_references(Path(copy_dir))
 
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 

@@ -1,6 +1,7 @@
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
 from uuid import UUID
 
 from dataladmetadatamodel.connector import Connector
@@ -113,7 +114,7 @@ class TestDeepCopy(unittest.TestCase):
                 file_test_paths)
 
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
-            flush_object_references(copy_dir)
+            flush_object_references(Path(copy_dir))
 
             assert_dataset_trees_equal(
                 self,
@@ -136,10 +137,10 @@ class TestDeepCopy(unittest.TestCase):
                 file_test_paths)
 
             dataset_tree.save()
-            flush_object_references(original_dir)
+            flush_object_references(Path(original_dir))
 
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
-            flush_object_references(copy_dir)
+            flush_object_references(Path(copy_dir))
 
             assert_dataset_trees_equal(
                 self,

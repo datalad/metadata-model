@@ -39,4 +39,4 @@ def create_metadata_from_dataset(mapper: str,
     tree_version_list.save()
     mdc_logger.info(f"done saving tree version list: {tree_version_list}")
 
-    flush_object_references(realm)
+    flush_object_references(Path(realm))
