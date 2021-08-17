@@ -36,23 +36,34 @@ def _get_lock_state(lock_dict: dict, realm: Path) -> LockState:
 
 
 def lock_backend(realm: Path):
-    lock_state = _get_lock_state(read_write_locked, realm)
+    lock_dir = get_lock_dir(realm)
+    lock_state = _get_lock_state(read_write_locked, lock_dir)
     if lock_state.counter == 0:
         lock_time = time.time()
         lock_state.lock.acquire()
         lock_time = time.time() - lock_time
         logger.debug(
-            "process {} locked git backend {} in {} seconds".format(
+            "process {} locked git backend using file {} in {} seconds".format(
                 PID,
-                realm,
+                lock_dir,
                 int(lock_time)))
     lock_state.counter += 1
 
 
 def unlock_backend(realm: Path):
-    lock_state = _get_lock_state(read_write_locked, realm)
+    lock_dir = get_lock_dir(realm, create_directory=False)
+    assert lock_dir.exists()
+    lock_state = _get_lock_state(read_write_locked, lock_dir)
     assert lock_state.counter > 0
     lock_state.counter -= 1
     if lock_state.counter == 0:
-        logger.debug("process {} unlocks git backend {}".format(PID, realm))
+        logger.debug(
+            "process {} unlocks git backend using file {}".format(PID, lock_dir))
         lock_state.lock.release()
+
+
+def get_lock_dir(realm: Path, create_directory: bool = True) -> Path:
+    lock_dir = realm / ".datalad" / "locks"
+    if not lock_dir.exists() and create_directory:
+        os.makedirs(lock_dir)
+    return lock_dir
