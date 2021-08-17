@@ -36,8 +36,8 @@ def add_object_reference(git_reference: GitReference,
 def flush_object_references(realm: Path):
     global CACHED_OBJECT_REFERENCES
 
+    lock_backend(realm)
     for git_reference, cached_tree_entries in CACHED_OBJECT_REFERENCES.items():
-        lock_backend(realm)
         try:
             existing_tree_entries = [
                 tuple(line.split())
@@ -49,7 +49,7 @@ def flush_object_references(realm: Path):
         existing_tree_entries.extend(cached_tree_entries)
         tree_hash = git_save_tree(str(realm), existing_tree_entries)
         git_update_ref(str(realm), git_reference, tree_hash)
-        unlock_backend(realm)
+    unlock_backend(realm)
 
     CACHED_OBJECT_REFERENCES = dict()
 
