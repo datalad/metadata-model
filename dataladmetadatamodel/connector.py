@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mapper import get_mapper
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -59,6 +60,7 @@ class Connector:
             if self.reference.is_none_reference():
                 self.object = None
             else:
+                logger.debug(f"Connector.load_object: mapping {self.reference}")
                 self.object = get_mapper(
                     self.reference.mapper_family,
                     self.reference.class_name)(self.reference.realm).map(
@@ -90,6 +92,7 @@ class Connector:
                 if True:
                     # FIXME: check for modifications self.reference is None or
                     #  self.is_object_modified():
+                    logger.debug(f"Connector.save_object: saving {type(self.object)}")
                     self.reference = self.object.save()
         else:
             if self.reference is None:
@@ -123,6 +126,9 @@ class Connector:
           4. Purging the original object
           3. Creating a connector from the copied object
         """
+
+        logger.debug(f"Connector.deepcopy: copying {type(self.object)}")
+
         if self.is_mapped:
             original_object = self.object
             purge_original = False

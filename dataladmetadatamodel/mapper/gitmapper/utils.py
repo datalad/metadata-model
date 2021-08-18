@@ -1,11 +1,6 @@
 """
-Simple linux kernel-based lock implementation. We use
-file-locks here. This is not very flexible, but locks
-are automatically released when a process exits. So no
-stale locks are kept around, even if you kill a runaway-
-process.
+Simple lock interface.
 """
-import logging
 import os
 import time
 from dataclasses import dataclass
@@ -13,8 +8,9 @@ from pathlib import Path
 
 from fasteners import InterProcessLock
 
+from dataladmetadatamodel.log import logger
 
-logger = logging.getLogger("datalad.metadata.model")
+
 PID = os.getpid()
 
 GIT_MAPPER_LOCK_FILE_NAME = "metadata-model-git.lock"

@@ -1,9 +1,9 @@
 from uuid import UUID
 from typing import Optional
 
-from .connector import ConnectedObject, Connector
-from .mapper import get_mapper
-from .mapper.reference import Reference
+from dataladmetadatamodel.connector import ConnectedObject, Connector
+from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class MetadataRootRecord(ConnectedObject):

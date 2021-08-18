@@ -7,7 +7,7 @@ half of all its connectors
 """
 from typing import Optional
 
-from .connector import ConnectedObject
+from dataladmetadatamodel.connector import ConnectedObject
 
 
 class ConnectorDict(dict, ConnectedObject):

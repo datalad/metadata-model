@@ -1,11 +1,11 @@
 from typing import Dict, Optional
 from uuid import UUID
 
-from .mapper import get_mapper
-from .mapper.reference import Reference
-from .versionlist import VersionList
-from .connector import ConnectedObject, Connector
-from .connectordict import ConnectorDict
+from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mapper.reference import Reference
+from dataladmetadatamodel.versionlist import VersionList
+from dataladmetadatamodel.connector import ConnectedObject, Connector
+from dataladmetadatamodel.connectordict import ConnectorDict
 
 
 class UUIDSet(ConnectedObject):

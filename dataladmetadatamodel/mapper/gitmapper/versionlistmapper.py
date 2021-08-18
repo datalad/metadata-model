@@ -1,9 +1,9 @@
 from typing import Any
 
-from .objectreference import GitReference
-from .gitbackend.subprocess import git_load_json, git_save_json, git_update_ref
-from ..basemapper import BaseMapper
-from ..reference import Reference
+from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_load_json, git_save_json, git_update_ref
+from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class VersionListGitMapper(BaseMapper):

@@ -1,11 +1,11 @@
 from typing import Dict, Iterable, Optional, Tuple, Union
 
-from .connector import ConnectedObject, Connector
-from .datasettree import DatasetTree
-from .mapper import get_mapper
-from .metadatapath import MetadataPath
-from .metadatarootrecord import MetadataRootRecord
-from .mapper.reference import Reference
+from dataladmetadatamodel.connector import ConnectedObject, Connector
+from dataladmetadatamodel.datasettree import DatasetTree
+from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class VersionRecord:

@@ -1,13 +1,13 @@
-from .datasettreemapper import DatasetTreeGitMapper
-from .filetreemapper import FileTreeGitMapper
-from .metadatamapper import MetadataGitMapper
-from .metadatarootrecordmapper import MetadataRootRecordGitMapper
-from .filetreemapper import GitReference
-from .referencemapper import ReferenceGitMapper
-from .textmapper import TextGitMapper
-from .uuidsetmapper import UUIDSetGitMapper
-from .versionlistmapper import TreeVersionListGitMapper
-from .versionlistmapper import VersionListGitMapper
+from dataladmetadatamodel.mapper.gitmapper.datasettreemapper import DatasetTreeGitMapper
+from dataladmetadatamodel.mapper.gitmapper.filetreemapper import FileTreeGitMapper
+from dataladmetadatamodel.mapper.gitmapper.metadatamapper import MetadataGitMapper
+from dataladmetadatamodel.mapper.gitmapper.metadatarootrecordmapper import MetadataRootRecordGitMapper
+from dataladmetadatamodel.mapper.gitmapper.filetreemapper import GitReference
+from dataladmetadatamodel.mapper.gitmapper.referencemapper import ReferenceGitMapper
+from dataladmetadatamodel.mapper.gitmapper.textmapper import TextGitMapper
+from dataladmetadatamodel.mapper.gitmapper.uuidsetmapper import UUIDSetGitMapper
+from dataladmetadatamodel.mapper.gitmapper.versionlistmapper import TreeVersionListGitMapper
+from dataladmetadatamodel.mapper.gitmapper.versionlistmapper import VersionListGitMapper
 
 
 GIT_MAPPER_FAMILY_MEMBERS = {

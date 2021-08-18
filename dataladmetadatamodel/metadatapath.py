@@ -1,8 +1,6 @@
-import logging
 from pathlib import PurePath, PurePosixPath
 
-
-logger = logging.getLogger("datalad.metadata.model")
+from dataladmetadatamodel.log import logger
 
 
 class MetadataPath(PurePosixPath):

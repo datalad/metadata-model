@@ -1,11 +1,12 @@
 from typing import Iterable, Optional, Tuple, Union
 
-from .connector import ConnectedObject, Connector
-from .mapper import get_mapper
-from .metadata import ExtractorConfiguration, Metadata
-from .metadatapath import MetadataPath
-from .treenode import TreeNode
-from .mapper.reference import Reference
+from dataladmetadatamodel.connector import ConnectedObject, Connector
+from dataladmetadatamodel.log import logger
+from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
+from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.treenode import TreeNode
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class FileTree(ConnectedObject, TreeNode):

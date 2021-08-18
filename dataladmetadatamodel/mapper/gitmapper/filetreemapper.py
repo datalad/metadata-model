@@ -1,12 +1,12 @@
 
-from .objectreference import GitReference, add_tree_reference
-from .gitbackend.subprocess import (
+from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference, add_tree_reference
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_load_str,
     git_ls_tree_recursive,
     git_save_str,
     git_save_tree)
-from ..basemapper import BaseMapper
-from ..reference import Reference
+from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 empty_tree_location = "None"

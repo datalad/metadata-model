@@ -1,9 +1,9 @@
 
-from .objectreference import GitReference, add_tree_reference
-from .gitbackend.subprocess import git_ls_tree_recursive, git_save_tree
-from .metadatarootrecordmapper import MetadataRootRecordGitMapper
-from ..basemapper import BaseMapper
-from ..reference import Reference
+from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference, add_tree_reference
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_ls_tree_recursive, git_save_tree
+from dataladmetadatamodel.mapper.gitmapper.metadatarootrecordmapper import MetadataRootRecordGitMapper
+from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 DATALAD_ROOT_RECORD_NAME = ".datalad_metadata_root_record"

@@ -1,12 +1,13 @@
 import enum
 from typing import List, Optional, Tuple
 
-from .connector import ConnectedObject
-from .mapper import get_mapper
-from .metadatapath import MetadataPath
-from .metadatarootrecord import MetadataRootRecord
-from .treenode import TreeNode
-from .mapper.reference import Reference
+from dataladmetadatamodel.connector import ConnectedObject
+from dataladmetadatamodel.log import logger
+from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.treenode import TreeNode
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class NodeType(enum.Enum):

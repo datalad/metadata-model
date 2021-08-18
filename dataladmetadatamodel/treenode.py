@@ -1,6 +1,6 @@
 from typing import Any, Iterable, List, Optional, Tuple
 
-from .metadatapath import MetadataPath
+from dataladmetadatamodel.metadatapath import MetadataPath
 
 
 class TreeNode:

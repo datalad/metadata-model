@@ -2,8 +2,8 @@ import enum
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from .utils import lock_backend, unlock_backend
-from .gitbackend.subprocess import git_ls_tree, git_update_ref, git_save_tree
+from dataladmetadatamodel.mapper.gitmapper.utils import lock_backend, unlock_backend
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_ls_tree, git_update_ref, git_save_tree
 
 
 class GitReference(enum.Enum):

@@ -3,10 +3,10 @@ import json
 import time
 from typing import Dict, Generator, Iterable, List, Optional, Tuple
 
-from . import JSONObject, check_serialized_version, version_string
-from .connector import ConnectedObject
-from .mapper import get_mapper
-from .mapper.reference import Reference
+from dataladmetadatamodel import JSONObject, check_serialized_version, version_string
+from dataladmetadatamodel.connector import ConnectedObject
+from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class ParameterDict(dict):

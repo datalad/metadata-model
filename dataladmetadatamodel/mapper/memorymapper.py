@@ -1,7 +1,7 @@
 from collections import defaultdict
 
-from .basemapper import BaseMapper as _BaseMapper
-from .reference import Reference as _Reference
+from dataladmetadatamodel.mapper.basemapper import BaseMapper as _BaseMapper
+from dataladmetadatamodel.mapper.reference import Reference as _Reference
 
 
 class MemoryMapper(_BaseMapper):

@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
 
-from .reference import Reference
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class BaseMapper(metaclass=ABCMeta):
