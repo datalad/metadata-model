@@ -25,12 +25,10 @@ def add_object_reference(git_reference: GitReference,
     if git_reference.value not in CACHED_OBJECT_REFERENCES:
         CACHED_OBJECT_REFERENCES[git_reference.value] = []
 
-    CACHED_OBJECT_REFERENCES[git_reference.value].append((
-        flag,
-        object_type,
-        object_hash,
-        "object_reference:" + object_hash
-    ))
+    cache_entry = (flag, object_type, object_hash, "object_reference:" + object_hash)
+
+    if cache_entry not in CACHED_OBJECT_REFERENCES[git_reference.value]:
+        CACHED_OBJECT_REFERENCES[git_reference.value].append(cache_entry)
 
 
 def flush_object_references(realm: Path):
