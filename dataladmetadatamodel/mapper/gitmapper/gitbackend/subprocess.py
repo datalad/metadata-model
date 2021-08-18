@@ -3,12 +3,15 @@ import shlex
 import subprocess
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from dataladmetadatamodel.log import logger
+
 
 def execute_with_output(arguments: Union[str, List[str]],
                         file_descriptor: Any,
                         stdin_content: Optional[Union[str, bytes]] = None
                         ) -> Any:
 
+    logger.debug(f"gitbackend: execute_with_output({arguments}, ..., {stdin_content})")
     return subprocess.run(
         shlex.split(arguments) if isinstance(arguments, str) else arguments,
         input=(
@@ -21,6 +24,7 @@ def execute_with_output(arguments: Union[str, List[str]],
 def execute(arguments: Union[str, List[str]],
             stdin_content: Optional[Union[str, bytes]] = None) -> Any:
 
+    logger.debug(f"gitbackend: execute({arguments}, {stdin_content})")
     return subprocess.run(
         shlex.split(arguments) if isinstance(arguments, str) else arguments,
         input=(
@@ -35,6 +39,7 @@ def checked_execute(arguments: Union[str, List[str]],
                     stdin_content: Optional[Union[str, bytes]] = None
                     ) -> Tuple[List[str], List[str]]:
 
+    logger.debug(f"gitbackend: checked_execute({arguments}, {stdin_content})")
     result = execute(arguments, stdin_content)
     if result.returncode != 0:
         raise RuntimeError(
