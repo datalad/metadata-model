@@ -39,7 +39,6 @@ def checked_execute(arguments: Union[str, List[str]],
                     stdin_content: Optional[Union[str, bytes]] = None
                     ) -> Tuple[List[str], List[str]]:
 
-    logger.debug(f"gitbackend: checked_execute({arguments}, {stdin_content})")
     result = execute(arguments, stdin_content)
     if result.returncode != 0:
         raise RuntimeError(
