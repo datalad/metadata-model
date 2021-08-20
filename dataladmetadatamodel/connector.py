@@ -104,8 +104,13 @@ class Connector:
         self.reference = None
         self.is_mapped = True
 
-    def purge(self, unsafe: Optional[bool] = False):
-        if self.is_object_modified() and unsafe is False:
+    def purge(self, discard_changes: Optional[bool] = False):
+        """
+        Try to remove a connected object from memory.
+        If the object is unmodified, it is removed, if it
+        is modified and discard_changes is True, it is also removed.
+        """
+        if self.is_object_modified() and discard_changes is False:
             raise ValueError(
                 f"Cannot purge unsaved, modified object of type "
                 f"{type(self.object).__name__}")
