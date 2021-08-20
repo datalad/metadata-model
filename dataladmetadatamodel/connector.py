@@ -9,6 +9,10 @@ class ConnectedObject:
     def __init__(self):
         self.modified = True
 
+        # Mapper can store private data that is
+        # required for mapping/unmapping here.
+        self.mapper_private_data = None
+
     def is_modified(self) -> bool:
         return self.modified
 

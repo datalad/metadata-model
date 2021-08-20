@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 
 from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference, add_tree_reference
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
@@ -8,6 +9,19 @@ from dataladmetadatamodel.mapper.reference import Reference
 
 
 empty_tree_location = "None"
+
+
+@dataclass
+class GitTreeEntry:
+    flag: str
+    type: str
+    hash: str
+    name: str
+    dirty: bool = False
+    parts: tuple = ()
+
+    def __post_init__(self):
+        self.parts = tuple(self.name.split("/"))
 
 
 class FileTreeGitMapper(BaseMapper):
@@ -46,15 +60,24 @@ class FileTreeGitMapper(BaseMapper):
 
         file_tree = FileTree("git", self.realm)
         if ref.location != empty_tree_location:
-            for line in git_ls_tree_recursive(self.realm, ref.location):
+            git_tree_entries = [
+                GitTreeEntry(*line.split())
+                for line in git_ls_tree_recursive(self.realm, ref.location)
+            ]
+        else:
+            git_tree_entries = []
 
-                location, path = line[12:52], line[53:]
+        file_tree.mapper_private_data = git_tree_entries
+
+        for entry in git_tree_entries:
+            if entry.type == "blob":
                 connector = Connector.from_reference(
-                    Reference("git", self.realm, "Metadata", location))
+                    Reference("git", self.realm, "Metadata", entry.hash))
 
                 file_tree.add_node_hierarchy(
-                    MetadataPath(path),
+                    MetadataPath(entry.name),
                     TreeNode(connector))
+
         return file_tree
 
     def unmap(self, obj) -> str:
