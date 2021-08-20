@@ -1,9 +1,7 @@
 
 from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference, add_tree_reference
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
-    git_load_str,
     git_ls_tree_recursive,
-    git_save_str,
     git_save_tree)
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.reference import Reference
@@ -20,18 +18,15 @@ class FileTreeGitMapper(BaseMapper):
         dir_entries = []
         for name, child_node in node.child_nodes.items():
             if child_node.is_leaf_node():
-                assert isinstance(child_node.value, Connector)
-                # Save connector, that will ensure that the reference is set.
-                # TODO: move this save-call? Since this is a high level
-                #  save-operation, it should probably be called in FileTree
-                #  or TreeNode, but that would require another recursive
-                #  descent.
+
+                connector = child_node.value
+                assert isinstance(connector, Connector)
+
+                # Save connector, that will ensure that the reference
+                # property of the connector is not None.
                 child_node.value.save_object()
-                # Save connectors reference.
-                location = git_save_str(
-                    self.realm,
-                    child_node.value.reference.to_json_str())
-                dir_entries.append(("100644", "blob", location, name))
+                dir_entries.append(
+                    ("100644", "blob", connector.reference.location, name))
             else:
                 dir_entries.append((
                     "040000",
@@ -52,10 +47,11 @@ class FileTreeGitMapper(BaseMapper):
         file_tree = FileTree("git", self.realm)
         if ref.location != empty_tree_location:
             for line in git_ls_tree_recursive(self.realm, ref.location):
+
                 location, path = line[12:52], line[53:]
                 connector = Connector.from_reference(
-                    Reference.from_json_str(
-                        git_load_str(self.realm, location)))
+                    Reference("git", self.realm, "Metadata", location))
+
                 file_tree.add_node_hierarchy(
                     MetadataPath(path),
                     TreeNode(connector))
