@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference, add_tree_reference
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
@@ -18,7 +18,7 @@ class GitTreeEntry:
     hash: str
     name: str
     dirty: bool = False
-    parts: tuple = ()
+    parts: tuple = field(init=False)
 
     def __post_init__(self):
         self.parts = tuple(self.name.split("/"))
@@ -27,6 +27,9 @@ class GitTreeEntry:
 class FileTreeGitMapper(BaseMapper):
 
     def _save_file_tree(self, node: "TreeNode") -> str:
+        """
+        Save modified, new, or deleted elements.
+        """
         from dataladmetadatamodel.connector import Connector
 
         dir_entries = []
