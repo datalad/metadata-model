@@ -1,6 +1,7 @@
 from typing import Iterable, Optional, Tuple, Union
 
 from dataladmetadatamodel.connector import ConnectedObject
+from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mapper import get_mapper
 from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
@@ -64,13 +65,17 @@ class FileTree(ConnectedObject, TreeNode):
         """
         self.un_touch()
 
-        for _, metadata_connector in self.get_paths_recursive(False):
+        for path, metadata_connector in self.get_paths_recursive(False):
             # The following lines should not be required because the
             # mapper should have created a
             #if metadata_connector is None:
             #    metadata_connector = self.connector_class.from_reference(
             #        Reference.get_none_reference())
-            metadata_connector.save_object()
+            if metadata_connector is not None:
+                metadata_connector.save_object()
+            else:
+                logger.debug(f"Path {path} has None metadata connector associated")
+
 
         return Reference(
             self.mapper_family,
