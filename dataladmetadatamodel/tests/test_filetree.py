@@ -50,17 +50,42 @@ class TestFileTree(unittest.TestCase):
                 Metadata("git", f"/tmp/{returned_path}"))
 
     def test_root_node(self):
+        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
         file_tree = FileTree("git", "/tmp")
         metadata_node = Metadata("git", "/tmp")
         file_tree.add_metadata(MetadataPath(""), metadata_node)
 
-        expected_connector = Connector.from_object(metadata_node)
+        expected_connector = PersistedReferenceConnector.from_object(metadata_node)
         self.assertEqual(file_tree.value, expected_connector)
         returned_entries = tuple(file_tree.get_paths_recursive())
 
         self.assertEqual(len(returned_entries), 1)
         self.assertEqual(returned_entries[0][0], MetadataPath(""))
         self.assertEqual(returned_entries[0][1], expected_connector)
+
+
+class TestMapping(unittest.TestCase):
+
+    def test_shallow_file_tree_mapping(self):
+        # assert that file trees content is not mapped by default
+        with tempfile.TemporaryDirectory() as metadata_store:
+
+            subprocess.run(["git", "init", metadata_store])
+
+            paths = [
+                MetadataPath(""),
+                MetadataPath("a")]
+
+            file_tree = FileTree("git", metadata_store)
+            for path in paths:
+                file_tree.add_metadata(path, Metadata("git", metadata_store))
+                file_tree.unget_metadata(path)
+
+            reference = file_tree.save()
+            flush_object_references(Path(metadata_store))
+
+            new_file_tree = Connector.from_reference(reference).load_object()
+            self.assertFalse(new_file_tree.child_nodes["a"].value.is_mapped)
 
 
 class TestDeepCopy(unittest.TestCase):

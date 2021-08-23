@@ -1,7 +1,6 @@
 from typing import Iterable, Optional, Tuple, Union
 
-from dataladmetadatamodel.connector import ConnectedObject, Connector
-from dataladmetadatamodel.log import logger
+from dataladmetadatamodel.connector import ConnectedObject
 from dataladmetadatamodel.mapper import get_mapper
 from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
@@ -18,6 +17,8 @@ class FileTree(ConnectedObject, TreeNode):
         TreeNode.__init__(self)
         self.mapper_family = mapper_family
         self.realm = realm
+        self.mapper = get_mapper(mapper_family, "FileTree")
+        self.connector_class = self.mapper.get_connector_class()
 
     def __contains__(self, path: Union[str, MetadataPath]) -> bool:
         # Allow strings as input as well
@@ -41,7 +42,7 @@ class FileTree(ConnectedObject, TreeNode):
         self.touch()
         self.add_node_hierarchy(
             path,
-            TreeNode(value=Connector.from_object(metadata)))
+            TreeNode(value=self.connector_class(None, metadata, True)))
 
     def get_metadata(self, path: MetadataPath) -> Optional[Metadata]:
         return self.get_node_at_path(path).value.load_object()
@@ -58,15 +59,17 @@ class FileTree(ConnectedObject, TreeNode):
     def save(self) -> Reference:
         """
         Persists all file node values, i.e. all mapped metadata,
-        if they are mapped or modified Then save the tree itself,
+        if they are mapped or modified, then save the tree itself,
         with the class mapper.
         """
         self.un_touch()
 
         for _, metadata_connector in self.get_paths_recursive(False):
-            if metadata_connector is None:
-                metadata_connector = Connector.from_reference(
-                    Reference.get_none_reference())
+            # The following lines should not be required because the
+            # mapper should have created a
+            #if metadata_connector is None:
+            #    metadata_connector = self.connector_class.from_reference(
+            #        Reference.get_none_reference())
             metadata_connector.save_object()
 
         return Reference(
@@ -79,7 +82,7 @@ class FileTree(ConnectedObject, TreeNode):
 
     def get_paths_recursive(self,
                             show_intermediate: Optional[bool] = False
-                            ) -> Iterable[Tuple[MetadataPath, Connector]]:
+                            ) -> Iterable[Tuple[MetadataPath, "Connector"]]:
 
         for name, tree_node in super().get_paths_recursive(show_intermediate):
             yield name, tree_node.value

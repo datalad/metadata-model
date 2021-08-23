@@ -132,7 +132,7 @@ class Connector:
           3. Creating a connector from the copied object
         """
 
-        logger.debug(f"Connector.deepcopy: copying {type(self.object)}")
+        logger.debug(f"{type(self)}.deepcopy: copying {type(self.object)}")
 
         if self.is_mapped:
             original_object = self.object
@@ -148,7 +148,8 @@ class Connector:
         if purge_original:
             self.purge()
 
-        copied_connector = Connector.from_object(copied_object)
+        # Create a connector instance with the same class as self
+        copied_connector = type(self).from_object(copied_object)
         copied_connector.save_object()
         copied_connector.purge()
 
@@ -159,7 +160,7 @@ class Connector:
 
     def __repr__(self):
         return (
-            f"Connector(reference={repr(self.reference)}, "
+            f"{type(self).__name__}(reference={repr(self.reference)}, "
             f"object={repr(self.object)}, is_mapped={repr(self.is_mapped)})")
 
     def __eq__(self, other):
