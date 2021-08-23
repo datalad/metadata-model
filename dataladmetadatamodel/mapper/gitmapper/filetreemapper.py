@@ -1,11 +1,10 @@
-
-from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference, add_tree_reference
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
-    git_load_str,
-    git_ls_tree_recursive,
-    git_save_str,
-    git_save_tree)
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.mapper.gitmapper.objectreference import (
+    GitReference,
+    add_tree_reference)
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_ls_tree_recursive,
+    git_save_tree)
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -15,23 +14,18 @@ empty_tree_location = "None"
 class FileTreeGitMapper(BaseMapper):
 
     def _save_file_tree(self, node: "TreeNode") -> str:
-        from dataladmetadatamodel.connector import Connector
+
+        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
 
         dir_entries = []
         for name, child_node in node.child_nodes.items():
             if child_node.is_leaf_node():
-                assert isinstance(child_node.value, Connector)
-                # Save connector, that will ensure that the reference is set.
-                # TODO: move this save-call? Since this is a high level
-                #  save-operation, it should probably be called in FileTree
-                #  or TreeNode, but that would require another recursive
-                #  descent.
-                child_node.value.save_object()
-                # Save connectors reference.
-                location = git_save_str(
-                    self.realm,
-                    child_node.value.reference.to_json_str())
-                dir_entries.append(("100644", "blob", location, name))
+
+                file_tree_connector = child_node.value
+                assert isinstance(file_tree_connector, PersistedReferenceConnector)
+
+                reference = file_tree_connector.save_object()
+                dir_entries.append(("100644", "blob", reference.location, name))
             else:
                 dir_entries.append((
                     "040000",
@@ -44,21 +38,22 @@ class FileTreeGitMapper(BaseMapper):
             return empty_tree_location
 
     def map(self, ref: Reference) -> "FileTree":
-        from dataladmetadatamodel.connector import Connector
         from dataladmetadatamodel.filetree import FileTree
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.treenode import TreeNode
+        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
 
         file_tree = FileTree("git", self.realm)
         if ref.location != empty_tree_location:
             for line in git_ls_tree_recursive(self.realm, ref.location):
                 location, path = line[12:52], line[53:]
-                connector = Connector.from_reference(
-                    Reference.from_json_str(
-                        git_load_str(self.realm, location)))
+                file_tree_connector = PersistedReferenceConnector(
+                    Reference("git", self.realm, "None", location),
+                    None,
+                    False)
                 file_tree.add_node_hierarchy(
                     MetadataPath(path),
-                    TreeNode(connector))
+                    TreeNode(file_tree_connector))
         return file_tree
 
     def unmap(self, obj) -> str:
@@ -70,3 +65,8 @@ class FileTreeGitMapper(BaseMapper):
         if file_tree_hash != empty_tree_location:
             add_tree_reference(GitReference.FILE_TREE, file_tree_hash)
         return file_tree_hash
+
+    @staticmethod
+    def get_connector_class():
+        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
+        return PersistedReferenceConnector
