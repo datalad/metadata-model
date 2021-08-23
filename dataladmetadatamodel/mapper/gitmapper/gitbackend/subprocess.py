@@ -87,7 +87,7 @@ def git_ls_tree(repo_dir, object_reference) -> List[str]:
 
 
 def git_ls_tree_recursive(repo_dir, object_reference) -> List[str]:
-    cmd_line = git_command_line(repo_dir, "ls-tree", ["-r", object_reference])
+    cmd_line = git_command_line(repo_dir, "ls-tree", ["-r", "-t", object_reference])
     return checked_execute(cmd_line)[0]
 
 
