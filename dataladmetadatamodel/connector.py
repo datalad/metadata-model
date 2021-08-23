@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Any, Optional
 
 from dataladmetadatamodel.log import logger
@@ -8,6 +9,16 @@ from dataladmetadatamodel.mapper.reference import Reference
 class ConnectedObject:
     def __init__(self):
         self.modified = True
+
+        # Used by mappers to associate internal mapper
+        # data with the model instance (mapping between
+        # mapper family and private data).
+        self.mapper_private_data = dict()
+
+    def __deepcopy__(self, memodict={}):
+        copy = ConnectedObject()
+        copy.modified = self.modified
+        copy.mapper_private_data = deepcopy(self.mapper_private_data, memodict)
 
     def is_modified(self) -> bool:
         return self.modified
