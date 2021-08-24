@@ -69,7 +69,7 @@ def add_nodes_for_path(git_tree_info: Dict[str, GitTreeEntry],
 def git_read_tree(realm: str, location: str) -> Dict[str, GitTreeEntry]:
     return {
         line.split()[3]: GitTreeEntry(*line.split())
-        for line in git_ls_tree_recursive(realm, location)
+        for line in git_ls_tree_recursive(realm, location, show_intermediate=True)
     }
 
 
