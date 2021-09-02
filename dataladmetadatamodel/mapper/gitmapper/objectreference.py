@@ -21,6 +21,7 @@ def add_object_reference(git_reference: GitReference,
                          flag: str,
                          object_type: str,
                          object_hash: str):
+    global CACHED_OBJECT_REFERENCES
 
     if git_reference.value not in CACHED_OBJECT_REFERENCES:
         CACHED_OBJECT_REFERENCES[git_reference.value] = []

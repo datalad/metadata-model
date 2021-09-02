@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 from pathlib import PurePosixPath, PureWindowsPath
 
-from ..metadatapath import MetadataPath
+from dataladmetadatamodel.metadatapath import MetadataPath
 
 
 class TestMetadataPath(unittest.TestCase):

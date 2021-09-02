@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from .. import version_string
-from ..metadatasource import MetadataSource, ImmediateMetadataSource,\
+from dataladmetadatamodel import version_string
+from dataladmetadatamodel.metadatasource import MetadataSource, ImmediateMetadataSource,\
     LocalGitMetadataSource
 
 
