@@ -1,6 +1,9 @@
 import unittest
 from unittest.mock import patch
-from pathlib import PurePosixPath, PureWindowsPath
+from pathlib import (
+    PurePosixPath,
+    PureWindowsPath
+)
 
 from dataladmetadatamodel.metadatapath import MetadataPath
 

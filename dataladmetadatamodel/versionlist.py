@@ -1,6 +1,15 @@
-from typing import Dict, Iterable, Optional, Tuple, Union
+from typing import (
+    Dict,
+    Iterable,
+    Optional,
+    Tuple,
+    Union
+)
 
-from dataladmetadatamodel.connector import ConnectedObject, Connector
+from dataladmetadatamodel.connector import (
+    ConnectedObject,
+    Connector
+)
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.mapper import get_mapper
 from dataladmetadatamodel.metadatapath import MetadataPath

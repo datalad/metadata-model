@@ -1,6 +1,12 @@
 
-from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference, add_tree_reference
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_ls_tree_recursive, git_save_tree
+from dataladmetadatamodel.mapper.gitmapper.objectreference import (
+    GitReference,
+    add_tree_reference
+)
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_ls_tree_recursive,
+    git_save_tree
+)
 from dataladmetadatamodel.mapper.gitmapper.metadatarootrecordmapper import MetadataRootRecordGitMapper
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.reference import Reference
@@ -30,7 +36,7 @@ class DatasetTreeGitMapper(BaseMapper):
         for name, child_node in node.child_nodes.items():
             dir_entries.append(
                 ("040000", "tree", self._save_dataset_tree(child_node), name))
-        return git_save_tree(self.realm, dir_entries)
+        return git_save_tree(self.realm, set(dir_entries))
 
     def _map_metadata_root_record(self,
                                   location: str) -> "MetadataRootRecord":

@@ -1,5 +1,8 @@
 from copy import deepcopy
-from typing import Any, Optional
+from typing import (
+    Any,
+    Optional
+)
 
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mapper import get_mapper
@@ -15,10 +18,12 @@ class ConnectedObject:
         # mapper family and private data).
         self.mapper_private_data = dict()
 
-    def __deepcopy__(self, memodict={}):
+    def __deepcopy__(self, memo=None):
         copy = ConnectedObject()
         copy.modified = self.modified
-        copy.mapper_private_data = deepcopy(self.mapper_private_data, memodict)
+        copy.mapper_private_data = deepcopy(
+            self.mapper_private_data,
+            memo=memo or dict())
 
     def is_modified(self) -> bool:
         return self.modified

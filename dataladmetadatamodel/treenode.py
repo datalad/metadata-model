@@ -1,4 +1,10 @@
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import (
+    Any,
+    Iterable,
+    List,
+    Optional,
+    Tuple
+)
 
 from dataladmetadatamodel.metadatapath import MetadataPath
 

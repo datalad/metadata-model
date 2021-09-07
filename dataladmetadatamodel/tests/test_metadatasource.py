@@ -4,8 +4,11 @@ import unittest
 from pathlib import Path
 
 from dataladmetadatamodel import version_string
-from dataladmetadatamodel.metadatasource import MetadataSource, ImmediateMetadataSource,\
+from dataladmetadatamodel.metadatasource import (
+    MetadataSource,
+    ImmediateMetadataSource,
     LocalGitMetadataSource
+)
 
 
 class TestFactory(unittest.TestCase):

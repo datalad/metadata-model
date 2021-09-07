@@ -1,10 +1,17 @@
-from typing import Dict, Optional
+from typing import (
+    Dict,
+    Optional
+)
+
 from uuid import UUID
 
 from dataladmetadatamodel.mapper import get_mapper
 from dataladmetadatamodel.mapper.reference import Reference
 from dataladmetadatamodel.versionlist import VersionList
-from dataladmetadatamodel.connector import ConnectedObject, Connector
+from dataladmetadatamodel.connector import (
+    ConnectedObject,
+    Connector
+)
 from dataladmetadatamodel.connectordict import ConnectorDict
 
 

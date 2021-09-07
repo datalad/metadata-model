@@ -1,7 +1,11 @@
 from typing import Any
 
 from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_load_json, git_save_json, git_update_ref
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_load_json,
+    git_save_json,
+    git_update_ref
+)
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.reference import Reference
 

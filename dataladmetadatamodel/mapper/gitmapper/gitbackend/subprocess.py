@@ -1,7 +1,7 @@
 import json
 import shlex
 import subprocess
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from dataladmetadatamodel.log import logger
 
@@ -104,12 +104,12 @@ def git_save_json(repo_dir, json_object: Union[Dict, List]) -> str:
 
 
 def git_save_tree(repo_dir,
-                  entry_list: List[Tuple[str, str, str, str]]
+                  entry_set: Set[Tuple[str, str, str, str]]
                   ) -> str:
 
     tree_spec = "\n".join([
         f"{flag} {node_type} {object_hash}\t{name}"
-        for flag, node_type, object_hash, name in entry_list
+        for flag, node_type, object_hash, name in entry_set
     ]) + "\n"
     cmd_line = git_command_line(repo_dir, "mktree", ["--missing", ])
     return checked_execute(cmd_line, stdin_content=tree_spec)[0][0]

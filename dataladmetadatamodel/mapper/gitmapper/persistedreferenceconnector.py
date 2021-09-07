@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.log import logger

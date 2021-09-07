@@ -7,11 +7,12 @@ from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
-from dataladmetadatamodel.mapper.gitmapper.objectreference import (
-    flush_object_references
-)
+from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
-from dataladmetadatamodel.tests.utils import assert_file_trees_equal, create_file_tree_with_metadata
+from dataladmetadatamodel.tests.utils import (
+    assert_file_trees_equal,
+    create_file_tree_with_metadata
+)
 
 
 default_paths = [

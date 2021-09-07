@@ -20,7 +20,11 @@ from copy import deepcopy
 from pathlib import Path
 from typing import IO, Optional
 
-from dataladmetadatamodel import JSONObject, check_serialized_version, version_string
+from dataladmetadatamodel import (
+    JSONObject,
+    check_serialized_version,
+    version_string
+)
 
 
 logger = logging.getLogger("datalad.metadata.model")

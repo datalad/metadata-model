@@ -2,7 +2,10 @@
 Commonly used functionality
 """
 import time
-from typing import Optional, Tuple
+from typing import (
+    Optional,
+    Tuple
+)
 from uuid import UUID
 
 from dataladmetadatamodel.connector import Connector
@@ -12,7 +15,10 @@ from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.uuidset import UUIDSet
-from dataladmetadatamodel.versionlist import TreeVersionList, VersionList
+from dataladmetadatamodel.versionlist import (
+    TreeVersionList,
+    VersionList
+)
 from dataladmetadatamodel.mapper.reference import Reference
 
 

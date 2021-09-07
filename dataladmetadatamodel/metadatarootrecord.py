@@ -1,7 +1,10 @@
 from uuid import UUID
 from typing import Optional
 
-from dataladmetadatamodel.connector import ConnectedObject, Connector
+from dataladmetadatamodel.connector import (
+    ConnectedObject,
+    Connector
+)
 from dataladmetadatamodel.mapper import get_mapper
 from dataladmetadatamodel.mapper.reference import Reference
 

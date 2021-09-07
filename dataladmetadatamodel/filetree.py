@@ -1,9 +1,18 @@
-from typing import Iterable, Optional, Tuple, Union
+from typing import (
+    Iterable,
+    Optional,
+    Tuple,
+    Union
+)
 
+from dataladmetadatamodel import JSONObject
 from dataladmetadatamodel.connector import ConnectedObject
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mapper import get_mapper
-from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
+from dataladmetadatamodel.metadata import (
+    ExtractorConfiguration,
+    Metadata
+)
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.treenode import TreeNode
 from dataladmetadatamodel.mapper.reference import Reference
@@ -76,7 +85,6 @@ class FileTree(ConnectedObject, TreeNode):
             else:
                 logger.debug(f"Path {path} has None metadata connector associated")
 
-
         return Reference(
             self.mapper_family,
             self.realm,
@@ -101,7 +109,7 @@ class FileTree(ConnectedObject, TreeNode):
                           author_name: str,
                           author_email: str,
                           configuration: ExtractorConfiguration,
-                          metadata_content: ConnectedObject):
+                          metadata_content: JSONObject):
 
         self.touch()
 

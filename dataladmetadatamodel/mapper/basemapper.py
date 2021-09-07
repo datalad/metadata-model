@@ -1,5 +1,11 @@
-from abc import ABCMeta, abstractmethod
-from typing import Any, Optional
+from abc import (
+    ABCMeta,
+    abstractmethod
+)
+from typing import (
+    Any,
+    Optional
+)
 
 
 from dataladmetadatamodel.mapper.reference import Reference

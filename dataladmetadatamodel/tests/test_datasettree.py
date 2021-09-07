@@ -10,7 +10,10 @@ from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
-from dataladmetadatamodel.tests.utils import assert_dataset_trees_equal, create_dataset_tree
+from dataladmetadatamodel.tests.utils import (
+    assert_dataset_trees_equal,
+    create_dataset_tree
+)
 
 
 file_test_paths = [

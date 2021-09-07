@@ -1,9 +1,11 @@
 import unittest
 from typing import Tuple
 
-
-from dataladmetadatamodel.metadata import ExtractorConfiguration, \
-    MetadataInstance, MetadataInstanceSet
+from dataladmetadatamodel.metadata import (
+    ExtractorConfiguration,
+    MetadataInstance,
+    MetadataInstanceSet
+)
 
 
 class TestInstanceSetBase(unittest.TestCase):

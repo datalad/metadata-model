@@ -1,7 +1,10 @@
 import json
 from typing import Optional
 
-from dataladmetadatamodel import check_serialized_version, version_string
+from dataladmetadatamodel import (
+    check_serialized_version,
+    version_string
+)
 
 
 none_class_name = "*None*"

@@ -1,8 +1,11 @@
 import enum
-from typing import List, Optional, Tuple
+from typing import (
+    List,
+    Optional,
+    Tuple
+)
 
 from dataladmetadatamodel.connector import ConnectedObject
-from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mapper import get_mapper
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord

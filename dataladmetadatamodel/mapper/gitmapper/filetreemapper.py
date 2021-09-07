@@ -4,10 +4,12 @@ from typing import Dict, List, Optional
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.gitmapper.objectreference import (
     GitReference,
-    add_tree_reference)
+    add_tree_reference
+)
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_ls_tree_recursive,
-    git_save_tree)
+    git_save_tree
+)
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -118,7 +120,7 @@ class FileTreeGitMapper(BaseMapper):
                 (entry.flag, entry.type, entry.hash, entry.path.split("/")[-1])
                 for entry in get_children_at(git_tree_info, path)
             ]
-            return git_save_tree(self.realm, dir_entries)
+            return git_save_tree(self.realm, set(dir_entries))
         else:
             return None
 

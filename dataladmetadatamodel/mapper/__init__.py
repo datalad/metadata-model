@@ -1,6 +1,12 @@
 
-from .memorymapper import MEMORY_MAPPER_FAMILY, MEMORY_MAPPER_LOCATIONS
-from .gitmapper import GIT_MAPPER_FAMILY_MEMBERS, GIT_MAPPER_LOCATIONS
+from .memorymapper import (
+    MEMORY_MAPPER_FAMILY,
+    MEMORY_MAPPER_LOCATIONS
+)
+from .gitmapper import (
+    GIT_MAPPER_FAMILY_MEMBERS,
+    GIT_MAPPER_LOCATIONS
+)
 
 
 GIT_MAPPER_FAMILY_NAME = "git"

@@ -1,7 +1,10 @@
 from typing import Any
 from uuid import UUID
 
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_load_json, git_save_json
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_load_json,
+    git_save_json
+)
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.reference import Reference
 

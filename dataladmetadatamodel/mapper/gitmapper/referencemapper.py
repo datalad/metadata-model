@@ -1,6 +1,9 @@
 from typing import Any
 
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_load_str, git_save_str
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_load_str,
+    git_save_str
+)
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.reference import Reference
 

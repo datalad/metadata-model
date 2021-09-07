@@ -2,7 +2,11 @@ from typing import Any
 from uuid import UUID
 
 from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_ls_tree, git_save_tree, git_update_ref
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_ls_tree,
+    git_save_tree,
+    git_update_ref
+)
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -44,6 +48,6 @@ class UUIDSetGitMapper(BaseMapper):
         if not top_half:
             raise ValueError("Cannot unmap an empty UUID")
 
-        location = git_save_tree(self.realm, top_half)
+        location = git_save_tree(self.realm, set(top_half))
         git_update_ref(self.realm, GitReference.UUID_SET.value, location)
         return GitReference.UUID_SET.value
