@@ -18,7 +18,7 @@ class Strings:
 
 
 class MetadataRootRecordGitMapper(BaseMapper):
-    def map(self, ref: Reference) -> Any:
+    def map_impl(self, ref: Reference) -> Any:
         from dataladmetadatamodel.connector import Connector
         from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
@@ -37,7 +37,7 @@ class MetadataRootRecordGitMapper(BaseMapper):
             Connector.from_reference(
                 Reference.from_json_obj(json_object[Strings.FILE_TREE])))
 
-    def unmap(self, obj) -> str:
+    def unmap_impl(self, obj) -> str:
         from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
         assert isinstance(obj, MetadataRootRecord)
         json_object = {

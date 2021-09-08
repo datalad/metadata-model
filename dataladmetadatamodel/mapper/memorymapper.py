@@ -1,10 +1,11 @@
 from collections import defaultdict
+from typing import Any
 
-from dataladmetadatamodel.mapper.basemapper import BaseMapper as _BaseMapper
-from dataladmetadatamodel.mapper.reference import Reference as _Reference
+from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.mapper.reference import Reference
 
 
-class MemoryMapper(_BaseMapper):
+class MemoryMapper(BaseMapper):
     instance = None
 
     def __init__(self):
@@ -15,17 +16,17 @@ class MemoryMapper(_BaseMapper):
     def __call__(self, *args, **kwargs):
         return self
 
-    def map(self, reference: _Reference):
+    def map_impl(self, reference: Reference) -> Any:
         index = int(reference.location)
         print(f"mapper: loading reference {reference}: {self.objects[index]}")
         return self.objects[index]
 
-    def unmap(self, obj) -> _Reference:
+    def unmap_impl(self, obj) -> Reference:
         location = str(self.index)
         print(f"mapper: saving object {obj}: {location}")
         self.objects[self.index] = obj
         self.index += 1
-        return _Reference("memory", "memory", type(obj).__name__, location)
+        return Reference("memory", "memory", type(obj).__name__, location)
 
     @classmethod
     def get_instance(cls):

@@ -9,7 +9,7 @@ from dataladmetadatamodel.mapper.reference import Reference
 
 class TextGitMapper(BaseMapper):
 
-    def map(self, ref: Reference) -> "Text":
+    def map_impl(self, ref: Reference) -> "Text":
         from ...text import Text
 
         assert isinstance(ref, Reference)
@@ -18,7 +18,7 @@ class TextGitMapper(BaseMapper):
         content = git_load_str(ref.realm, ref.location)
         return Text(ref.mapper_family, ref.realm, content)
 
-    def unmap(self, text) -> str:
+    def unmap_impl(self, text) -> str:
         from ...text import Text
 
         assert isinstance(text, Text)

@@ -35,8 +35,9 @@ class MetadataRootRecord(ConnectedObject):
         """
         self.un_touch()
 
-        self.file_tree.save_object()
-        self.dataset_level_metadata.save_object()
+        # Those two are not required, since unmap will save them
+        # self.file_tree.save_object()
+        # self.dataset_level_metadata.save_object()
 
         return Reference(
             self.mapper_family,
