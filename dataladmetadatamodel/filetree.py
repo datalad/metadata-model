@@ -75,11 +75,6 @@ class FileTree(ConnectedObject, TreeNode):
         self.un_touch()
 
         for path, metadata_connector in self.get_paths_recursive(False):
-            # The following lines should not be required because the
-            # mapper should have created a
-            #if metadata_connector is None:
-            #    metadata_connector = self.connector_class.from_reference(
-            #        Reference.get_none_reference())
             if metadata_connector is not None:
                 metadata_connector.save_object()
             else:

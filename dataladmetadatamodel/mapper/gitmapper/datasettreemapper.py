@@ -44,7 +44,7 @@ class DatasetTreeGitMapper(BaseMapper):
             Reference("git", self.realm, "MetadataRootRecord", location)
         )
 
-    def map(self, ref: Reference) -> "DatasetTree":
+    def map_impl(self, ref: Reference) -> "DatasetTree":
         from dataladmetadatamodel.datasettree import DatasetTree
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.treenode import TreeNode
@@ -69,7 +69,7 @@ class DatasetTreeGitMapper(BaseMapper):
             )
         return dataset_tree
 
-    def unmap(self, obj) -> str:
+    def unmap_impl(self, obj) -> str:
         """
         Save DatasetTree as git tree with DATALAD_ROOT_RECORD_NAME
         nodes for each MetadataRootRecord instance.

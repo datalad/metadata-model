@@ -13,13 +13,13 @@ from dataladmetadatamodel.mapper.reference import Reference
 
 class MetadataGitMapper(BaseMapper):
 
-    def map(self, ref: Reference) -> "Metadata":
+    def map_impl(self, ref: Reference) -> "Metadata":
         from dataladmetadatamodel.metadata import Metadata
         return Metadata.from_json(
             git_load_str(self.realm, ref.location)
         )
 
-    def unmap(self, obj) -> str:
+    def unmap_impl(self, obj) -> str:
         from dataladmetadatamodel.metadata import Metadata
         assert isinstance(obj, Metadata)
 

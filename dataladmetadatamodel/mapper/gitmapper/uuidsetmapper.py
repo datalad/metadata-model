@@ -13,7 +13,7 @@ from dataladmetadatamodel.mapper.reference import Reference
 
 class UUIDSetGitMapper(BaseMapper):
 
-    def map(self, ref: Reference) -> Any:
+    def map_impl(self, ref: Reference) -> Any:
         from dataladmetadatamodel.connector import Connector
         from dataladmetadatamodel.uuidset import UUIDSet
         assert isinstance(ref, Reference)
@@ -27,7 +27,7 @@ class UUIDSetGitMapper(BaseMapper):
         }
         return UUIDSet("git", self.realm, initial_set)
 
-    def unmap(self, uuid_set: Any) -> str:
+    def unmap_impl(self, uuid_set: Any) -> str:
         """
         Store the data in the UUIDSet, including
         the top-half of the connectors.

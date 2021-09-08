@@ -4,11 +4,15 @@ from abc import (
 )
 from typing import (
     Any,
+    Dict,
     Optional
 )
 
-
 from dataladmetadatamodel.mapper.reference import Reference
+from dataladmetadatamodel.log import logger
+
+
+MAPPED_OBJECTS: Dict[id, Reference] = dict()
 
 
 class BaseMapper(metaclass=ABCMeta):
@@ -33,10 +37,27 @@ class BaseMapper(metaclass=ABCMeta):
         """
         self.realm = realm
 
-    @abstractmethod
     def map(self, reference: Reference) -> Any:
+        obj = self.map_impl(reference)
+        MAPPED_OBJECTS[id(obj)] = reference
+        return obj
+
+    def unmap(self, obj) -> Reference:
+        if id(obj) not in MAPPED_OBJECTS:
+            MAPPED_OBJECTS[id(obj)] = self.unmap_impl(obj)
+        else:
+            logger.debug(f"object {obj} already saved")
+        return MAPPED_OBJECTS[id(obj)]
+
+    @abstractmethod
+    def map_impl(self, reference: Reference) -> Any:
         raise NotImplementedError
 
     @abstractmethod
-    def unmap(self, obj) -> str:
+    def unmap_impl(self, obj) -> Reference:
         raise NotImplementedError
+
+    @staticmethod
+    def start_mapping_cycle():
+        global MAPPED_OBJECTS
+        MAPPED_OBJECTS = dict()
