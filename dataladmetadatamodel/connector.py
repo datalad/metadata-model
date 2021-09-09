@@ -160,9 +160,12 @@ class Connector:
             original_object = self.load_object()
             purge_original = True
 
-        copied_object = original_object.deepcopy(
-            new_mapper_family,
-            new_realm)
+        if original_object is None:
+            copied_object = None
+        else:
+            copied_object = original_object.deepcopy(
+                new_mapper_family,
+                new_realm)
 
         if purge_original:
             self.purge()

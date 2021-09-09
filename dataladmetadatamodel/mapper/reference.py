@@ -27,6 +27,7 @@ class Reference:
         self.realm = realm
         self.class_name = class_name
         self.location = location
+        self.modified = True
 
     def __str__(self):
         return self.__repr__()

@@ -47,8 +47,9 @@ class BaseMapper(metaclass=ABCMeta):
         if key in MAPPED_OBJECTS:
             logger.warning(f"object of {type(obj).__name__} at {id(obj)} already saved")
         else:
-            MAPPED_OBJECTS[key] = True
-        return self.unmap_impl(obj)
+            reference = self.unmap_impl(obj)
+            MAPPED_OBJECTS[key] = reference
+        return MAPPED_OBJECTS[key]
 
     @abstractmethod
     def map_impl(self, reference: Reference) -> Any:

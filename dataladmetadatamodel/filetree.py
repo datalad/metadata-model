@@ -80,7 +80,7 @@ class FileTree(ConnectedObject, TreeNode):
             else:
                 logger.debug(f"Path {path} has None metadata connector associated")
 
-        return get_mapper(self.mapper_family, "FileTree")(self.realm).unmap(self)
+        return self.unmap_myself(self.mapper_family, self.realm)
 
     def get_paths_recursive(self,
                             show_intermediate: Optional[bool] = False

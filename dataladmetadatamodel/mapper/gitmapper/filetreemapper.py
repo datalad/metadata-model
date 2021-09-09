@@ -2,18 +2,18 @@ from dataclasses import dataclass, field
 from typing import (
     Dict,
     List,
-    Optional,
-    Tuple
+    Optional
 )
 
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_ls_tree_recursive,
+    git_save_str,
+    git_save_tree
+)
 from dataladmetadatamodel.mapper.gitmapper.objectreference import (
     GitReference,
     add_tree_reference
-)
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
-    git_ls_tree_recursive,
-    git_save_tree
 )
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -74,12 +74,12 @@ def add_nodes_for_path(git_tree_info: Dict[str, GitTreeEntry],
             git_tree_info[intermediate_path] = GitTreeEntry(
                 "040000",
                 "tree",
-                "",
+                "-",
                 intermediate_path)
 
     # Create final element
     if path not in git_tree_info:
-        git_tree_info[path] = GitTreeEntry(flag, node_type, "", path)
+        git_tree_info[path] = GitTreeEntry(flag, node_type, "-", path)
 
 
 def git_read_tree(realm: str, location: str) -> Dict[str, GitTreeEntry]:
@@ -94,10 +94,36 @@ def git_read_tree(realm: str, location: str) -> Dict[str, GitTreeEntry]:
 
 class FileTreeGitMapper(BaseMapper):
 
-    def _save_file_tree(self,
-                        node: "TreeNode",
-                        path: str,
-                        git_tree_info: Dict[str, GitTreeEntry]) -> [bool, str]:
+    def _save_new_file_tree(self,
+                            node: "TreeNode"
+                            ) -> Optional[str]:
+        from dataladmetadatamodel.connector import Connector
+        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
+
+        dir_entries = []
+        for name, child_node in node.child_nodes.items():
+
+            if child_node.is_leaf_node():
+                metadata_connector = child_node.value
+                assert isinstance(child_node.value, PersistedReferenceConnector)
+                reference = metadata_connector.save_object()
+                dir_entries.append(("100644", "blob", reference.location, name))
+
+            else:
+                sub_dir_hash = self._save_new_file_tree(child_node)
+                if sub_dir_hash:
+                    dir_entries.append(("040000", "tree", sub_dir_hash, name))
+
+        if dir_entries:
+            return git_save_tree(self.realm, dir_entries)
+        else:
+            return None
+
+    def _save_existing_file_tree(self,
+                                 node: "TreeNode",
+                                 path: str,
+                                 git_tree_info: Dict[str, GitTreeEntry]
+                                 ) -> [bool, str]:
 
         from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
 
@@ -107,6 +133,7 @@ class FileTreeGitMapper(BaseMapper):
         for name, child_node in node.child_nodes.items():
 
             child_node_path = path + ("/" if path else "") + name
+
             # Add potential new nodes
             if child_node.is_leaf_node():
                 add_nodes_for_path(git_tree_info, "100644", "blob", child_node_path)
@@ -125,9 +152,10 @@ class FileTreeGitMapper(BaseMapper):
                 if entry.hash != reference.location:
                     entry.hash = reference.location
                     level_changed = True
+
             else:
 
-                sub_tree_changed, child_tree_hash = self._save_file_tree(child_node, child_node_path, git_tree_info)
+                sub_tree_changed, child_tree_hash = self._save_existing_file_tree(child_node, child_node_path, git_tree_info)
                 if sub_tree_changed and child_tree_hash != entry.hash:
                     entry.hash = child_tree_hash
                     level_changed = True
@@ -171,9 +199,16 @@ class FileTreeGitMapper(BaseMapper):
         from dataladmetadatamodel.filetree import FileTree
 
         assert isinstance(obj, FileTree)
-        git_tree_info = obj.mapper_private_data.get("git", dict())
+        git_tree_info = obj.mapper_private_data.get("git", None)
 
-        changed, file_tree_hash = self._save_file_tree(obj, "", git_tree_info)
+        if git_tree_info is None:
+            file_tree_hash = self._save_new_file_tree(obj)
+        else:
+            _, file_tree_hash = self._save_existing_file_tree(obj, "", git_tree_info)
+
+        if file_tree_hash is None:
+            return Reference.get_none_reference()
+
         add_tree_reference(GitReference.FILE_TREE, file_tree_hash)
         return Reference("git", self.realm, "FileTree", file_tree_hash)
 
