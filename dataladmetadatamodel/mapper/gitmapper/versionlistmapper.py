@@ -72,7 +72,9 @@ class TreeVersionListGitMapper(VersionListGitMapper):
         from dataladmetadatamodel.versionlist import TreeVersionList
 
         assert isinstance(obj, TreeVersionList)
-        location = super().unmap_impl(obj).location
+        reference = super().unmap_impl(obj)
         git_update_ref(
-            self.realm, GitReference.TREE_VERSION_LIST.value, location)
-        return Reference("git", self.realm, "TreeVersionList", location)
+            self.realm,
+            GitReference.TREE_VERSION_LIST.value,
+            reference.location)
+        return reference

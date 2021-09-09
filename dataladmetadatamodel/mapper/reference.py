@@ -19,6 +19,10 @@ class Reference:
                  realm: str,
                  class_name: str,
                  location: Optional[str] = None):
+
+        assert isinstance(location, str) or location is None, \
+                "location is not a string"
+
         self.mapper_family = mapper_family
         self.realm = realm
         self.class_name = class_name
@@ -44,8 +48,7 @@ class Reference:
         return {
             "@": dict(
                 type="Reference",
-                version=version_string,
-            ),
+                version=version_string),
             **dict(
                 mapper_family=self.mapper_family,
                 realm=self.realm,
@@ -70,4 +73,7 @@ class Reference:
 
     @classmethod
     def get_none_reference(cls) -> "Reference":
-        return cls(none_mapper_family_name, none_realm, none_class_name, none_location)
+        return cls(none_mapper_family_name,
+                   none_realm,
+                   none_class_name,
+                   none_location)
