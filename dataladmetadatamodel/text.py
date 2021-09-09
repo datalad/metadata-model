@@ -24,13 +24,7 @@ class Text(ConnectedObject):
 
     def save(self) -> Reference:
         self.un_touch()
-        return Reference(
-            self.mapper_family,
-            self.realm,
-            "Text",
-            get_mapper(
-                self.mapper_family,
-                "Text")(self.realm).unmap(self))
+        return self.unmap_myself(self.mapper_family, self.realm)
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,

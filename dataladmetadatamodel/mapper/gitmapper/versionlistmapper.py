@@ -44,7 +44,7 @@ class VersionListGitMapper(BaseMapper):
         version_records = self._get_version_records(ref)
         return VersionList("git", self.realm, version_records)
 
-    def unmap_impl(self, obj: Any) -> str:
+    def unmap_impl(self, obj: Any) -> Reference:
         from dataladmetadatamodel.versionlist import VersionList
 
         assert isinstance(obj, VersionList)
@@ -57,7 +57,8 @@ class VersionListGitMapper(BaseMapper):
             }
             for primary_data_version, version_record in obj.version_set.items()
         ]
-        return git_save_json(self.realm, json_object)
+        location = git_save_json(self.realm, json_object)
+        return Reference("git", self.realm, "VersionList", location)
 
 
 class TreeVersionListGitMapper(VersionListGitMapper):
@@ -67,8 +68,11 @@ class TreeVersionListGitMapper(VersionListGitMapper):
         version_records = self._get_version_records(ref)
         return TreeVersionList("git", self.realm, version_records)
 
-    def unmap_impl(self, obj: Any) -> str:
-        location = super().unmap_impl(obj)
+    def unmap_impl(self, obj: Any) -> Reference:
+        from dataladmetadatamodel.versionlist import TreeVersionList
+
+        assert isinstance(obj, TreeVersionList)
+        location = super().unmap_impl(obj).location
         git_update_ref(
             self.realm, GitReference.TREE_VERSION_LIST.value, location)
-        return GitReference.TREE_VERSION_LIST.value
+        return Reference("git", self.realm, "TreeVersionList", location)

@@ -18,6 +18,10 @@ class ReferenceGitMapper(BaseMapper):
         ref_json_str = git_load_str(self.realm, ref.location)
         return Reference.from_json_str(ref_json_str)
 
-    def unmap_impl(self, ref: Any) -> str:
+    def unmap_impl(self, ref: Any) -> Reference:
         assert isinstance(ref, Reference)
-        return git_save_str(self.realm, ref.to_json_str())
+        return Reference(
+            "git",
+            self.realm,
+            "Reference",
+            git_save_str(self.realm, ref.to_json_str()))

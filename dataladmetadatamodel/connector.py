@@ -40,6 +40,9 @@ class ConnectedObject:
     def post_load(self, _family, _realm):
         pass
 
+    def unmap_myself(self, mapper_family: str, realm: str) -> Reference:
+        return get_mapper(mapper_family, type(self).__name__)(realm).unmap(self)
+
 
 class Connector:
     def __init__(self,

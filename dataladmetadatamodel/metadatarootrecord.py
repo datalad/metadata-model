@@ -34,18 +34,7 @@ class MetadataRootRecord(ConnectedObject):
         of the connectors with the appropriate class mapper.
         """
         self.un_touch()
-
-        # Those two are not required, since unmap will save them
-        # self.file_tree.save_object()
-        # self.dataset_level_metadata.save_object()
-
-        return Reference(
-            self.mapper_family,
-            self.realm,
-            "MetadataRootRecord",
-            get_mapper(
-                self.mapper_family,
-                "MetadataRootRecord")(self.realm).unmap(self))
+        return self.unmap_myself(self.mapper_family, self.realm)
 
     def set_file_tree(self, file_tree: ConnectedObject):
         self.touch()

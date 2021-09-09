@@ -249,13 +249,7 @@ class Metadata(ConnectedObject):
 
     def save(self) -> Reference:
         self.un_touch()
-        return Reference(
-            self.mapper_family,
-            self.realm,
-            "Metadata",
-            get_mapper(
-                self.mapper_family,
-                "Metadata")(self.realm).unmap(self))
+        return get_mapper(self.mapper_family, "Metadata")(self.realm).unmap(self)
 
     def extractors(self) -> Generator[str, None, None]:
         yield from self.instance_sets.keys()

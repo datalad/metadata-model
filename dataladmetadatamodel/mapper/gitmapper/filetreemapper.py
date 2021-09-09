@@ -3,7 +3,7 @@ from typing import (
     Dict,
     List,
     Optional,
-    Union
+    Tuple
 )
 
 from dataladmetadatamodel.mapper.basemapper import BaseMapper
@@ -55,18 +55,27 @@ def get_node_at(git_tree_info: Dict[str, GitTreeEntry], path: str) -> Optional[G
     return git_tree_info.get(path, None)
 
 
+def get_intermediate_paths(path: str) -> List[str]:
+    path_elements = path.split("/")
+    return [
+        "/".join(path_elements[0:i])
+        for i in range(1, len(path_elements))]
+
+
 def add_nodes_for_path(git_tree_info: Dict[str, GitTreeEntry],
                        flag: str,
                        node_type: str,
                        path: str):
+    """ Add all tree nodes, if they do not yet exist """
 
-    """ add all tree nodes, if they do not yet exist """
-    path_elements = path.split("/")
-    # Create intermediate
-    for i in range(1, len(path_elements) - 1):
-        intermediate_path = "/".join(path_elements[0:i])
+    # Create nodes for intermediate paths
+    for intermediate_path in get_intermediate_paths(path):
         if intermediate_path not in git_tree_info:
-            git_tree_info[intermediate_path] = GitTreeEntry("040000", "tree", "", intermediate_path)
+            git_tree_info[intermediate_path] = GitTreeEntry(
+                "040000",
+                "tree",
+                "",
+                intermediate_path)
 
     # Create final element
     if path not in git_tree_info:
@@ -157,7 +166,7 @@ class FileTreeGitMapper(BaseMapper):
 
         return file_tree
 
-    def unmap_impl(self, obj) -> str:
+    def unmap_impl(self, obj) -> Reference:
         """ Save FileTree as git file tree """
         from dataladmetadatamodel.filetree import FileTree
 
@@ -166,7 +175,7 @@ class FileTreeGitMapper(BaseMapper):
 
         changed, file_tree_hash = self._save_file_tree(obj, "", git_tree_info)
         add_tree_reference(GitReference.FILE_TREE, file_tree_hash)
-        return file_tree_hash
+        return Reference("git", self.realm, "FileTree", file_tree_hash)
 
     @staticmethod
     def get_connector_class():

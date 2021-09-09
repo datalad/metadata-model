@@ -37,7 +37,7 @@ class MetadataRootRecordGitMapper(BaseMapper):
             Connector.from_reference(
                 Reference.from_json_obj(json_object[Strings.FILE_TREE])))
 
-    def unmap_impl(self, obj) -> str:
+    def unmap_impl(self, obj) -> Reference:
         from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
         assert isinstance(obj, MetadataRootRecord)
         json_object = {
@@ -48,4 +48,5 @@ class MetadataRootRecordGitMapper(BaseMapper):
             Strings.FILE_TREE:
                 obj.file_tree.save_object().to_json_obj()
         }
-        return git_save_json(self.realm, json_object)
+        mrr_location = git_save_json(self.realm, json_object)
+        return Reference("git", self.realm, "MetadataRootRecord", mrr_location)

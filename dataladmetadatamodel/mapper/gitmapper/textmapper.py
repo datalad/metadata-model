@@ -18,8 +18,9 @@ class TextGitMapper(BaseMapper):
         content = git_load_str(ref.realm, ref.location)
         return Text(ref.mapper_family, ref.realm, content)
 
-    def unmap_impl(self, text) -> str:
+    def unmap_impl(self, text) -> Reference:
         from ...text import Text
 
         assert isinstance(text, Text)
-        return git_save_str(self.realm, text.content)
+        text_location = git_save_str(self.realm, text.content)
+        return Reference("git", self.realm, "Text", text_location)
