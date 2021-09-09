@@ -19,10 +19,10 @@ class MetadataGitMapper(BaseMapper):
             git_load_str(self.realm, ref.location)
         )
 
-    def unmap_impl(self, obj) -> str:
+    def unmap_impl(self, obj) -> Reference:
         from dataladmetadatamodel.metadata import Metadata
         assert isinstance(obj, Metadata)
 
         metadata_object_hash = git_save_str(self.realm, obj.to_json())
         add_blob_reference(GitReference.METADATA, metadata_object_hash)
-        return metadata_object_hash
+        return Reference("git", self.realm, "Metadata", metadata_object_hash)

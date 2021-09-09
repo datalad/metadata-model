@@ -27,7 +27,7 @@ class UUIDSetGitMapper(BaseMapper):
         }
         return UUIDSet("git", self.realm, initial_set)
 
-    def unmap_impl(self, uuid_set: Any) -> str:
+    def unmap_impl(self, uuid_set: Any) -> Reference:
         """
         Store the data in the UUIDSet, including
         the top-half of the connectors.
@@ -50,4 +50,4 @@ class UUIDSetGitMapper(BaseMapper):
 
         location = git_save_tree(self.realm, set(top_half))
         git_update_ref(self.realm, GitReference.UUID_SET.value, location)
-        return GitReference.UUID_SET.value
+        return Reference("git", self.realm, "UUIDSet", location)

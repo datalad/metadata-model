@@ -1,4 +1,31 @@
-from typing import Any
+"""
+A PersistentReferenceConnector is a Connector
+that connects to a final object via a persisted
+reference, i.e. a Reference that is stored in git
+
+persisted_reference_connector -> Reference on disk -> final object
+
+Instead of directly using the location as the
+final object location, it assumes that the location
+is a pointer to a reference, loads the reference
+and from the reference's location the final object.
+
+This allows to refer to "References" in tree-entries
+of type blob, without having to load the reference
+from disk.
+
+Thus only references that are really loaded lead to
+additional git repository reading. This is especially
+useful for file-trees. Without this file-tree reading
+would consist of reading the git-tree objects and all
+persisted references
+"""
+
+
+from typing import (
+    Any,
+    Optional
+)
 
 from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.log import logger
@@ -14,10 +41,9 @@ class PersistedReferenceConnector(Connector):
     referenced object
     """
     def _load_metadata_reference(self) -> Reference:
-        persisted_ref_realm = self.reference.realm
-        return ReferenceGitMapper(persisted_ref_realm).map(self.reference)
+        return ReferenceGitMapper(self.reference.realm).map(self.reference)
 
-    def _save_metadata_reference(self, metadata_reference: Reference) -> str:
+    def _save_metadata_reference(self, metadata_reference: Reference) -> Reference:
         return ReferenceGitMapper(metadata_reference.realm).unmap(metadata_reference)
 
     def load_object(self) -> Any:
@@ -63,11 +89,62 @@ class PersistedReferenceConnector(Connector):
                 logger.debug(f"PersistedReferenceConnector.save_object: saving {type(self.object)}")
                 persisted_ref_reference = self.object.save()
 
-                location = self._save_metadata_reference(persisted_ref_reference)
-                self.reference = Reference("git", persisted_ref_reference.realm, "Reference", location)
+                self.reference = self._save_metadata_reference(persisted_ref_reference)
 
         else:
             if self.reference is None:
                 self.reference = Reference.get_none_reference()
 
         return self.reference
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_realm: Optional[str] = None
+                 ) -> "PersistedReferenceConnector":
+        """
+        Create a copy of the persisted reference connector.
+        The copied connector will be connected to a copy of
+        the original persisted reference, which will be connected
+        to a copy of the original object.
+        The connected object will be copied in the following steps:
+
+          1. Loading the persisted reference
+          2. Loading the original object
+          3. Calling deepcopy on the original object to get a copied object
+          4. Purging the original object
+          5. Creating a persisted reference for the new object
+          6. Storing the persisted reference
+          7. Creating a persisted reference connector from the copied object
+        """
+
+        assert new_mapper_family == "git", "PersistedReferenceConnector can only be copied to git-mapped backend"
+
+        logger.debug(f"{type(self)}.deepcopy: copying {type(self.object)}")
+
+        if self.is_mapped:
+            original_object = self.object
+            purge_original = False
+        else:
+            original_object = self.load_object()
+            purge_original = True
+
+        copied_object = original_object.deepcopy(
+            new_mapper_family,
+            new_realm)
+
+        if purge_original:
+            self.purge()
+
+        reference_to_copy = copied_object.save()
+        rtc_reference = self._save_metadata_reference(reference_to_copy)
+
+        copied_connector = PersistedReferenceConnector(
+            rtc_reference,
+            copied_object,
+            True)
+
+        # Create a connector instance with the same class as self
+        copied_connector.save_object()
+        copied_connector.purge()
+
+        return copied_connector

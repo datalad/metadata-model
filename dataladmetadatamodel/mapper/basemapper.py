@@ -43,11 +43,13 @@ class BaseMapper(metaclass=ABCMeta):
         return obj
 
     def unmap(self, obj) -> Reference:
-        if id(obj) not in MAPPED_OBJECTS:
-            MAPPED_OBJECTS[id(obj)] = self.unmap_impl(obj)
+        key = (id(obj), type(obj).__name__)
+        if key in MAPPED_OBJECTS:
+            logger.warning(f"object of {type(obj).__name__} at {id(obj)} already saved")
         else:
-            logger.debug(f"object {obj} already saved")
-        return MAPPED_OBJECTS[id(obj)]
+            reference = self.unmap_impl(obj)
+            MAPPED_OBJECTS[key] = reference
+        return MAPPED_OBJECTS[key]
 
     @abstractmethod
     def map_impl(self, reference: Reference) -> Any:

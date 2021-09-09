@@ -76,13 +76,7 @@ class VersionList(ConnectedObject):
         for primary_data_version, version_record in self.version_set.items():
             version_record.element_connector.save_object()
 
-        return Reference(
-            self.mapper_family,
-            self.realm,
-            "VersionList",
-            get_mapper(
-                self.mapper_family,
-                "VersionList")(self.realm).unmap(self))
+        return self.unmap_myself(self.mapper_family, self.realm)
 
     def versions(self) -> Iterable:
         return self.version_set.keys()
@@ -172,13 +166,7 @@ class TreeVersionList(VersionList):
         for primary_data_version, version_record in self.version_set.items():
             version_record.element_connector.save_object()
 
-        return Reference(
-            self.mapper_family,
-            self.realm,
-            "TreeVersionList",
-            get_mapper(
-                self.mapper_family,
-                "TreeVersionList")(self.realm).unmap(self))
+        return self.unmap_myself(self.mapper_family, self.realm)
 
     def get_dataset_tree(self,
                          primary_data_version: str

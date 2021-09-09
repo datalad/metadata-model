@@ -40,11 +40,7 @@ class UUIDSet(ConnectedObject):
 
         self.uuid_set.save()
 
-        return Reference(
-            self.mapper_family,
-            self.realm,
-            "UUIDSet",
-            get_mapper(self.mapper_family, "UUIDSet")(self.realm).unmap(self))
+        return self.unmap_myself(self.mapper_family, self.realm)
 
     def uuids(self):
         return self.uuid_set.keys()

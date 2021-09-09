@@ -19,6 +19,9 @@ class TreeNode:
         assert isinstance(path, MetadataPath)
         return self.get_node_at_path(path) is not None
 
+    def __str__(self):
+        return f"<{type(self).__name__}: children: {self.child_nodes.keys()}>"
+
     def is_leaf_node(self):
         return len(self.child_nodes) == 0
 

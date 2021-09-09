@@ -110,13 +110,7 @@ class DatasetTree(ConnectedObject, TreeNode):
         for _, file_node in self.get_paths_recursive(False):
             file_node.value.save()
 
-        return Reference(
-            self.mapper_family,
-            self.realm,
-            "DatasetTree",
-            get_mapper(
-                self.mapper_family,
-                "DatasetTree")(self.realm).unmap(self))
+        return self.unmap_myself(self.mapper_family, self.realm)
 
     def get_dataset_paths(self) -> List[
                                        Tuple[
