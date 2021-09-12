@@ -63,7 +63,7 @@ class ModifiableObject:
         return self.dirty
 
     def _sub_elements_modified(self):
-        return any(map(self.is_modified, self.get_modifiable_mapped_sub_elements()))
+        return any(map(lambda element: element.is_modified(), self.get_modifiable_mapped_sub_elements()))
 
     def xxxsub_elements_modified(self) -> bool:
         """
@@ -151,6 +151,27 @@ class ComplexDict(MappableObject):
         self.content = dict()
 
 
+class CTree(MappableObject):
+    def __init__(self, reference: Optional[SReference] = None):
+        super().__init__(reference)
+        self.tree = dict()
+
+    def put_c(self, path: str, mappable_dict: MappableDict):
+        self.tree[path] = mappable_dict
+        self.touch()
+
+    def get_c(self, path: str) -> MappableDict:
+        mappable_dict = self.tree[path]
+        mappable_dict.read_in()
+        return mappable_dict
+
+    def purge_impl(self):
+        self.tree = dict()
+
+    def get_modifiable_mapped_sub_elements(self) -> Iterable:
+        yield from self.tree.values()
+
+
 class MappedDictMapper(Mapper):
 
     def read_in(self, mappable_object: MappableDict, reference: SReference):
@@ -175,11 +196,56 @@ class ComplexDictMapper(Mapper):
         return git_save_json(repo_dir, first_level)
 
 
+class CTreeMapper(Mapper):
+
+    def read_in(self, c_tree: CTree, reference: SReference):
+        first_level = git_load_json(repo_dir, str(reference))
+        for key, value in first_level.items():
+            c_tree.tree[key] = MappableDict(git_load_str(repo_dir, first_level[key]))
+
+    def write_out(self, c_tree: CTree) -> SReference:
+        first_level = {
+            key: git_save_str(repo_dir, mapped_dict.write_out())
+            for key, mapped_dict in c_tree.tree.items()
+        }
+        return git_save_json(repo_dir, first_level)
+
+
 mapper["MappableDict"] = MappedDictMapper()
 mapper["ComplexDict"] = ComplexDictMapper()
+mapper["CTree"] = CTreeMapper()
 
 
 def test():
+
+    ct = CTree()
+    for path in ["a/b/c1", "a/b/c2", "a/b/c3"]:
+        sub_elment = MappableDict()
+        for ext in ("-v0", "-v1", "-v2"):
+            sub_elment.put(path + ext, "This is value for: " + path + ext)
+        ct.put_c(path, sub_elment)
+
+    print(ct.is_modified())
+
+    reference = ct.write_out()
+    print(reference)
+
+    md = ct.get_c("a/b/c1")
+    md.put("test-mod", "a key to test modification")
+
+    print(ct.is_modified())
+
+    reference = ct.write_out()
+    print(reference)
+
+    ct.purge()
+
+    ct2 = CTree(reference)
+    ct2.read_in()
+
+    print(ct2)
+
+    return
 
     cd = ComplexDict()
     for key, value in (("a", "this is a"),
