@@ -1,3 +1,4 @@
+import logging
 from typing import (
     Dict,
     Iterable,
@@ -15,6 +16,7 @@ from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
 )
 
 
+logging.basicConfig(level=logging.DEBUG)
 repo_dir: str = "/home/cristian/tmp/mapptest"
 
 
@@ -200,14 +202,17 @@ class CTreeMapper(Mapper):
 
     def read_in(self, c_tree: CTree, reference: SReference):
         first_level = git_load_json(repo_dir, str(reference))
+        logging.debug(f"CTreeMapper: read_in: first_level: {first_level}")
         for key, value in first_level.items():
-            c_tree.tree[key] = MappableDict(git_load_str(repo_dir, first_level[key]))
+            # logging.debug(f"CTreeMapper: first_level[{key}]: {first_level[key]}")
+            c_tree.tree[key] = MappableDict(git_load_str(repo_dir, first_level[key])[5:])
 
     def write_out(self, c_tree: CTree) -> SReference:
         first_level = {
-            key: git_save_str(repo_dir, mapped_dict.write_out())
+            key: git_save_str(repo_dir, "link:" + mapped_dict.write_out())
             for key, mapped_dict in c_tree.tree.items()
         }
+        logging.debug(f"CTreeMapper: write_out: first_level: {first_level}")
         return git_save_json(repo_dir, first_level)
 
 
@@ -229,6 +234,8 @@ def test():
 
     reference = ct.write_out()
     print(reference)
+
+    print(ct.is_modified())
 
     md = ct.get_c("a/b/c1")
     md.put("test-mod", "a key to test modification")
