@@ -1,0 +1,219 @@
+from typing import (
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Union
+)
+
+
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_load_json,
+    git_load_str,
+    git_save_json,
+    git_save_str
+)
+
+
+repo_dir: str = "/home/cristian/tmp/mapptest"
+
+
+SReference = str
+SJSON = Union[str, int, float, Dict, List]
+
+
+class Mapper:
+    def read_in(self, mappable_object: "MappableObject", SReference):
+        raise NotImplementedError
+
+    def write_out(self, mappable_object: "MappableObject") -> SReference:
+        raise NotImplementedError
+
+
+mapper: Dict[str, Mapper] = dict()
+
+
+class ModifiableObject:
+    """
+    Object that tracks modification status.
+
+    Responsibilities:
+     - allow touching and cleaning
+     - determine modification state based
+       on subclass-implementation of is_modified_impl()
+    """
+    def __init__(self):
+        # A modifiable object is assumed
+        # to be unmodified upon creation
+        self.dirty = False
+
+    def touch(self):
+        self.dirty = True
+
+    def clean(self):
+        self.dirty = False
+
+    def is_modified(self) -> bool:
+        """
+        Determine whether the object or one of its contained
+        objects was modified.
+        """
+        if not self.dirty:
+            self.dirty = self._sub_elements_modified()
+        return self.dirty
+
+    def _sub_elements_modified(self):
+        return any(map(self.is_modified, self.get_modifiable_mapped_sub_elements()))
+
+    def xxxsub_elements_modified(self) -> bool:
+        """
+        By default modification state is determined by
+        the dirty flag in this object, i.e. whether
+        self.clean() or self.touch() has been invoked
+        latest.
+
+        :return: True if any sub-element exists that is
+                 modified, else False
+        """
+        return False
+
+    def get_modifiable_mapped_sub_elements(self) -> Iterable:
+        return []
+
+
+class MappableObject(ModifiableObject):
+    """
+    Base class for objects that can
+    be mapped onto a storage backend
+    """
+    def __init__(self, reference: Optional[SReference]):
+        super().__init__()
+        self.reference = reference
+        if reference is None:
+            self.mapped = True
+        else:
+            self.mapped = False
+
+    def read_in(self):
+        if self.mapped:
+            return
+        assert self.reference is not None
+        mapper[type(self).__name__].read_in(self, self.reference)
+        self.mapped = True
+        self.clean()
+
+    def write_out(self) -> SReference:
+        if self.mapped:
+            self.reference = mapper[type(self).__name__].write_out(self)
+            self.clean()
+        assert self.reference is not None
+        return self.reference
+
+    def purge(self):
+        if self.mapped:
+            self.purge_impl()
+            self.mapped = False
+            self.clean()
+
+    def purge_impl(self):
+        raise NotImplementedError
+
+
+class MappableDict(MappableObject):
+    def __init__(self, reference: Optional[SReference] = None):
+        super().__init__(reference)
+        self.content = dict()
+
+    def put(self, key: str, value: SJSON):
+        self.content[key] = value
+        self.touch()
+
+    def get(self, key: str) -> SJSON:
+        return self.content[key]
+
+    def purge_impl(self):
+        self.content = dict()
+
+
+class ComplexDict(MappableObject):
+    def __init__(self, reference: Optional[SReference] = None):
+        super().__init__(reference)
+        self.content = dict()
+
+    def put(self, key: str, value: SJSON):
+        self.content[key] = value
+        self.touch()
+
+    def get(self, key: str) -> SJSON:
+        return self.content[key]
+
+    def purge_impl(self):
+        self.content = dict()
+
+
+class MappedDictMapper(Mapper):
+
+    def read_in(self, mappable_object: MappableDict, reference: SReference):
+        mappable_object.content = git_load_json(repo_dir, str(reference))
+
+    def write_out(self, mappable_object: MappableDict) -> SReference:
+        return git_save_json(repo_dir, mappable_object.content)
+
+
+class ComplexDictMapper(Mapper):
+
+    def read_in(self, complex_dict: ComplexDict, reference: SReference):
+        first_level = git_load_json(repo_dir, str(reference))
+        for key, value in first_level.items():
+            complex_dict.content[key] = git_load_str(repo_dir, first_level[key])
+
+    def write_out(self, complex_dict: ComplexDict) -> SReference:
+        first_level = {
+            key: git_save_str(repo_dir, value)
+            for key, value in complex_dict.content.items()
+        }
+        return git_save_json(repo_dir, first_level)
+
+
+mapper["MappableDict"] = MappedDictMapper()
+mapper["ComplexDict"] = ComplexDictMapper()
+
+
+def test():
+
+    cd = ComplexDict()
+    for key, value in (("a", "this is a"),
+                       ("b", "bbbb is here!")):
+        cd.put(key, value)
+
+    print(cd.is_modified())
+
+    reference = cd.write_out()
+    print(reference)
+
+    cd.purge()
+    cd.read_in()
+    print(cd.content)
+
+    return
+    md = MappableDict()
+    for i in range(32):
+        md.put(str(i), hex(i))
+
+    print(md.is_modified())
+
+    reference = md.write_out()
+    print(reference)
+
+    md.purge()
+    md.read_in()
+    print(md.content)
+
+
+    md2 = MappableDict(reference)
+    md2.read_in()
+    print(md2.content)
+
+
+if __name__ == "__main__":
+    test()

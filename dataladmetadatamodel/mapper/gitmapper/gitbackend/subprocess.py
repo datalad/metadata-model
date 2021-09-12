@@ -72,12 +72,12 @@ def git_text_result(cmd_line):
     return "\n".join(result)
 
 
-def git_load_str(repo_dir, object_reference) -> str:
+def git_load_str(repo_dir: str, object_reference: str) -> str:
     cmd_line = git_command_line(repo_dir, "show", [object_reference])
     return git_text_result(cmd_line)
 
 
-def git_load_json(repo_dir, object_reference) -> Union[Dict, List]:
+def git_load_json(repo_dir: str, object_reference: str) -> Union[Dict, List]:
     return json.loads(git_load_str(repo_dir, object_reference))
 
 
