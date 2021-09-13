@@ -204,7 +204,6 @@ class CTreeMapper(Mapper):
         first_level = git_load_json(repo_dir, str(reference))
         logging.debug(f"CTreeMapper: read_in: first_level: {first_level}")
         for key, value in first_level.items():
-            # logging.debug(f"CTreeMapper: first_level[{key}]: {first_level[key]}")
             c_tree.tree[key] = MappableDict(git_load_str(repo_dir, first_level[key])[5:])
 
     def write_out(self, c_tree: CTree) -> SReference:
