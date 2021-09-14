@@ -5,7 +5,6 @@ from abc import (
 from typing import Optional
 
 from dataladmetadatamodel.mappableobject import MappableObject
-from dataladmetadatamodel.mapper.xxx import get_mapper
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -22,10 +21,13 @@ class Mapper(metaclass=ABCMeta):
         self.class_name = class_name
         self.destination = default_destination
 
-    def read_in(self, mappable_object: MappableObject, reference: Reference):
+    def read_in(self,
+                mappable_object: MappableObject,
+                reference: Reference) -> None:
+
         assert type(mappable_object).__name__ == self.class_name
         assert reference.class_name == self.class_name
-        return self.read_in_impl(mappable_object, reference)
+        self.read_in_impl(mappable_object, reference)
 
     def write_out(self,
                   mappable_object: MappableObject,
@@ -39,7 +41,7 @@ class Mapper(metaclass=ABCMeta):
         return self.write_out_impl(mappable_object, destination)
 
     @abstractmethod
-    def read_in_impl(self, mappable_object: MappableObject, reference: Reference):
+    def read_in_impl(self, mappable_object: MappableObject, reference: Reference) -> None:
         raise NotImplementedError
 
     @abstractmethod
