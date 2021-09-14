@@ -1,22 +1,17 @@
 from uuid import UUID
 from typing import Optional
 
-from dataladmetadatamodel.connector import (
-    ConnectedObject,
-    Connector
-)
-from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mappableobject import MappableObject
+
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-class MetadataRootRecord(ConnectedObject):
+class MetadataRootRecord(MappableObject):
     def __init__(self,
-                 mapper_family: str,
-                 realm: str,
                  dataset_identifier: UUID,
                  dataset_version: str,
-                 dataset_level_metadata: Connector,
-                 file_tree: Connector):
+                 dataset_level_metadata: Metadata,
+                 file_tree: FileTree):
 
         super().__init__()
         self.mapper_family = mapper_family

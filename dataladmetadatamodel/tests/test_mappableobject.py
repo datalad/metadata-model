@@ -1,41 +1,44 @@
-from typing import (
-    Iterable,
-    List
-)
 import unittest
+from unittest.mock import MagicMock
 
 from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.mapper.xxx import set_mapper
 
 
-class TestModifiableObject(unittest.TestCase):
+class SUTMappableObject(MappableObject):
+    def __init__(self, reference=None):
+        super().__init__(reference)
+        self.something = "Something " * 100
 
-    def test_new_clean(self):
-        mo = ModifiableObject()
-        self.assertFalse(mo.is_modified())
+    def purge_impl(self, force: bool):
+        self.something = None
 
-    def test_touching_cleaning(self):
-        mo = ModifiableObject()
-        mo.touch()
-        self.assertTrue(mo.is_modified())
-        mo.clean()
-        self.assertFalse(mo.is_modified())
 
-    def test_sub_object_modification(self):
-        class Bag(ModifiableObject):
-            def __init__(self, sub_objects: List[ModifiableObject]):
-                super().__init__()
-                self.sub_objects = sub_objects
+class TestMappableObject(unittest.TestCase):
 
-            def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
-                return self.sub_objects
+    def setUp(self) -> None:
+        self.test_mapper = MagicMock()
+        set_mapper("SUTMappableObject", "git", self.test_mapper)
 
-        sub_objects = [ModifiableObject() for _ in range(3)]
+    def test_new_mapped(self):
+        # expect that a newly created object without reference is written out once
+        mo = SUTMappableObject(None)
+        mo.write_out("/tmp/t", "git")
+        self.test_mapper.write_out.assert_called_once_with(mo, "/tmp/t")
+        mo.write_out("/tmp/t", "git")
+        self.test_mapper.write_out.assert_called_once_with(mo, "/tmp/t")
 
-        bag = Bag(sub_objects)
-        self.assertFalse(bag.is_modified(), "Expected un-modified state due to newly instantiated sub-objects")
+    def test_purge(self):
+        mo = SUTMappableObject(None)
+        self.assertRaises(ValueError, mo.purge)
+        mo.write_out("/tmp/t", "git")
+        mo.purge()
+        self.test_mapper.write_out.assert_called_once_with(mo, "/tmp/t")
 
-        sub_objects[0].touch()
-        self.assertTrue(bag.is_modified(), "Expected modified state due to one modified sub-object")
+    def test_forced_purge(self):
+        mo = SUTMappableObject(None)
+        mo.purge(force=True)
+        self.test_mapper.write_out.assert_not_called()
 
 
 if __name__ == '__main__':
