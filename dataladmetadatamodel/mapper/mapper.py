@@ -21,18 +21,19 @@ class Mapper(metaclass=ABCMeta):
         self.class_name = class_name
         self.destination = default_destination
 
-    def read_in(self,
-                mappable_object: MappableObject,
-                reference: Reference) -> None:
+    def map_in(self,
+               mappable_object: MappableObject,
+               reference: Reference
+               ) -> None:
 
         assert type(mappable_object).__name__ == self.class_name
         assert reference.class_name == self.class_name
         self.read_in_impl(mappable_object, reference)
 
-    def write_out(self,
-                  mappable_object: MappableObject,
-                  destination: Optional[str] = None
-                  ) -> Reference:
+    def map_out(self,
+                mappable_object: MappableObject,
+                destination: Optional[str] = None
+                ) -> Reference:
 
         if destination is None:
             if self.destination is None:
@@ -41,9 +42,9 @@ class Mapper(metaclass=ABCMeta):
         return self.write_out_impl(mappable_object, destination)
 
     @abstractmethod
-    def read_in_impl(self, mappable_object: MappableObject, reference: Reference) -> None:
+    def map_in_impl(self, mappable_object: MappableObject, reference: Reference) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def write_out_impl(self, mappable_object: MappableObject, destination: str) -> Reference:
+    def map_out_impl(self, mappable_object: MappableObject, destination: str) -> Reference:
         raise NotImplementedError

@@ -24,21 +24,21 @@ class TestMappableObject(unittest.TestCase):
         # expect that a newly created object without reference is written out once
         mo = SUTMappableObject(None)
         mo.write_out("/tmp/t", "git")
-        self.test_mapper.write_out.assert_called_once_with(mo, "/tmp/t")
+        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t")
         mo.write_out("/tmp/t", "git")
-        self.test_mapper.write_out.assert_called_once_with(mo, "/tmp/t")
+        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t")
 
     def test_purge(self):
         mo = SUTMappableObject(None)
         self.assertRaises(ValueError, mo.purge)
         mo.write_out("/tmp/t", "git")
         mo.purge()
-        self.test_mapper.write_out.assert_called_once_with(mo, "/tmp/t")
+        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t")
 
     def test_forced_purge(self):
         mo = SUTMappableObject(None)
         mo.purge(force=True)
-        self.test_mapper.write_out.assert_not_called()
+        self.test_mapper.map_out.assert_not_called()
 
 
 if __name__ == '__main__':

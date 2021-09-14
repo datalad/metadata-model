@@ -33,7 +33,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         if self.mapped:
             return
         assert self.reference is not None
-        get_mapper(type(self).__name__, backend_type).read_in(self, self.reference)
+        get_mapper(type(self).__name__, backend_type).map_in(self, self.reference)
         self.mapped = True
         self.clean()
 
@@ -46,7 +46,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             if not self.is_modified() and not force_write:
                 logger.debug("write_out: skipping mapping because object is not modified.")
             else:
-                self.reference = get_mapper(type(self).__name__, backend_type).write_out(self, destination)
+                self.reference = get_mapper(type(self).__name__, backend_type).map_out(self, destination)
                 self.clean()
         assert self.reference is not None
         return self.reference
