@@ -172,7 +172,7 @@ def create_file_tree_with_metadata(backend: str,
 
     assert len(paths) == len(metadata)
 
-    file_tree = FileTree(backend, realm)
+    file_tree = FileTree()
     for path, md in zip(paths, metadata):
         file_tree.add_metadata(path, md)
 

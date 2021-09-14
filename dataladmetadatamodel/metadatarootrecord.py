@@ -2,7 +2,8 @@ from uuid import UUID
 from typing import Optional
 
 from dataladmetadatamodel.mappableobject import MappableObject
-
+from dataladmetadatamodel.filetree import FileTree
+from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -10,8 +11,8 @@ class MetadataRootRecord(MappableObject):
     def __init__(self,
                  dataset_identifier: UUID,
                  dataset_version: str,
-                 dataset_level_metadata: Metadata,
-                 file_tree: FileTree):
+                 dataset_level_metadata: "Metadata",
+                 file_tree: "FileTree"):
 
         super().__init__()
         self.mapper_family = mapper_family
@@ -31,16 +32,16 @@ class MetadataRootRecord(MappableObject):
         self.un_touch()
         return self.unmap_myself(self.mapper_family, self.realm)
 
-    def set_file_tree(self, file_tree: ConnectedObject):
+    def set_file_tree(self, file_tree: FileTree):
         self.touch()
-        self.file_tree = Connector.from_object(file_tree)
+        self.file_tree = file_tree
 
     def get_file_tree(self):
         return self.file_tree.load_object()
 
-    def set_dataset_level_metadata(self, dataset_level_metadata: ConnectedObject):
+    def set_dataset_level_metadata(self, dataset_level_metadata: Metadata):
         self.touch()
-        self.dataset_level_metadata = Connector.from_object(dataset_level_metadata)
+        self.dataset_level_metadata = dataset_level_metadata
 
     def get_dataset_level_metadata(self):
         return self.dataset_level_metadata.load_object()

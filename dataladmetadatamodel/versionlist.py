@@ -6,12 +6,9 @@ from typing import (
     Union
 )
 
-from dataladmetadatamodel.connector import (
-    ConnectedObject,
-    Connector
-)
 from dataladmetadatamodel.datasettree import DatasetTree
-from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mapper.reference import Reference
@@ -21,11 +18,11 @@ class VersionRecord:
     def __init__(self,
                  time_stamp: str,
                  path: Optional[MetadataPath],
-                 element_connector: Connector):
+                 element: Union[DatasetTree, MetadataRootRecord]):
 
         self.time_stamp = time_stamp
         self.path = path or MetadataPath("")
-        self.element_connector = element_connector
+        self.element = element
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
@@ -35,34 +32,22 @@ class VersionRecord:
         return VersionRecord(
             self.time_stamp,
             self.path,
-            self.element_connector.deepcopy(new_mapper_family, new_realm)
-        )
+            self.element_connector.deepcopy(new_mapper_family, new_realm))
 
 
-class VersionList(ConnectedObject):
+class VersionList(MappableObject):
     def __init__(self,
-                 mapper_family: str,
-                 realm: str,
-                 initial_set: Optional[Dict[str, VersionRecord]] = None):
+                 initial_set: Optional[Dict[str, VersionRecord]],
+                 reference: Optional[Reference] = None):
 
-        super().__init__()
-        self.mapper_family = mapper_family
-        self.realm = realm
+        super().__init__(reference)
         self.version_set = initial_set or dict()
 
     def _get_version_record(self, primary_data_version) -> VersionRecord:
         return self.version_set[primary_data_version]
 
-    def _get_dst_connector(self, primary_data_version) -> Connector:
-        return self._get_version_record(primary_data_version).element_connector
-
-    def is_modified(self) -> bool:
-        return (
-            super().is_modified()
-            or any(
-                map(
-                    lambda vr: vr.element_connector.is_object_modified(),
-                    self.version_set.values())))
+    def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
+        yield from self.version_set.values()
 
     def save(self) -> Reference:
         """

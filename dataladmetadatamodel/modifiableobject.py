@@ -1,7 +1,11 @@
+from abc import (
+    ABCMeta,
+    abstractmethod
+)
 from typing import Iterable
 
 
-class ModifiableObject:
+class ModifiableObject(metaclass=ABCMeta):
     """
     Modifiable objects track their modification status.
     including the modification status of potential
@@ -35,7 +39,11 @@ class ModifiableObject:
         return self.dirty
 
     def _sub_objects_modified(self):
-        return any(map(lambda element: element.is_modified(), self.get_modifiable_sub_objects()))
+        return any(
+            map(
+                lambda element: element.is_modified(),
+                self.get_modifiable_sub_objects()))
 
+    @abstractmethod
     def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
-        return []
+        raise NotImplementedError

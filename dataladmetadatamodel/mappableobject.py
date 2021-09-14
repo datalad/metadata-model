@@ -8,7 +8,6 @@ from typing import Optional
 
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.modifiableobject import ModifiableObject
-from dataladmetadatamodel.mapper.xxx import get_mapper
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -20,6 +19,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
     def __init__(self, reference: Optional[Reference] = None):
         super().__init__()
         self.reference = reference
+        self.mapper_private_data = None
 
         if reference is None:
             # if no reference is given, we assume a newly
@@ -29,25 +29,36 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         else:
             self.mapped = False
 
-    def read_in(self, backend_type="git"):
-        if self.mapped:
-            return
-        assert self.reference is not None
-        get_mapper(type(self).__name__, backend_type).map_in(self, self.reference)
-        self.mapped = True
-        self.clean()
+    def read_in(self, backend_type="git") -> "MappableObject":
+        from dataladmetadatamodel.mapper.xxx import get_mapper
+
+        if not self.mapped:
+            assert self.reference is not None
+            get_mapper(
+                type(self).__name__,
+                backend_type).map_in(self, self.reference)
+            self.mapped = True
+            self.clean()
+        return self
 
     def write_out(self,
                   destination: str,
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
 
+        from dataladmetadatamodel.mapper.xxx import get_mapper
+
         if self.mapped:
             if not self.is_modified() and not force_write:
-                logger.debug("write_out: skipping mapping because object is not modified.")
+                logger.debug(
+                    "write_out: skipping map_out because "
+                    "object is not modified.")
             else:
-                self.reference = get_mapper(type(self).__name__, backend_type).map_out(self, destination)
+                self.reference = get_mapper(
+                    type(self).__name__,
+                    backend_type).map_out(self, destination, force_write)
                 self.clean()
+
         assert self.reference is not None
         return self.reference
 
