@@ -37,15 +37,37 @@ class BaseMapper(metaclass=ABCMeta):
         """
         self.realm = realm
 
+    def __del__(self):
+        """
+        Ensure that the object is removed from the
+        cache of unmapped objects.
+        """
+        existing_entries = [
+            key
+            for key in MAPPED_OBJECTS.keys()
+            if key[0] == id(self)
+        ]
+        if existing_entries:
+            logger.debug(f"Mapper {type(self).__name__}: removing "
+                         f"{existing_entries} from mapped object cache")
+            for key in existing_entries:
+                del MAPPED_OBJECTS[key]
+
+    @staticmethod
+    def _get_key(obj: Any):
+        return (id(obj), type(obj).__name__)
+
     def map(self, reference: Reference) -> Any:
         obj = self.map_impl(reference)
-        MAPPED_OBJECTS[id(obj)] = reference
+        key = self._get_key(obj)
+        MAPPED_OBJECTS[key] = reference
         return obj
 
     def unmap(self, obj) -> Reference:
-        key = (id(obj), type(obj).__name__)
+        reference = self.unmap_impl(obj)
+        key = self._get_key(obj)
         if key in MAPPED_OBJECTS:
-            logger.warning(f"object of {type(obj).__name__} at {id(obj)} already saved")
+            logger.warning(f"Mapper: <{type(obj).__name__}> at {id(obj)} already saved")
         else:
             reference = self.unmap_impl(obj)
             MAPPED_OBJECTS[key] = reference

@@ -1,3 +1,4 @@
+import logging
 import subprocess
 import unittest
 from pathlib import Path
@@ -10,6 +11,9 @@ from ....filetree import FileTree
 from ....metadata import Metadata
 from ....metadatapath import MetadataPath
 from ....tests.utils import create_file_tree_with_metadata
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 initial_paths = [

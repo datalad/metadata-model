@@ -7,6 +7,7 @@ from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 from dataladmetadatamodel.tests.utils import (
@@ -113,6 +114,7 @@ class TestDeepCopy(unittest.TestCase):
                 MetadataPath("/a/x"),
                 Metadata("git", original_dir))
 
+            BaseMapper.start_mapping_cycle()
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
 
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
@@ -131,10 +133,13 @@ class TestDeepCopy(unittest.TestCase):
                 MetadataPath("a/b/d"),
                 MetadataPath("a/x")]
 
+            BaseMapper.start_mapping_cycle()
+
             file_tree = FileTree("git", original_dir)
             for path in paths:
                 file_tree.add_metadata(path, Metadata("git", original_dir))
                 file_tree.unget_metadata(path)
+
             file_tree.save()
             flush_object_references(Path(original_dir))
 

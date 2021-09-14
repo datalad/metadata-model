@@ -15,7 +15,7 @@ class TestVersionListMapper(unittest.TestCase):
 
     def test_basic_unmapping(self):
         with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_save_str") as save:
-
+            save.configure_mock(return_value="000002222")
             none_reference = Reference.get_none_reference()
             ReferenceGitMapper(test_realm_name).unmap(none_reference)
             representation = save.call_args[0][1]

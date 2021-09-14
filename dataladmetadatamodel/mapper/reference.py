@@ -21,7 +21,7 @@ class Reference:
                  location: Optional[str] = None):
 
         assert isinstance(location, str) or location is None, \
-                "location is not a string"
+                f"location is not a string: {location}"
 
         self.mapper_family = mapper_family
         self.realm = realm
