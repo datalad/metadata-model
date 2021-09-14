@@ -114,7 +114,6 @@ class TestDeepCopy(unittest.TestCase):
                 MetadataPath("/a/x"),
                 Metadata("git", original_dir))
 
-            BaseMapper.start_mapping_cycle()
             file_tree_copy = file_tree.deepcopy("git", copy_dir)
 
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
@@ -132,8 +131,6 @@ class TestDeepCopy(unittest.TestCase):
                 MetadataPath("a/b/c/d"),
                 MetadataPath("a/b/d"),
                 MetadataPath("a/x")]
-
-            BaseMapper.start_mapping_cycle()
 
             file_tree = FileTree("git", original_dir)
             for path in paths:

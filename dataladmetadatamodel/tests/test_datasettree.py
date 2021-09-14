@@ -117,8 +117,6 @@ class TestDeepCopy(unittest.TestCase):
                 dataset_test_paths,
                 file_test_paths)
 
-            BaseMapper.start_mapping_cycle()
-
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
             flush_object_references(Path(copy_dir))
 
@@ -141,8 +139,6 @@ class TestDeepCopy(unittest.TestCase):
                 original_dir,
                 dataset_test_paths,
                 file_test_paths)
-
-            BaseMapper.start_mapping_cycle()
 
             dataset_tree.save()
             flush_object_references(Path(original_dir))

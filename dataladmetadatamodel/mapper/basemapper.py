@@ -12,9 +12,6 @@ from dataladmetadatamodel.mapper.reference import Reference
 from dataladmetadatamodel.log import logger
 
 
-MAPPED_OBJECTS: Dict[id, Reference] = dict()
-
-
 class BaseMapper(metaclass=ABCMeta):
     """
     Base class for mapper classes
@@ -37,41 +34,11 @@ class BaseMapper(metaclass=ABCMeta):
         """
         self.realm = realm
 
-    def __del__(self):
-        """
-        Ensure that the object is removed from the
-        cache of unmapped objects.
-        """
-        existing_entries = [
-            key
-            for key in MAPPED_OBJECTS.keys()
-            if key[0] == id(self)
-        ]
-        if existing_entries:
-            logger.debug(f"Mapper {type(self).__name__}: removing "
-                         f"{existing_entries} from mapped object cache")
-            for key in existing_entries:
-                del MAPPED_OBJECTS[key]
-
-    @staticmethod
-    def _get_key(obj: Any):
-        return (id(obj), type(obj).__name__)
-
     def map(self, reference: Reference) -> Any:
-        obj = self.map_impl(reference)
-        key = self._get_key(obj)
-        MAPPED_OBJECTS[key] = reference
-        return obj
+        return self.map_impl(reference)
 
     def unmap(self, obj) -> Reference:
-        reference = self.unmap_impl(obj)
-        key = self._get_key(obj)
-        if key in MAPPED_OBJECTS:
-            logger.warning(f"Mapper: <{type(obj).__name__}> at {id(obj)} already saved")
-        else:
-            reference = self.unmap_impl(obj)
-            MAPPED_OBJECTS[key] = reference
-        return MAPPED_OBJECTS[key]
+        return self.unmap_impl(obj)
 
     @abstractmethod
     def map_impl(self, reference: Reference) -> Any:
@@ -80,8 +47,3 @@ class BaseMapper(metaclass=ABCMeta):
     @abstractmethod
     def unmap_impl(self, obj) -> Reference:
         raise NotImplementedError
-
-    @staticmethod
-    def start_mapping_cycle():
-        global MAPPED_OBJECTS
-        MAPPED_OBJECTS = dict()
