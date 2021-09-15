@@ -8,13 +8,16 @@ from ..referencemapper import ReferenceGitMapper
 
 
 test_realm_name = "ewkd0iasd"
+location_0 = "a0000000000000000"
 
 
 class TestReferenceMapper(unittest.TestCase):
 
     def test_none_reference_unmapping(self):
         with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_save_str") as save:
-            save.configure_mock(return_value="000111")
+
+            save.configure_mock(return_value=location_0)
+
             none_reference = Reference.get_none_reference()
             ReferenceGitMapper(test_realm_name).unmap(none_reference)
             representation = save.call_args[0][1]
