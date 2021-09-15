@@ -39,23 +39,27 @@ class DatasetTreeGitMapper(BaseMapper):
         return git_save_tree(self.realm, set(dir_entries))
 
     def _map_metadata_root_record(self,
-                                  location: str) -> "MetadataRootRecord":
+                                  location: str
+                                  ) -> "MetadataRootRecord":
         return MetadataRootRecordGitMapper(self.realm).map(
             Reference("git", self.realm, "MetadataRootRecord", location)
         )
 
-    def map_impl(self, ref: Reference) -> "DatasetTree":
+    def map_in_impl(self,
+                    dataset_tree: "DatasetTree",
+                    reference: Reference) -> None:
+
         from dataladmetadatamodel.datasettree import DatasetTree
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.treenode import TreeNode
 
-        dataset_tree = DatasetTree("git", self.realm)
+        assert isinstance(dataset_tree, DatasetTree)
 
         # List all leaf-nodes. Those should only end with the datalad
         # root record-name. Add the hierarchy except the leaf-node,
         # read the metadata root record from the leave node, and
         # add it as value to the hierarchy.
-        for line in git_ls_tree_recursive(self.realm, ref.location):
+        for line in git_ls_tree_recursive(reference.realm, reference.location):
 
             _, _, location, path_string = line.split()
             path = MetadataPath(path_string)
@@ -65,18 +69,20 @@ class DatasetTreeGitMapper(BaseMapper):
             dataset_tree.add_node_hierarchy(
                 MetadataPath(*path.parts[:-1]),
                 TreeNode(metadata_root_record),
-                allow_leaf_node_conversion=True
-            )
-        return dataset_tree
+                allow_leaf_node_conversion=True)
 
-    def unmap_impl(self, obj) -> Reference:
+    def map_out_impl(self,
+                     dataset_tree: "DatasetTree",
+                     destination: str,
+                     force_write: bool) -> Reference:
         """
         Save DatasetTree as git tree with DATALAD_ROOT_RECORD_NAME
         nodes for each MetadataRootRecord instance.
         """
         from dataladmetadatamodel.datasettree import DatasetTree
 
-        assert isinstance(obj, DatasetTree)
-        dataset_tree_hash = self._save_dataset_tree(obj)
+        assert isinstance(dataset_tree, DatasetTree)
+
+        dataset_tree_hash = self._save_dataset_tree(dataset_tree)
         add_tree_reference(GitReference.DATASET_TREE, dataset_tree_hash)
-        return Reference("git", self.realm, "DatasetTree", dataset_tree_hash)
+        return Reference("git", destination, "DatasetTree", dataset_tree_hash)

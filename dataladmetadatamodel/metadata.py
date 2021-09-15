@@ -301,6 +301,8 @@ class Metadata(MappableObject):
                  new_mapper_family: Optional[str] = None,
                  new_realm: Optional[str] = None) -> "Metadata":
 
+        raise NotImplementedError
+
         new_mapper_family = new_mapper_family or self.mapper_family
         new_realm = new_realm or self.realm
 

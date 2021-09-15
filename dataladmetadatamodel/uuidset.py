@@ -76,6 +76,8 @@ class UUIDSet(ConnectedObject):
                  new_realm: Optional[str] = None
                  ) -> "UUIDSet":
 
+        raise NotImplementedError
+
         """ copy a UUID set optionally with a new mapper or a new realm """
         new_mapper_family = new_mapper_family or self.mapper_family
         new_realm = new_realm or self.realm

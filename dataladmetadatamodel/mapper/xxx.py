@@ -20,9 +20,11 @@ def set_mapper(class_name: str, backend_type: str, mapper: Any):
 def initialize_object_store():
     from .gitmapper.filetreemapper import FileTreeGitMapper
     from .gitmapper.metadatamapper import MetadataGitMapper
+    from .gitmapper.metadatarootrecordmapper import MetadataRootRecordGitMapper
 
-    set_mapper("Metadata", "git", MetadataGitMapper("Metadata"))
     set_mapper("FileTree", "git", FileTreeGitMapper("FileTree"))
+    set_mapper("Metadata", "git", MetadataGitMapper("Metadata"))
+    set_mapper("MetadataRootRecord", "git", MetadataRootRecordGitMapper("MetadataRootRecord"))
 
 
 initialize_object_store()

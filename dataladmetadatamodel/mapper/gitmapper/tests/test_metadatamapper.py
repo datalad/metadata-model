@@ -34,19 +34,19 @@ class TestMetadataMapper(unittest.TestCase):
                 {
                     "@": {
                         "type": "Metadata",
-                        "version": "2.0"
+                        "version": version_string
                     },
                     "instance_sets": {
                         "test-extractor": {
                             "@": {
                                 "type": "MetadataInstanceSet",
-                                "version": "2.0"
+                                "version": version_string
                             },
                             "parameter_set": [
                                 {
                                     "@": {
                                         "type": "ExtractorConfiguration",
-                                        "version": "2.0"
+                                        "version": version_string
                                     },
                                     "version": "v3.4",
                                     "parameter": {"p1": "1"}
@@ -56,7 +56,7 @@ class TestMetadataMapper(unittest.TestCase):
                                 "0": {
                                     "@": {
                                         "type": "MetadataInstance",
-                                        "version": "2.0"
+                                        "version": version_string
                                     },
                                     "time_stamp": 1.2,
                                     "author": "test-tool",
@@ -64,7 +64,7 @@ class TestMetadataMapper(unittest.TestCase):
                                     "configuration": {
                                         "@": {
                                             "type": "ExtractorConfiguration",
-                                            "version": "2.0"
+                                            "version": version_string
                                         },
                                         "version": "v3.4",
                                         "parameter": {"p1": "1"}

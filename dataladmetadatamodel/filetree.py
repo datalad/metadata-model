@@ -108,6 +108,8 @@ class FileTree(MappableObject, TreeNode):
                  new_mapper_family: Optional[str] = None,
                  new_realm: Optional[str] = None) -> "FileTree":
 
+        raise NotImplementedError
+
         copied_file_tree = FileTree(
             new_mapper_family or self.mapper_family,
             new_realm or self.realm)
