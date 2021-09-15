@@ -6,7 +6,6 @@ from pathlib import Path
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
-from dataladmetadatamodel.mapper.basemapper import BaseMapper
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 from dataladmetadatamodel.tests.utils import (
@@ -29,9 +28,8 @@ class TestFileTree(unittest.TestCase):
     def test_add_metadata(self):
 
         file_tree = create_file_tree_with_metadata(default_paths, [
-            Metadata("git", f"/tmp/{p}")
-            for p in default_paths
-        ])
+            Metadata()
+            for _ in default_paths])
 
         returned_entries = tuple(file_tree.get_paths_recursive())
 
@@ -39,16 +37,13 @@ class TestFileTree(unittest.TestCase):
         self.assertEqual(sorted(default_paths), sorted(returned_paths))
 
         for returned_path, returned_metadata in [
-                (entry[0], entry[1].object)
+                (entry[0], entry[1])
                 for entry in returned_entries]:
-
-            self.assertEqual(
-                returned_metadata,
-                Metadata("git", f"/tmp/{returned_path}"))
+            self.assertEqual(returned_metadata, Metadata())
 
     def test_root_node(self):
-        file_tree = FileTree("git", "/tmp")
-        metadata_node = Metadata("git", "/tmp")
+        file_tree = FileTree()
+        metadata_node = Metadata()
         file_tree.add_metadata(MetadataPath(""), metadata_node)
 
         self.assertEqual(file_tree.value, "aaaaa")
@@ -71,16 +66,16 @@ class TestMapping(unittest.TestCase):
                 MetadataPath(""),
                 MetadataPath("a")]
 
-            file_tree = FileTree("git", metadata_store)
+            file_tree = FileTree()
             for path in paths:
-                file_tree.add_metadata(path, Metadata("git", metadata_store))
-                file_tree.unget_metadata(path)
+                file_tree.add_metadata(path, Metadata())
+                file_tree.unget_metadata(path, metadata_store)
 
-            reference = file_tree.save()
+            reference = file_tree.write_out(metadata_store)
             flush_object_references(Path(metadata_store))
 
-            new_file_tree = Connector.from_reference(reference).load_object()
-            self.assertFalse(new_file_tree.child_nodes["a"].value.is_mapped)
+            new_file_tree = FileTree(reference).read_in()
+            self.assertFalse(new_file_tree.child_nodes["a"].value.mapped)
 
 
 class TestDeepCopy(unittest.TestCase):
@@ -93,22 +88,11 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
 
-            file_tree = FileTree("git", original_dir)
-            file_tree.add_metadata(
-                MetadataPath(""),
-                Metadata("git", original_dir))
-            file_tree.add_metadata(
-                MetadataPath("/a/b/c/d"),
-                Metadata("git", original_dir))
-            file_tree.add_metadata(
-                MetadataPath("/a/b/d"),
-                Metadata("git", original_dir))
-            file_tree.add_metadata(
-                MetadataPath("/a/x"),
-                Metadata("git", original_dir))
+            file_tree = FileTree()
+            for path in ["", "/a/b/c/d", "/a/b/d", "/a/x"]:
+                file_tree.add_metadata(MetadataPath(path), Metadata())
 
-            file_tree_copy = file_tree.deepcopy("git", copy_dir)
-
+            file_tree_copy = file_tree.deepcopy()
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 
     def test_copy_from_backend(self):
@@ -125,16 +109,15 @@ class TestDeepCopy(unittest.TestCase):
                 MetadataPath("a/b/d"),
                 MetadataPath("a/x")]
 
-            file_tree = FileTree("git", original_dir)
+            file_tree = FileTree()
             for path in paths:
-                file_tree.add_metadata(path, Metadata("git", original_dir))
-                file_tree.unget_metadata(path)
+                file_tree.add_metadata(path, Metadata())
+                file_tree.unget_metadata(path, original_dir)
+            file_tree.write_out(original_dir)
+            #flush_object_references(Path(original_dir))
 
-            file_tree.save()
-            flush_object_references(Path(original_dir))
-
-            file_tree_copy = file_tree.deepcopy("git", copy_dir)
-            flush_object_references(Path(copy_dir))
+            file_tree_copy = file_tree.deepcopy()
+            #flush_object_references(Path(copy_dir))
 
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 

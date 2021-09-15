@@ -64,14 +64,14 @@ class FileTree(MappableObject, TreeNode):
         self.touch()
         self.get_node_at_path(path).value.set(metadata)
 
-    def unget_metadata(self, path: MetadataPath):
+    def unget_metadata(self, path: MetadataPath, destination: str):
         value = self.get_node_at_path(path).value
-        value.write_out()
+        value.write_out(destination)
         value.purge()
 
     def get_paths_recursive(self,
                             show_intermediate: Optional[bool] = False
-                            ) -> Iterable[Tuple[MetadataPath, "Connector"]]:
+                            ) -> Iterable[Tuple[MetadataPath, Metadata]]:
 
         for name, tree_node in super().get_paths_recursive(show_intermediate):
             yield name, tree_node.value
