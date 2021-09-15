@@ -53,9 +53,12 @@ class MetadataGitMapper(Mapper):
                 "Metadata",
                 metadata_blob_location).to_json_str())
 
-        # return reference to reference
+        # Return reference to reference, also it specifies
+        # the class Metadata, it points actually to a
+        # persisted Reference object. But this is only known
+        # internally in this mapper.
         return Reference(
             "git",
             destination,
-            "Reference",
+            "Metadata",
             metadata_reference_blob_location)

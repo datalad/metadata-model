@@ -1,4 +1,5 @@
 import unittest
+from typing import Iterable
 from unittest.mock import MagicMock
 
 from dataladmetadatamodel.mappableobject import MappableObject
@@ -13,6 +14,9 @@ class SUTMappableObject(MappableObject):
     def purge_impl(self, force: bool):
         self.something = None
 
+    def get_modifiable_sub_objects(self) -> Iterable:
+        return []
+
 
 class TestMappableObject(unittest.TestCase):
 
@@ -24,16 +28,16 @@ class TestMappableObject(unittest.TestCase):
         # expect that a newly created object without reference is written out once
         mo = SUTMappableObject(None)
         mo.write_out("/tmp/t", "git")
-        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t")
+        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t", False)
         mo.write_out("/tmp/t", "git")
-        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t")
+        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t", False)
 
     def test_purge(self):
         mo = SUTMappableObject(None)
         self.assertRaises(ValueError, mo.purge)
         mo.write_out("/tmp/t", "git")
         mo.purge()
-        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t")
+        self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t", False)
 
     def test_forced_purge(self):
         mo = SUTMappableObject(None)

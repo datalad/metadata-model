@@ -7,14 +7,23 @@ import unittest
 from dataladmetadatamodel.modifiableobject import ModifiableObject
 
 
+class SUTModifiableObject(ModifiableObject):
+    def __init__(self):
+        super().__init__()
+        self.something = "Something " * 100
+
+    def get_modifiable_sub_objects(self) -> Iterable:
+        return []
+
+
 class TestModifiableObject(unittest.TestCase):
 
     def test_new_clean(self):
-        mo = ModifiableObject()
+        mo = SUTModifiableObject()
         self.assertFalse(mo.is_modified())
 
     def test_touching_cleaning(self):
-        mo = ModifiableObject()
+        mo = SUTModifiableObject()
         mo.touch()
         self.assertTrue(mo.is_modified())
         mo.clean()
@@ -29,7 +38,7 @@ class TestModifiableObject(unittest.TestCase):
             def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
                 return self.sub_objects
 
-        sub_objects = [ModifiableObject() for _ in range(3)]
+        sub_objects = [SUTModifiableObject() for _ in range(3)]
 
         bag = Bag(sub_objects)
         self.assertFalse(bag.is_modified(), "Expected un-modified state due to newly instantiated sub-objects")

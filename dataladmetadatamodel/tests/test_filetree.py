@@ -46,12 +46,12 @@ class TestFileTree(unittest.TestCase):
         metadata_node = Metadata()
         file_tree.add_metadata(MetadataPath(""), metadata_node)
 
-        self.assertEqual(file_tree.value, "aaaaa")
+        self.assertIs(file_tree.value, metadata_node)
         returned_entries = tuple(file_tree.get_paths_recursive())
 
         self.assertEqual(len(returned_entries), 1)
         self.assertEqual(returned_entries[0][0], MetadataPath(""))
-        self.assertEqual(returned_entries[0][1], "aaaa")
+        self.assertIs(returned_entries[0][1], metadata_node)
 
 
 class TestMapping(unittest.TestCase):
