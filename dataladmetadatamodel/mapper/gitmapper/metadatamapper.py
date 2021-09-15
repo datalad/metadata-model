@@ -1,4 +1,3 @@
-
 from dataladmetadatamodel.mapper.gitmapper.objectreference import (
     GitReference,
     add_blob_reference
@@ -15,11 +14,16 @@ class MetadataGitMapper(Mapper):
 
     def map_in_impl(self,
                     metadata: "Metadata",
-                    reference: Reference) -> None:
+                    meta_reference: Reference) -> None:
 
         from dataladmetadatamodel.metadata import Metadata
+        from dataladmetadatamodel.mapper.reference import Reference
 
         assert isinstance(metadata, Metadata)
+
+        reference = Reference.from_json_str(
+            git_load_str(meta_reference.realm, meta_reference.location))
+
         metadata.init_from_json(
             git_load_str(reference.realm, reference.location))
 
@@ -31,6 +35,27 @@ class MetadataGitMapper(Mapper):
         from dataladmetadatamodel.metadata import Metadata
         assert isinstance(metadata, Metadata)
 
-        metadata_location = git_save_str(destination, metadata.to_json())
-        add_blob_reference(GitReference.METADATA, metadata_location)
-        return Reference("git", destination, "Metadata", metadata_location)
+        # Save metadata object and add it to the
+        # blob-references. That is necessary because
+        # metadata blobs are only referenced in
+        # persisted Reference-objects, i.e. in
+        # JSON-strings that are stored in the
+        # repository.
+        metadata_blob_location = git_save_str(destination, metadata.to_json())
+        add_blob_reference(GitReference.METADATA, metadata_blob_location)
+
+        # save reference
+        metadata_reference_blob_location = git_save_str(
+            destination,
+            Reference(
+                "git",
+                destination,
+                "Metadata",
+                metadata_blob_location).to_json_str())
+
+        # return reference to reference
+        return Reference(
+            "git",
+            destination,
+            "Metadata",
+            metadata_reference_blob_location)
