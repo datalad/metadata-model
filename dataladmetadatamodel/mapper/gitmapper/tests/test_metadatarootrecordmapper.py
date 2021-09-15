@@ -66,7 +66,7 @@ class TestMetadataMapper(unittest.TestCase):
                         },
                         'mapper_family': 'git',
                         'realm': '/tmp/t1',
-                        'class_name': 'Reference',
+                        'class_name': 'Metadata',
                         'location': location_1
                     },
                     'file_tree': {
