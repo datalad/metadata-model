@@ -1,27 +1,27 @@
 from _collections import defaultdict
 from typing import (
-    Any,
     DefaultDict,
     Dict
 )
 
+registered_mapper: DefaultDict[str, Dict[str, "Mapper"]] = defaultdict(dict)
 
-registered_mapper: DefaultDict[str, Dict[str, Any]] = defaultdict(dict)
 
-
-def get_mapper(class_name: str, backend_type: str):
+def get_mapper(class_name: str, backend_type: str) -> "Mapper":
     return registered_mapper[backend_type][class_name]
 
 
-def set_mapper(class_name: str, backend_type: str, mapper: Any):
+def set_mapper(class_name: str, backend_type: str, mapper: "Mapper"):
     registered_mapper[backend_type][class_name] = mapper
 
 
 def initialize_object_store():
+    from .gitmapper.datasettreemapper import DatasetTreeGitMapper
     from .gitmapper.filetreemapper import FileTreeGitMapper
     from .gitmapper.metadatamapper import MetadataGitMapper
     from .gitmapper.metadatarootrecordmapper import MetadataRootRecordGitMapper
 
+    set_mapper("DatasetTree", "git", DatasetTreeGitMapper("DatasetTree"))
     set_mapper("FileTree", "git", FileTreeGitMapper("FileTree"))
     set_mapper("Metadata", "git", MetadataGitMapper("Metadata"))
     set_mapper("MetadataRootRecord", "git", MetadataRootRecordGitMapper("MetadataRootRecord"))

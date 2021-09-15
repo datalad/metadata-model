@@ -5,42 +5,20 @@ from typing import (
 
 from uuid import UUID
 
-from dataladmetadatamodel.mapper import get_mapper
-from dataladmetadatamodel.mapper.reference import Reference
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.versionlist import VersionList
-from dataladmetadatamodel.connector import (
-    ConnectedObject,
-    Connector
-)
-from dataladmetadatamodel.connectordict import ConnectorDict
 
 
-class UUIDSet(ConnectedObject):
+class UUIDSet(MappableObject):
     def __init__(self,
                  mapper_family: str,
                  realm: str,
-                 initial_set: Optional[Dict[UUID, Connector]] = None):
+                 initial_set: Optional[Dict[UUID, VersionList]] = None):
 
         super().__init__()
         self.mapper_family = mapper_family
         self.realm = realm
-        self.uuid_set = ConnectorDict()
-
-        if initial_set:
-            self.uuid_set.update(initial_set)
-
-    def save(self) -> Reference:
-        """
-        This method persists the bottom-half of all modified
-        connectors by delegating it to the ConnectorDict. Then
-        it saves the properties of the UUIDSet and the top-half
-        of the connectors with the appropriate class mapper.
-        """
-        self.un_touch()
-
-        self.uuid_set.save()
-
-        return self.unmap_myself(self.mapper_family, self.realm)
+        self.uuid_set = initial_set or dict()
 
     def uuids(self):
         return self.uuid_set.keys()
@@ -54,21 +32,21 @@ class UUIDSet(ConnectedObject):
         The entry is marked as dirty.
         """
         self.touch()
-        self.uuid_set[uuid] = Connector.from_object(version_list)
+        self.uuid_set[uuid] = version_list
 
     def get_version_list(self, uuid) -> VersionList:
         """
         Get the version list for uuid. If it is not mapped yet,
         it will be mapped.
         """
-        return self.uuid_set[uuid].load_object()
+        return self.uuid_set[uuid].read_in()
 
     def unget_version_list(self, uuid):
         """
         Remove a version list from memory. First, persist the
         current status, if it was changed.
         """
-        self.uuid_set[uuid].save_object()
+        self.uuid_set[uuid].write_out()
         self.uuid_set[uuid].purge()
 
     def deepcopy(self,

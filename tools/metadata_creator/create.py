@@ -5,7 +5,6 @@ from time import time
 from typing import Dict, List, Tuple, Union
 from uuid import UUID
 
-from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata

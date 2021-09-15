@@ -55,14 +55,10 @@ class TestFileTreeMapper(unittest.TestCase):
         with TemporaryDirectory() as temp_file:
             subprocess.run(["git", "init", temp_file], check=True)
 
-            file_tree = create_file_tree_with_metadata(
-                "git",
-                temp_file,
-                initial_paths,
-                [
-                    Metadata()
-                    for _ in initial_paths
-                ])
+            file_tree = create_file_tree_with_metadata(initial_paths, [
+                Metadata()
+                for _ in initial_paths
+            ])
 
             new_file_tree = self.save_load_compare(file_tree, temp_file, initial_paths)
 

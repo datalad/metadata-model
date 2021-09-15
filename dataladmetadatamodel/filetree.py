@@ -38,7 +38,7 @@ class FileTree(MappableObject, TreeNode):
             yield tree_node.value
 
     def purge_impl(self, force: bool):
-        raise NotImplementedError
+        logger.warning(f"{type(self).__name__}: purge_impl not implemented")
 
     def add_directory(self, name):
         self.touch()
@@ -108,24 +108,16 @@ class FileTree(MappableObject, TreeNode):
                  new_mapper_family: Optional[str] = None,
                  new_realm: Optional[str] = None) -> "FileTree":
 
-        raise NotImplementedError
-
-        copied_file_tree = FileTree(
-            new_mapper_family or self.mapper_family,
-            new_realm or self.realm)
-
-        for path, connector in self.get_paths_recursive(True):
-            if connector is not None:
-                copied_connector = connector.deepcopy(
-                    new_mapper_family,
-                    new_realm)
+        copied_file_tree = FileTree()
+        for path, metadata in self.get_paths_recursive(True):
+            if metadata is not None:
+                copied_metadata = metadata.deepcopy()
             else:
-                copied_connector = None
+                copied_metadata = None
 
             copied_file_tree.add_node_hierarchy(
                 path,
-                TreeNode(
-                    value=copied_connector),
+                TreeNode(value=copied_metadata),
                 allow_leaf_node_conversion=True)
 
         return copied_file_tree

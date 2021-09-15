@@ -3,7 +3,6 @@ import time
 from typing import Dict, Optional, Tuple
 from uuid import UUID
 
-from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 

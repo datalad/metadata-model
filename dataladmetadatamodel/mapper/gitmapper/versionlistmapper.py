@@ -19,7 +19,6 @@ class VersionListGitMapper(Mapper):
     """
 
     def _get_version_records(self, ref: Reference) -> dict:
-        from dataladmetadatamodel.connector import Connector
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.versionlist import VersionRecord
 

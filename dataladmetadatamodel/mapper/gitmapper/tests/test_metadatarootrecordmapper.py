@@ -31,13 +31,9 @@ class TestMetadataMapper(unittest.TestCase):
 
     def test_basic_unmapping(self):
 
-        file_tree = create_file_tree_with_metadata(
-            "git",
-            "/tmp",
-            default_paths,
-            [
-                Metadata()
-                for _ in default_paths])
+        file_tree = create_file_tree_with_metadata(default_paths, [
+            Metadata()
+            for _ in default_paths])
 
         mrr = MetadataRootRecord(
             uuid_0,

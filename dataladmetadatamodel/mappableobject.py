@@ -42,7 +42,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         return self
 
     def write_out(self,
-                  destination: str,
+                  destination: Optional[str] = None,
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
 
@@ -54,6 +54,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                     "write_out: skipping map_out because "
                     "object is not modified.")
             else:
+                destination = destination or self.reference.realm
+                assert destination is not None, f"No destination provided for {self}"
                 self.reference = get_mapper(
                     type(self).__name__,
                     backend_type).map_out(self, destination, force_write)

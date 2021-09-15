@@ -14,7 +14,6 @@ from dataladmetadatamodel.mapper.reference import Reference
 class UUIDSetGitMapper(BaseMapper):
 
     def map_impl(self, ref: Reference) -> Any:
-        from dataladmetadatamodel.connector import Connector
         from dataladmetadatamodel.uuidset import UUIDSet
         assert isinstance(ref, Reference)
         assert ref.mapper_family == "git"

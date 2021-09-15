@@ -301,18 +301,13 @@ class Metadata(MappableObject):
                  new_mapper_family: Optional[str] = None,
                  new_realm: Optional[str] = None) -> "Metadata":
 
-        raise NotImplementedError
+        #new_mapper_family = new_mapper_family or self.mapper_family
+        #new_realm = new_realm or self.realm
 
-        new_mapper_family = new_mapper_family or self.mapper_family
-        new_realm = new_realm or self.realm
-
-        copied_metadata = Metadata(new_mapper_family, new_realm)
+        copied_metadata = Metadata()
         for extractor_name, instance_set in self.instance_sets.items():
-
-            # copy the instance set, i.e. the model object
             copied_metadata.instance_sets[extractor_name] = \
                 copy.deepcopy(instance_set)
-            del instance_set
 
         return copied_metadata
 

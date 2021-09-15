@@ -3,7 +3,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
@@ -29,14 +28,10 @@ class TestFileTree(unittest.TestCase):
 
     def test_add_metadata(self):
 
-        file_tree = create_file_tree_with_metadata(
-            "git",
-            "/tmp",
-            default_paths,
-            [
-                Metadata("git", f"/tmp/{p}")
-                for p in default_paths
-            ])
+        file_tree = create_file_tree_with_metadata(default_paths, [
+            Metadata("git", f"/tmp/{p}")
+            for p in default_paths
+        ])
 
         returned_entries = tuple(file_tree.get_paths_recursive())
 
@@ -52,18 +47,16 @@ class TestFileTree(unittest.TestCase):
                 Metadata("git", f"/tmp/{returned_path}"))
 
     def test_root_node(self):
-        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
         file_tree = FileTree("git", "/tmp")
         metadata_node = Metadata("git", "/tmp")
         file_tree.add_metadata(MetadataPath(""), metadata_node)
 
-        expected_connector = PersistedReferenceConnector.from_object(metadata_node)
-        self.assertEqual(file_tree.value, expected_connector)
+        self.assertEqual(file_tree.value, "aaaaa")
         returned_entries = tuple(file_tree.get_paths_recursive())
 
         self.assertEqual(len(returned_entries), 1)
         self.assertEqual(returned_entries[0][0], MetadataPath(""))
-        self.assertEqual(returned_entries[0][1], expected_connector)
+        self.assertEqual(returned_entries[0][1], "aaaa")
 
 
 class TestMapping(unittest.TestCase):

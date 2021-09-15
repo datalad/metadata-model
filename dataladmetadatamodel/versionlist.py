@@ -34,7 +34,7 @@ class VersionRecord:
         return VersionRecord(
             self.time_stamp,
             self.path,
-            self.element_connector.deepcopy(new_mapper_family, new_realm))
+            self.element.deepcopy(new_mapper_family, new_realm))
 
 
 class VersionList(MappableObject):
@@ -43,7 +43,7 @@ class VersionList(MappableObject):
                  reference: Optional[Reference] = None):
 
         super().__init__(reference)
-        self.version_set = initial_set or dict()
+        self.version_set: Dict[str, VersionRecord] = initial_set or dict()
 
     def _get_version_record(self, primary_data_version) -> VersionRecord:
         return self.version_set[primary_data_version]
@@ -51,26 +51,12 @@ class VersionList(MappableObject):
     def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
         yield from self.version_set.values()
 
-    def save(self) -> Reference:
-        """
-        This method persists the bottom-half of all modified
-        connectors by delegating it to the ConnectorDict. Then
-        it saves the properties of the VersionList and the top-half
-        of the connectors with the appropriate class mapper.
-        """
-        self.un_touch()
-
-        for primary_data_version, version_record in self.version_set.items():
-            version_record.element_connector.save_object()
-
-        return self.unmap_myself(self.mapper_family, self.realm)
-
     def versions(self) -> Iterable:
         return self.version_set.keys()
 
     def get_versioned_element(self,
                               primary_data_version: str
-                              ) -> Tuple[str, MetadataPath, Union[DatasetTree, MetadataRootRecord]]:
+                              ) -> Tuple[str, MetadataPath, MappableObject]:
 
         """
         Get the dataset tree or metadata root record,
@@ -81,7 +67,7 @@ class VersionList(MappableObject):
         return (
             version_record.time_stamp,
             version_record.path,
-            version_record.element_connector.load_object())
+            version_record.element.read_in())
 
     def set_versioned_element(self,
                               primary_data_version: str,
@@ -98,7 +84,7 @@ class VersionList(MappableObject):
         self.version_set[primary_data_version] = VersionRecord(
             time_stamp,
             path,
-            Connector.from_object(element))
+            element)
 
     def unget_versioned_element(self,
                                 primary_data_version: str):
@@ -108,9 +94,9 @@ class VersionList(MappableObject):
         the backend, if it was changed or--- then purge it
         from memory.
         """
-        dst_connector = self._get_dst_connector(primary_data_version)
-        dst_connector.save_object()
-        dst_connector.purge()
+        version_record = self.version_set[primary_data_version]
+        version_record.element.write_out()
+        version_record.element.purge()
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
@@ -118,6 +104,7 @@ class VersionList(MappableObject):
                  path_prefix: Optional[MetadataPath] = None
                  ) -> "VersionList":
 
+        raise NotImplementedError
         new_mapper_family = new_mapper_family or self.mapper_family
         new_realm = new_realm or self.realm
         path_prefix = path_prefix or MetadataPath("")
@@ -145,15 +132,6 @@ class TreeVersionList(VersionList):
     specific mapping, for example in the git mapper, which will
     update a reference, if mapping an TreeVersionList instance.
     """
-    def save(self) -> Reference:
-
-        self.un_touch()
-
-        # Save all dataset tree connectors that are mapped
-        for primary_data_version, version_record in self.version_set.items():
-            version_record.element_connector.save_object()
-
-        return self.unmap_myself(self.mapper_family, self.realm)
 
     def get_dataset_tree(self,
                          primary_data_version: str
@@ -161,6 +139,7 @@ class TreeVersionList(VersionList):
 
         time_stamp, _, dataset_tree = super().get_versioned_element(
             primary_data_version)
+        assert isinstance(dataset_tree, DatasetTree)
         return time_stamp, dataset_tree
 
     def set_dataset_tree(self,
@@ -188,6 +167,7 @@ class TreeVersionList(VersionList):
                  path_prefix: Optional[MetadataPath] = None
                  ) -> "TreeVersionList":
 
+        raise NotImplementedError
         new_mapper_family = new_mapper_family or self.mapper_family
         new_realm = new_realm or self.realm
         path_prefix = path_prefix or MetadataPath("")
