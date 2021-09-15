@@ -46,12 +46,17 @@ def get_children_at(git_tree_info: Dict[str, GitTreeEntry],
     selected_entries = [
         entry
         for entry in git_tree_info.values()
-        if len(entry.parts) == len(node_parts) + 1 and entry.parts[:-1] == node_parts
-    ]
+        if (
+            len(entry.parts) == len(node_parts) + 1
+            and entry.parts[:-1] == node_parts)]
+
     return selected_entries
 
 
-def get_node_at(git_tree_info: Dict[str, GitTreeEntry], path: str) -> Optional[GitTreeEntry]:
+def get_node_at(git_tree_info: Dict[str, GitTreeEntry],
+                path: str
+                ) -> Optional[GitTreeEntry]:
+
     return git_tree_info.get(path, None)
 
 
@@ -128,7 +133,7 @@ class FileTreeGitMapper(Mapper):
                         name))
 
         if dir_entries:
-            return git_save_tree(destination, set(dir_entries))
+            return git_save_tree(destination, dir_entries)
         else:
             return None
 
@@ -201,6 +206,7 @@ class FileTreeGitMapper(Mapper):
                     file_tree: "FileTree",
                     reference: Reference) -> None:
 
+        from dataladmetadatamodel.metadata import Metadata
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.treenode import TreeNode
 
@@ -211,13 +217,15 @@ class FileTreeGitMapper(Mapper):
 
             for entry in git_tree_info.values():
                 if entry.type == "blob":
-                    file_tree_connector = PersistedReferenceConnector(
-                        Reference("git", self.realm, "None", entry.hash),
-                        None,
-                        False)
                     file_tree.add_node_hierarchy(
                         MetadataPath(entry.path),
-                        TreeNode(file_tree_connector))
+                        TreeNode(
+                            Metadata(
+                                Reference(
+                                    "git",
+                                    reference.realm,
+                                    "Metadata",
+                                    entry.hash))))
 
         return file_tree
 
@@ -234,7 +242,7 @@ class FileTreeGitMapper(Mapper):
 
         assert isinstance(file_tree, FileTree)
 
-        git_tree_info = file_tree.mapper_private_data
+        git_tree_info = file_tree.mapper_private_data.get("git", None)
         if git_tree_info is None:
             file_tree_hash = self._save_new_file_tree(
                 file_tree,

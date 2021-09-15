@@ -35,15 +35,16 @@ class TestFileTreeMapper(unittest.TestCase):
         reference = file_tree.write_out(destination)
         flush_object_references(Path(destination))
 
-        #
+        # DBG START
         print(reference)
-        return file_tree
-        #
+        # return file_tree
+        # DBG END
 
         file_tree = None
 
-        #new_file_tree = FileTreeGitMapper(realm).map(reference)
-        #loaded_paths = [p[0] for p in new_file_tree.get_paths_recursive()]
+        new_file_tree = FileTree(reference)
+        new_file_tree.read_in()
+        loaded_paths = [p[0] for p in new_file_tree.get_paths_recursive()]
 
         self.assertEqual(len(loaded_paths), len(expected_paths))
         self.assertTrue(all(map(lambda np: np in expected_paths, loaded_paths)))
@@ -70,7 +71,7 @@ class TestFileTreeMapper(unittest.TestCase):
             self.assertEqual(len(initial_paths) + 1, len(new_paths))
 
             updated_file_tree = self.save_load_compare(new_file_tree, temp_file, new_paths)
-
+            return
 
 if __name__ == '__main__':
     unittest.main()

@@ -57,5 +57,5 @@ class MetadataGitMapper(Mapper):
         return Reference(
             "git",
             destination,
-            "Metadata",
+            "Reference",
             metadata_reference_blob_location)

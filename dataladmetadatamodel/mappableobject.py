@@ -19,7 +19,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
     def __init__(self, reference: Optional[Reference] = None):
         super().__init__()
         self.reference = reference
-        self.mapper_private_data = None
+        self.mapper_private_data = dict()
 
         if reference is None:
             # if no reference is given, we assume a newly
@@ -32,7 +32,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
     def read_in(self, backend_type="git") -> "MappableObject":
         from dataladmetadatamodel.mapper.xxx import get_mapper
 
-        if not self.mapped:
+        if self.mapped is False:
             assert self.reference is not None
             get_mapper(
                 type(self).__name__,

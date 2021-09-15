@@ -22,7 +22,7 @@ class FileTree(MappableObject, TreeNode):
     def __init__(self,
                  reference: Optional[Reference] = None):
 
-        MappableObject.__init__(self)
+        MappableObject.__init__(self, reference)
         TreeNode.__init__(self)
 
     def __contains__(self, path: Union[str, MetadataPath]) -> bool:
