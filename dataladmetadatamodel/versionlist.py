@@ -29,8 +29,6 @@ class VersionRecord:
                  new_realm: Optional[str] = None
                  ) -> "VersionRecord":
 
-        raise NotImplementedError
-
         return VersionRecord(
             self.time_stamp,
             self.path,

@@ -1,5 +1,4 @@
-from typing import Any
-
+from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_load_json,
@@ -8,7 +7,6 @@ from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
 )
 from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
-from dataladmetadatamodel.mappableobject import MappableObject
 
 
 class VersionListGitMapper(Mapper):
@@ -18,31 +16,32 @@ class VersionListGitMapper(Mapper):
     define a list of primary data-metadata associations.
     """
 
-    def _get_version_records(self, ref: Reference) -> dict:
+    def _get_version_records(self, reference: Reference) -> dict:
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.versionlist import VersionRecord
 
-        assert isinstance(ref, Reference)
-        assert ref.mapper_family == "git"
+        assert isinstance(reference, Reference)
+        assert reference.mapper_family == "git"
 
-        json_object = git_load_json(self.realm, ref.location)
+        json_object = git_load_json(reference.realm, reference.location)
         version_records = {
             pdm_assoc["primary_data_version"]: VersionRecord(
                 pdm_assoc["time_stamp"],
                 MetadataPath(pdm_assoc["path"]),
-                Connector.from_reference(
-                    Reference.from_json_obj(pdm_assoc["dataset_tree"])
-                )
+                DatasetTree(Reference.from_json_obj(pdm_assoc["dataset_tree"]))
             )
             for pdm_assoc in json_object
         }
         return version_records
 
-    def map_impl(self, ref: Reference) -> Any:
+    def map_in_impl(self,
+                    version_list: "VersionList",
+                    reference: Reference) -> None:
+
         from dataladmetadatamodel.versionlist import VersionList
 
-        version_records = self._get_version_records(ref)
-        return VersionList("git", self.realm, version_records)
+        assert isinstance(version_list, VersionList)
+        version_list.version_set = self._get_version_records(reference)
 
     def map_out_impl(self,
                      version_list: "VersionList",
@@ -53,7 +52,6 @@ class VersionListGitMapper(Mapper):
         from dataladmetadatamodel.versionlist import VersionList
 
         assert isinstance(version_list, VersionList)
-
         for primary_data_version, version_record in version_list.version_set.items():
             version_record.write_out()
 
@@ -77,8 +75,8 @@ class TreeVersionListGitMapper(VersionListGitMapper):
 
         from dataladmetadatamodel.versionlist import TreeVersionList
 
-        for version, version_record in self._get_version_records(reference):
-            self.set_dataset_tree("000", "1.2", None)
+        assert isinstance(tree_version_list, TreeVersionList)
+        tree_version_list.version_set = self._get_version_records(reference)
 
     def map_out_impl(self,
                      tree_version_list: "TreeVersionList",
@@ -89,9 +87,9 @@ class TreeVersionListGitMapper(VersionListGitMapper):
         from dataladmetadatamodel.versionlist import TreeVersionList
 
         assert isinstance(tree_version_list, TreeVersionList)
-        reference = super().unmap_impl(obj)
+        reference = super().map_out_impl(tree_version_list, destination, force_write)
         git_update_ref(
-            self.realm,
+            destination,
             GitReference.TREE_VERSION_LIST.value,
             reference.location)
         return reference
