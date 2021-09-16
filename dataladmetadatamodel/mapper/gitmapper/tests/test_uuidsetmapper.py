@@ -11,7 +11,7 @@ test_realm_name = "ewkd0iasd"
 location_0 = "a000000000000000000000000000000000000000"
 
 
-class TestVersionListMapper(unittest.TestCase):
+class TestUUIDSetMapper(unittest.TestCase):
 
     def test_basic_unmapping(self):
         self.assertTrue(False, "implement me")
