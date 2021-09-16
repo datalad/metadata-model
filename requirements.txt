@@ -2,3 +2,4 @@ nose
 click
 dataclasses
 fasteners
+nose
