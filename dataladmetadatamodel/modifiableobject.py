@@ -2,7 +2,10 @@ from abc import (
     ABCMeta,
     abstractmethod
 )
-from typing import Iterable
+from typing import (
+    Iterable,
+    Set
+)
 
 
 class ModifiableObject(metaclass=ABCMeta):
@@ -21,27 +24,23 @@ class ModifiableObject(metaclass=ABCMeta):
     def __init__(self):
         # A modifiable object is assumed
         # to be unmodified upon creation
-        self.dirty = False
+        self.saved_on: Set[str] = set()
 
     def touch(self):
-        self.dirty = True
+        self.set_unsaved()
 
-    def clean(self):
-        self.dirty = False
+    def set_saved_on(self, destination: str):
+        self.saved_on.add(destination)
 
-    def is_modified(self) -> bool:
-        """
-        Determine whether the object or one of its contained
-        objects was modified.
-        """
-        if not self.dirty:
-            self.dirty = self._sub_objects_modified()
-        return self.dirty
+    def set_unsaved(self):
+        self.saved_on = set()
 
-    def _sub_objects_modified(self):
-        return any(
+    def is_saved_on(self, destination: str) -> bool:
+        if destination not in self.saved_on:
+            return False
+        return all(
             map(
-                lambda element: element.is_modified(),
+                lambda element: element.is_saved_on(destination),
                 self.get_modifiable_sub_objects()))
 
     @abstractmethod

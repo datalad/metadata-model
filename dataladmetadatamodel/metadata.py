@@ -282,11 +282,10 @@ class Metadata(MappableObject):
         })
 
     def init_from_json(self, json_str) -> None:
-
         obj = json.loads(json_str)
         check_serialized_version(obj)
-        assert obj["@"]["type"] == "Metadata"
 
+        assert obj["@"]["type"] == "Metadata"
         for format_name, instance_set_json_obj in obj["instance_sets"].items():
             self.instance_sets[format_name] = \
                 MetadataInstanceSet.from_json_obj(instance_set_json_obj)
@@ -295,6 +294,8 @@ class Metadata(MappableObject):
     def from_json(cls, json_str: str) -> "Metadata":
         metadata = cls(None)
         metadata.init_from_json(json_str)
+        metadata.mapped = True
+        metadata.set_unsaved()
         return metadata
 
     def deepcopy(self,
@@ -310,4 +311,3 @@ class Metadata(MappableObject):
                 copy.deepcopy(instance_set)
 
         return copied_metadata
-

@@ -84,14 +84,20 @@ class TestMetadataMapper(unittest.TestCase):
             ExtractorConfiguration("v3.4", {"p1": "1"}),
             {"key1": "this is metadata"})
 
-        with mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatamapper.git_save_str") as save:
+        with mock.patch(
+                "dataladmetadatamodel.mapper.gitmapper"
+                ".metadatamapper.git_save_str") as save:
 
             save.configure_mock(return_value=location_0)
 
             reference = metadata.write_out("/tmp/t1", "git")
             self.assertEqual(len(save.call_args_list), 2)
-            self.assertEqual(json.loads(save.call_args_list[0][0][1]), expected_metadata_object)
-            self.assertEqual(json.loads(save.call_args_list[1][0][1]), expected_reference_object)
+            self.assertEqual(
+                json.loads(save.call_args_list[0][0][1]),
+                expected_metadata_object)
+            self.assertEqual(
+                json.loads(save.call_args_list[1][0][1]),
+                expected_reference_object)
 
 
 if __name__ == '__main__':

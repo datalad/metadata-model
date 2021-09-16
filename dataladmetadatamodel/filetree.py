@@ -8,7 +8,7 @@ from typing import (
 from dataladmetadatamodel import JSONObject
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mappableobject import MappableObject
-from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mapper.xxx import get_mapper
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
     Metadata

@@ -18,14 +18,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         super().__init__()
         self.reference = reference
         self.mapper_private_data = dict()
-
-        if reference is None:
-            # if no reference is given, we assume a newly
-            # created object, and set the modified state.
-            self.mapped = True
-            self.touch()
-        else:
-            self.mapped = False
+        self.mapped = reference is None
 
     def read_in(self, backend_type="git") -> "MappableObject":
         from dataladmetadatamodel.mapper.xxx import get_mapper
@@ -36,7 +29,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 type(self).__name__,
                 backend_type).map_in(self, self.reference)
             self.mapped = True
-            self.clean()
+            self.set_saved_on(self.reference.realm)
         return self
 
     def write_out(self,
@@ -46,33 +39,42 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
 
         from dataladmetadatamodel.mapper.xxx import get_mapper
 
-        # TODO: has does clean and mapped combine?
-        if self.mapped:
-            if not self.is_modified() and not force_write and self.reference is not None:
-                logger.debug(
-                    "write_out: skipping map_out because "
-                    "object is not modified and has a reference.")
-            else:
-                if self.reference:
-                    destination = destination or self.reference.realm
-                assert destination is not None, f"No destination provided for {self}"
-                self.reference = get_mapper(
-                    type(self).__name__,
-                    backend_type).map_out(self, destination, force_write)
-                self.clean()
+        if not self.mapped:
+            assert self.reference is not None, f"mapper object {self} has no reference"
+            return self.reference
 
-        assert self.reference is not None, f"{self} has no reference after write_out"
+        if self.reference:
+            destination = destination or self.reference.realm
+        assert destination is not None, f"write_out: no destination available for {self}"
+
+        if self.is_saved_on(destination):
+            if force_write:
+                logger.debug(
+                    f"write_out: forcing map_out, {self} "
+                    f"is already stored on {destination}")
+            else:
+                logger.debug(
+                    f"write_out: skipping map_out because {self} "
+                    f"is already stored on {destination}")
+        else:
+            logger.debug(
+                f"write_out: calling map_out to save {self} to {destination}")
+            self.reference = get_mapper(
+                type(self).__name__,
+                backend_type).map_out(self, destination, force_write)
+            self.set_saved_on(destination)
+        assert self.reference is not None, f"mapper object {self} has no reference"
         return self.reference
 
     def purge(self, force: bool = False):
         if self.mapped:
-            if self.is_modified():
+            if len(self.saved_on) == 0:
                 if not force:
-                    raise ValueError(f"Trying to purge a modified object: {self}")
-                logger.warning(f"Forcefully purging modified object: {self}")
+                    raise ValueError(f"purge: called with unsaved object: {self}")
+                logger.warning(f"Forcefully purging unsaved object: {self}")
             self.purge_impl(force)
             self.mapped = False
-            self.clean()
+            self.set_unsaved()
 
     @abstractmethod
     def purge_impl(self, force: bool):
