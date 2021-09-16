@@ -37,17 +37,20 @@ class VersionRecord:
 
 class VersionList(MappableObject):
     def __init__(self,
-                 initial_set: Optional[Dict[str, VersionRecord]],
+                 initial_set: Optional[Dict[str, VersionRecord]] = None,
                  reference: Optional[Reference] = None):
 
         super().__init__(reference)
         self.version_set: Dict[str, VersionRecord] = initial_set or dict()
 
-    def _get_version_record(self, primary_data_version) -> VersionRecord:
-        return self.version_set[primary_data_version]
+    def purge_impl(self, force: bool):
+        raise NotImplementedError
 
     def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
         yield from self.version_set.values()
+
+    def _get_version_record(self, primary_data_version) -> VersionRecord:
+        return self.version_set[primary_data_version]
 
     def versions(self) -> Iterable:
         return self.version_set.keys()
@@ -55,7 +58,6 @@ class VersionList(MappableObject):
     def get_versioned_element(self,
                               primary_data_version: str
                               ) -> Tuple[str, MetadataPath, MappableObject]:
-
         """
         Get the dataset tree or metadata root record,
         its timestamp and path for the given version.
@@ -78,7 +80,6 @@ class VersionList(MappableObject):
         The entry is marked as dirty.
         """
         self.touch()
-
         self.version_set[primary_data_version] = VersionRecord(
             time_stamp,
             path,

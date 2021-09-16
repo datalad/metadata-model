@@ -1,4 +1,3 @@
-from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_load_json,
@@ -17,6 +16,7 @@ class VersionListGitMapper(Mapper):
     """
 
     def _get_version_records(self, reference: Reference) -> dict:
+        from dataladmetadatamodel.datasettree import DatasetTree
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.versionlist import VersionRecord
 
