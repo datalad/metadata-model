@@ -1,66 +1,43 @@
-import json
 import unittest
 from unittest import mock
-
-from .... import version_string
-from ...reference import Reference
-from ..referencemapper import ReferenceGitMapper
+from uuid import UUID
 
 
-test_realm_name = "ewkd0iasd"
 location_0 = "a000000000000000000000000000000000000000"
+location_1 = "a000000000000000000000000000000000000001"
+
+uuid_0 = UUID("00000000000000000000000000000000")
+uuid_1 = UUID("00000000000000000000000000000001")
+
+
+expected_tree_args = {
+    ('100644', 'blob', 'a000000000000000000000000000000000000001', '00000000-0000-0000-0000-000000000001'),
+    ('100644', 'blob', 'a000000000000000000000000000000000000001', '00000000-0000-0000-0000-000000000000')
+}
 
 
 class TestUUIDSetMapper(unittest.TestCase):
 
     def test_basic_unmapping(self):
-        self.assertTrue(False, "implement me")
+        from dataladmetadatamodel.uuidset import UUIDSet
+        from dataladmetadatamodel.versionlist import VersionList
 
-        with mock.patch(
-                "dataladmetadatamodel.mapper.gitmapper"
-                ".referencemapper.git_save_str") as save:
+        with mock.patch("dataladmetadatamodel.mapper.gitmapper.uuidsetmapper.git_save_tree") as save_tree, \
+                mock.patch("dataladmetadatamodel.mapper.gitmapper.uuidsetmapper.git_update_ref") as update_ref, \
+                mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_save_json") as save_json:
 
-            save.configure_mock(return_value=location_0)
+            save_tree.configure_mock(return_value=location_0)
+            save_json.configure_mock(return_value=location_1)
 
-            none_reference = Reference.get_none_reference()
-            ReferenceGitMapper(test_realm_name).unmap(none_reference)
-            representation = save.call_args[0][1]
-            self.assertEqual(
-                json.loads(representation),
-                {
-                    "@": {
-                        "type": "Reference",
-                        "version": version_string
-                    },
-                    "mapper_family": "*None*",
-                    "realm": "*None*",
-                    "class_name": "*None*",
-                    "location": "*None*"
-                })
-
-    def test_none_reference_mapping(self):
-        self.assertTrue(False, "implement me")
-
-        with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_load_str") as load:
-
-            load.return_value = json.dumps({
-                "@": {
-                    "type": "Reference",
-                    "version": version_string
-                },
-                "mapper_family": "*None*",
-                "realm": "*None*",
-                "class_name": "*None*",
-                "location": "*None*"
+            uuid_set = UUIDSet({
+                uuid_0: VersionList(),
+                uuid_1: VersionList()
             })
 
-            loaded_ref = ReferenceGitMapper(test_realm_name).map(
-                Reference(
-                    "git",
-                    test_realm_name,
-                    "Reference",
-                    "ignored due to patch"))
-            self.assertTrue(loaded_ref.is_none_reference())
+            uuid_set.write_out("/tmp/t1")
+
+            tree_args = save_tree.call_args[0][1]
+            self.assertEqual(tree_args, expected_tree_args)
 
 
 if __name__ == '__main__':

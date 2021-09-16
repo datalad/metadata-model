@@ -16,14 +16,15 @@ class UUIDSet(MappableObject):
                  initial_set: Optional[Dict[UUID, VersionList]] = None,
                  reference: Optional[Reference] = None):
 
-        super().__init__()
+        super().__init__(reference)
         self.uuid_set = initial_set or dict()
 
     def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
         raise NotImplementedError
 
     def purge_impl(self, force: bool):
-        raise NotImplementedError
+        for version_list in self.uuid_set.values():
+            version_list.purge()
 
     def uuids(self):
         return self.uuid_set.keys()

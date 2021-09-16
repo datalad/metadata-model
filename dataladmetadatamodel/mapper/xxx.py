@@ -20,6 +20,7 @@ def initialize_object_store():
     from .gitmapper.filetreemapper import FileTreeGitMapper
     from .gitmapper.metadatamapper import MetadataGitMapper
     from .gitmapper.metadatarootrecordmapper import MetadataRootRecordGitMapper
+    from .gitmapper.uuidsetmapper import UUIDSetGitMapper
     from .gitmapper.versionlistmapper import (
         TreeVersionListGitMapper,
         VersionListGitMapper
@@ -30,6 +31,7 @@ def initialize_object_store():
     set_mapper("Metadata", "git", MetadataGitMapper("Metadata"))
     set_mapper("MetadataRootRecord", "git", MetadataRootRecordGitMapper("MetadataRootRecord"))
     set_mapper("TreeVersionList", "git", TreeVersionListGitMapper("TreeVersionList"))
+    set_mapper("UUIDSet", "git", UUIDSetGitMapper("UUIDSet"))
     set_mapper("VersionList", "git", VersionListGitMapper("VersionList"))
 
 
