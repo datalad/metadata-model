@@ -2,12 +2,11 @@ import json
 import unittest
 from unittest import mock
 
+from .... import version_string
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
     Metadata
 )
-
-from .... import version_string
 
 
 location_0 = "a000000000000000000000000000000000000000"

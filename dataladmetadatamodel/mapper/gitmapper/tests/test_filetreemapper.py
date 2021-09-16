@@ -1,11 +1,9 @@
 import logging
 import subprocess
 import unittest
-from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
 
-from ..objectreference import flush_object_references
 from ....filetree import FileTree
 from ....metadata import Metadata
 from ....metadatapath import MetadataPath

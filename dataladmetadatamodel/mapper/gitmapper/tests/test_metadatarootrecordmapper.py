@@ -1,4 +1,3 @@
-import json
 import unittest
 from unittest import mock
 from uuid import UUID
@@ -62,7 +61,7 @@ class TestMetadataMapper(unittest.TestCase):
                     'dataset_level_metadata': {
                         '@': {
                             'type': 'Reference',
-                            'version': '2.0'
+                            'version': version_string
                         },
                         'mapper_family': 'git',
                         'realm': '/tmp/t1',
@@ -72,7 +71,7 @@ class TestMetadataMapper(unittest.TestCase):
                     'file_tree': {
                         '@': {
                             'type': 'Reference',
-                            'version': '2.0'
+                            'version': version_string
                         },
                         'mapper_family': 'git',
                         'realm': '/tmp/t1',
