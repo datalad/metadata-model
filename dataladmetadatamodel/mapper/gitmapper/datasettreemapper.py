@@ -18,7 +18,7 @@ class DatasetTreeGitMapper(Mapper):
 
     def _save_dataset_tree(self,
                            node: "TreeNode",
-                           destiantion: str) -> str:
+                           destination: str) -> str:
         dir_entries = []
 
         if node.value is not None:
@@ -26,7 +26,7 @@ class DatasetTreeGitMapper(Mapper):
                 MetadataRootRecord
 
             assert isinstance(node.value, MetadataRootRecord)
-            reference = node.value.write_out(destiantion)
+            reference = node.value.write_out(destination)
             dir_entries.append((
                 "100644",
                 "blob",
@@ -37,10 +37,10 @@ class DatasetTreeGitMapper(Mapper):
             dir_entries.append((
                 "040000",
                 "tree",
-                self._save_dataset_tree(child_node, destiantion),
+                self._save_dataset_tree(child_node, destination),
                 name))
 
-        return git_save_tree(destiantion, set(dir_entries))
+        return git_save_tree(destination, set(dir_entries))
 
     def map_in_impl(self,
                     dataset_tree: "DatasetTree",

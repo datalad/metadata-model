@@ -35,7 +35,8 @@ class FileTree(MappableObject, TreeNode):
 
     def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
         for name, tree_node in super().get_paths_recursive():
-            yield tree_node.value
+            if tree_node.value is not None:
+                yield tree_node.value
 
     def purge_impl(self, force: bool):
         logger.warning(f"{type(self).__name__}: purge_impl not implemented")

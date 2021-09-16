@@ -2,9 +2,7 @@ from abc import (
     ABCMeta,
     abstractmethod
 )
-
 from typing import Optional
-
 
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.modifiableobject import ModifiableObject
@@ -48,20 +46,22 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
 
         from dataladmetadatamodel.mapper.xxx import get_mapper
 
+        # TODO: has does clean and mapped combine?
         if self.mapped:
-            if not self.is_modified() and not force_write:
+            if not self.is_modified() and not force_write and self.reference is not None:
                 logger.debug(
                     "write_out: skipping map_out because "
-                    "object is not modified.")
+                    "object is not modified and has a reference.")
             else:
-                destination = destination or self.reference.realm
+                if self.reference:
+                    destination = destination or self.reference.realm
                 assert destination is not None, f"No destination provided for {self}"
                 self.reference = get_mapper(
                     type(self).__name__,
                     backend_type).map_out(self, destination, force_write)
                 self.clean()
 
-        assert self.reference is not None
+        assert self.reference is not None, f"{self} has no reference after write_out"
         return self.reference
 
     def purge(self, force: bool = False):

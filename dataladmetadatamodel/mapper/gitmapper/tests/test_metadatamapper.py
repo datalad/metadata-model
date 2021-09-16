@@ -10,7 +10,7 @@ from dataladmetadatamodel.metadata import (
 from .... import version_string
 
 
-location_0 = "a000000000000000"
+location_0 = "a000000000000000000000000000000000000000"
 
 
 expected_reference_object = {

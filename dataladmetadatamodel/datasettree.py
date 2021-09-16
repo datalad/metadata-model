@@ -36,8 +36,9 @@ class DatasetTree(MappableObject, TreeNode):
         raise NotImplementedError
 
     def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
-        # return all metadata root record objects
-        raise NotImplementedError
+        for _, tree_node in self.get_paths_recursive():
+            if tree_node.value is not None:
+                yield tree_node.value
 
     def node_type(self):
         if self.is_leaf_node():

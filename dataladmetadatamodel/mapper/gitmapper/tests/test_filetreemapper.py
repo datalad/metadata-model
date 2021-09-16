@@ -32,13 +32,6 @@ class TestFileTreeMapper(unittest.TestCase):
                           expected_paths: List[MetadataPath]) -> FileTree:
 
         reference = file_tree.write_out(destination)
-        flush_object_references(Path(destination))
-
-        # DBG START
-        print(reference)
-        # return file_tree
-        # DBG END
-
         file_tree = None
 
         new_file_tree = FileTree(reference)
@@ -67,6 +60,7 @@ class TestFileTreeMapper(unittest.TestCase):
 
             updated_file_tree = self.save_load_compare(new_file_tree, temp_file, new_paths)
             return
+
 
 if __name__ == '__main__':
     unittest.main()

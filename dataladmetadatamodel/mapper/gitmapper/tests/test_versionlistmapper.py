@@ -8,7 +8,7 @@ from ..referencemapper import ReferenceGitMapper
 
 
 test_realm_name = "ewkd0iasd"
-location_0 = "a000000000000000000"
+location_0 = "a000000000000000000000000000000000000000"
 
 
 class TestVersionListMapper(unittest.TestCase):
