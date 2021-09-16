@@ -1,9 +1,19 @@
 import subprocess
 import tempfile
 import unittest
+from uuid import UUID
 
 
-from dataladmetadatamodel.versionlist import VersionList
+from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.versionlist import VersionList, VersionRecord
+
+from .utils import MMDummy
+
+
+uuid_0 = UUID("00000000000000000000000000000000")
+uuid_1 = UUID("00000000000000000000000000000001")
+uuid_2 = UUID("00000000000000000000000000000002")
 
 
 class TestVersionList(unittest.TestCase):
@@ -11,10 +21,29 @@ class TestVersionList(unittest.TestCase):
     def test_basic(self):
         version_list = VersionList()
 
+    def test_deepcopy(self):
+        version_list = VersionList({
+            "v1": VersionRecord(
+                "0.1",
+                MetadataPath("a"),
+                MMDummy()
+            ),
+            "v2": VersionRecord(
+                "0.2",
+                MetadataPath("b"),
+                MMDummy()
+            )
+        })
 
-class TestDeepCopy(unittest.TestCase):
+        copied_version_list = version_list.deepcopy(
+            path_prefix=MetadataPath("x/y/z")
+        )
+        print(copied_version_list)
 
-    def test_copy_from_memory(self):
+
+class XTestDeepCopy(unittest.TestCase):
+
+    def xtest_copy_from_memory(self):
         with \
                 tempfile.TemporaryDirectory() as original_dir, \
                 tempfile.TemporaryDirectory() as copy_dir:
@@ -22,7 +51,7 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
 
-    def test_copy_from_backend(self):
+    def xtest_copy_from_backend(self):
         with \
                 tempfile.TemporaryDirectory() as original_dir, \
                 tempfile.TemporaryDirectory() as copy_dir:

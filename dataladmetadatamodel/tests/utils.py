@@ -1,3 +1,4 @@
+import time
 import unittest
 from typing import Any, List
 from uuid import UUID
@@ -189,3 +190,20 @@ def create_dataset_tree(dataset_paths: List[MetadataPath],
         dataset_tree.add_dataset(path, mrr)
 
     return dataset_tree
+
+
+class MMDummy:
+    def __init__(self, info: str = ""):
+        self.info = info or f"MMDummy created at {time.time()}"
+
+    def deepcopy(self, *args, **kwargs):
+        return MMDummy("copy of: " + self.info)
+
+    def read_in(self):
+        return self
+
+    def write_out(self):
+        return "MMDummy-Reference"
+
+    def purge(self, force: bool = False):
+        return

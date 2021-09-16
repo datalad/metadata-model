@@ -44,7 +44,9 @@ class VersionList(MappableObject):
         self.version_set: Dict[str, VersionRecord] = initial_set or dict()
 
     def purge_impl(self, force: bool):
-        raise NotImplementedError
+        for version, version_record in self.version_set.items():
+            version_record.element.write_out()
+            version_record.element.purge(force)
 
     def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
         yield from self.version_set.values()
@@ -103,16 +105,15 @@ class VersionList(MappableObject):
                  path_prefix: Optional[MetadataPath] = None
                  ) -> "VersionList":
 
-        raise NotImplementedError
-        new_mapper_family = new_mapper_family or self.mapper_family
-        new_realm = new_realm or self.realm
+        #new_mapper_family = new_mapper_family or self.mapper_family
+        #new_realm = new_realm or self.realm
         path_prefix = path_prefix or MetadataPath("")
 
         copied_version_list = VersionList(new_mapper_family, new_realm)
 
         for primary_data_version, version_record in self.version_set.items():
 
-            metadata_root_record = version_record.element_connector.load_object()
+            metadata_root_record = version_record.element.read_in()
 
             copied_version_list.set_versioned_element(
                 primary_data_version,
@@ -120,7 +121,7 @@ class VersionList(MappableObject):
                 path_prefix / version_record.path,
                 metadata_root_record.deepcopy(new_mapper_family, new_realm))
 
-            version_record.element_connector.purge()
+            version_record.element.purge()
 
         return copied_version_list
 

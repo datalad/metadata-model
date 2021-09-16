@@ -1,5 +1,6 @@
 from typing import (
     Dict,
+    Iterable,
     Optional
 )
 
@@ -7,18 +8,22 @@ from uuid import UUID
 
 from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.versionlist import VersionList
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 class UUIDSet(MappableObject):
     def __init__(self,
-                 mapper_family: str,
-                 realm: str,
-                 initial_set: Optional[Dict[UUID, VersionList]] = None):
+                 initial_set: Optional[Dict[UUID, VersionList]] = None,
+                 reference: Optional[Reference] = None):
 
         super().__init__()
-        self.mapper_family = mapper_family
-        self.realm = realm
         self.uuid_set = initial_set or dict()
+
+    def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
+        raise NotImplementedError
+
+    def purge_impl(self, force: bool):
+        raise NotImplementedError
 
     def uuids(self):
         return self.uuid_set.keys()
