@@ -60,8 +60,10 @@ class UUIDSet(MappableObject):
                  new_destination: Optional[str] = None
                  ) -> "UUIDSet":
 
-        """ copy a UUID set optionally with a new mapper or a new destination """
-        copied_uuid_set = UUIDSet()
+        copied_uuid_set = UUIDSet(reference=Reference("git",
+                                      new_destination,
+                                      "UUIDSet",
+                                      "*None*"))
 
         for uuid, version_list in self.uuid_set.items():
             copied_uuid_set.uuid_set[uuid] = version_list.deepcopy(

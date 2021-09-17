@@ -116,14 +116,13 @@ class DatasetTree(MappableObject, TreeNode):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None) -> "DatasetTree":
+                 new_destination: Optional[str] = None) -> "DatasetTree":
 
         copied_dataset_tree = DatasetTree()
-
         for path, node in self.get_paths_recursive(True):
             if node.value is not None:
                 assert isinstance(node.value, MetadataRootRecord)
-                copied_value = node.value.deepcopy(new_mapper_family, new_realm)
+                copied_value = node.value.deepcopy(new_mapper_family, new_destination)
                 copied_dataset_tree.add_dataset(path, copied_value)
 
         return copied_dataset_tree

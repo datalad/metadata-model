@@ -3,10 +3,11 @@ import tempfile
 import unittest
 from uuid import UUID
 
-
 from dataladmetadatamodel.metadatapath import MetadataPath
-from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
-from dataladmetadatamodel.versionlist import VersionList, VersionRecord
+from dataladmetadatamodel.versionlist import (
+    VersionList,
+    VersionRecord
+)
 
 from .utils import MMDummy
 
