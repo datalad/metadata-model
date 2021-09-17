@@ -53,6 +53,12 @@ class DatasetTreeGitMapper(Mapper):
 
         assert isinstance(dataset_tree, DatasetTree)
 
+        # Empty dataset trees are identified by a None-reference
+        if reference.is_none_reference():
+            dataset_tree.child_nodes = {}
+            dataset_tree.value = None
+            return
+
         # List all leaf-nodes. Those should only end with the datalad
         # root record-name. Add the hierarchy except the leaf-node,
         # read the metadata root record from the leave node, and
@@ -95,6 +101,9 @@ class DatasetTreeGitMapper(Mapper):
         from dataladmetadatamodel.datasettree import DatasetTree
 
         assert isinstance(dataset_tree, DatasetTree)
+
+        if dataset_tree.child_nodes == {} and dataset_tree.value is None:
+            return Reference.get_none_reference("DatasetTree")
 
         dataset_tree_hash = self._save_dataset_tree(dataset_tree, destination)
         add_tree_reference(GitReference.DATASET_TREE, dataset_tree_hash)
