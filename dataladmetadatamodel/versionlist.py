@@ -45,7 +45,6 @@ class VersionList(MappableObject):
 
     def purge_impl(self, force: bool):
         for version, version_record in self.version_set.items():
-            version_record.element.write_out()
             version_record.element.purge(force)
 
     def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:

@@ -245,6 +245,9 @@ class Metadata(MappableObject):
     def extractor_runs(self) -> Generator[Tuple[str, MetadataInstanceSet], None, None]:
         yield from self.instance_sets.items()
 
+    def extractor_runs_for_extractor(self, extractor_name: str) -> MetadataInstanceSet:
+        return self.instance_sets[extractor_name]
+
     def add_extractor_run(self,
                           time_stamp: Optional[float],
                           extractor_name: str,

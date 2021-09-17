@@ -4,7 +4,11 @@ import unittest
 from pathlib import Path
 
 from dataladmetadatamodel.filetree import FileTree
-from dataladmetadatamodel.metadata import Metadata
+from dataladmetadatamodel.metadata import (
+    ExtractorConfiguration,
+    Metadata,
+    MetadataInstance
+)
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
@@ -40,6 +44,47 @@ class TestFileTree(unittest.TestCase):
                 (entry[0], entry[1])
                 for entry in returned_entries]:
             self.assertEqual(returned_metadata, Metadata())
+
+    def test_add_extractor_run(self):
+
+        file_tree = create_file_tree_with_metadata(default_paths, [
+            Metadata()
+            for _ in default_paths])
+
+        author_name = "Karl-Test"
+        author_email = author_name + "@test.com"
+        extractor_name = "test_extractor"
+        extractor_configuration = ExtractorConfiguration(
+            "extractor_version_1",
+            {"key1": "value1"})
+        metadata_content = {"key0": "this is metadata"}
+
+        file_tree.add_extractor_run(
+            default_paths[0],
+            1.2,
+            extractor_name,
+            author_name,
+            author_email,
+            extractor_configuration,
+            metadata_content)
+
+        metadata = file_tree.get_metadata(default_paths[0])
+        self.assertIsNotNone(metadata)
+
+        stored_metadata = metadata.extractor_runs_for_extractor(extractor_name)
+
+        self.assertEqual(
+            stored_metadata.parameter_set,
+            [extractor_configuration])
+
+        self.assertEqual(
+            stored_metadata.instances[0],
+            MetadataInstance(
+                1.2,
+                author_name,
+                author_email,
+                extractor_configuration,
+                metadata_content))
 
     def test_root_node(self):
         file_tree = FileTree()
