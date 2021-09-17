@@ -11,7 +11,7 @@ from dataladmetadatamodel.metadata import (
 )
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
-
+from dataladmetadatamodel.mapper.reference import Reference
 from dataladmetadatamodel.tests.utils import (
     assert_file_trees_equal,
     create_file_tree_with_metadata
@@ -135,9 +135,11 @@ class TestDeepCopy(unittest.TestCase):
 
             file_tree = FileTree()
             for path in ["", "/a/b/c/d", "/a/b/d", "/a/x"]:
-                file_tree.add_metadata(MetadataPath(path), Metadata())
+                file_tree.add_metadata(
+                    MetadataPath(path),
+                    Metadata())
 
-            file_tree_copy = file_tree.deepcopy()
+            file_tree_copy = file_tree.deepcopy(new_destination=copy_dir)
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 
     def test_copy_from_backend(self):
@@ -159,10 +161,8 @@ class TestDeepCopy(unittest.TestCase):
                 file_tree.add_metadata(path, Metadata())
                 file_tree.unget_metadata(path, original_dir)
             file_tree.write_out(original_dir)
-            #flush_object_references(Path(original_dir))
 
-            file_tree_copy = file_tree.deepcopy()
-            #flush_object_references(Path(copy_dir))
+            file_tree_copy = file_tree.deepcopy(new_destination=copy_dir)
 
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 

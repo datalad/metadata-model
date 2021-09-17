@@ -303,14 +303,10 @@ class Metadata(MappableObject):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None) -> "Metadata":
-
-        #new_mapper_family = new_mapper_family or self.mapper_family
-        #new_realm = new_realm or self.realm
+                 new_destination: Optional[str] = None) -> "Metadata":
 
         copied_metadata = Metadata()
         for extractor_name, instance_set in self.instance_sets.items():
-            copied_metadata.instance_sets[extractor_name] = \
-                copy.deepcopy(instance_set)
+            copied_metadata.instance_sets[extractor_name] = copy.deepcopy(instance_set)
 
         return copied_metadata

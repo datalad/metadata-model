@@ -14,8 +14,11 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
     Base class for objects that can
     be mapped onto a storage backend
     """
-    def __init__(self, reference: Optional[Reference] = None):
+    def __init__(self,
+                 reference: Optional[Reference] = None):
+
         super().__init__()
+
         self.reference = reference
         self.mapper_private_data = dict()
         self.mapped = reference is None
@@ -26,9 +29,9 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
 
         if self.mapped is False:
             assert self.reference is not None
-            get_mapper(
-                type(self).__name__,
-                backend_type).map_in(self, self.reference)
+            get_mapper(type(self).__name__,
+                       backend_type).map_in(self,
+                                            self.reference)
             self.mapped = True
             self.set_saved_on(self.reference.realm)
         return self

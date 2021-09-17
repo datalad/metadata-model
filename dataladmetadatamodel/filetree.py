@@ -6,7 +6,6 @@ from typing import (
 )
 
 from dataladmetadatamodel import JSONObject
-from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
@@ -107,12 +106,27 @@ class FileTree(MappableObject, TreeNode):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None) -> "FileTree":
+                 new_destination: Optional[str] = None) -> "FileTree":
 
         copied_file_tree = FileTree()
+
         for path, metadata in self.get_paths_recursive(True):
             if metadata is not None:
-                copied_metadata = metadata.deepcopy()
+
+                if metadata.mapped is False:
+                    metadata.read_in()
+                    write_out = True
+                else:
+                    write_out = False
+
+                copied_metadata = metadata.deepcopy(new_mapper_family, new_destination)
+
+                if write_out is True:
+                    metadata.write_out()
+                    metadata.purge()
+
+                copied_metadata.write_out(destination=new_destination)
+                copied_metadata.purge()
             else:
                 copied_metadata = None
 

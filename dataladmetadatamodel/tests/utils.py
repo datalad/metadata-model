@@ -13,6 +13,7 @@ from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.versionlist import VersionList
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -152,9 +153,29 @@ def assert_mrrs_equal(test_case: unittest.TestCase,
         assert_file_trees_equal
     )
 
-    # Compare the metadata remainder
+    # Compare the remaining metadata
     test_case.assertEqual(a.dataset_identifier, b.dataset_identifier)
     test_case.assertEqual(a.dataset_version, b.dataset_version)
+
+
+def assert_version_lists_equal(test_case: unittest.TestCase,
+                               a: VersionList,
+                               b: VersionList,
+                               unsafe: bool
+                               ):
+
+    a_entries = [a.get_versioned_element(pdv) for pdv in a.versions()]
+    b_entries = [b.get_versioned_element(pdv) for pdv in b.versions()]
+
+    for a_entry, b_entry in zip(a_entries, b_entries):
+        test_case.assertEqual(a_entry[0], b_entry[0])
+        test_case.assertEqual(a_entry[1], b_entry[1])
+        test_case.assertIsInstance(a_entry[2], (DatasetTree, MetadataRootRecord))
+        test_case.assertIsInstance(b_entry[2], (DatasetTree, MetadataRootRecord))
+        if isinstance(a_entry[2], DatasetTree):
+            assert_dataset_trees_equal(test_case, a_entry[2], b_entry[2], unsafe)
+        else:
+            assert_mrr_equal(test_case, a_entry[2], b_entry[2], unsafe)
 
 
 def create_file_tree(paths: List[MetadataPath]) -> FileTree:
@@ -200,6 +221,7 @@ def create_dataset_tree(dataset_paths: List[MetadataPath],
 class MMDummy:
     def __init__(self, info: str = ""):
         self.info = info or f"MMDummy created at {time.time()}"
+        self.mapped = False
 
     def deepcopy(self, *args, **kwargs):
         return MMDummy("copy of: " + self.info)

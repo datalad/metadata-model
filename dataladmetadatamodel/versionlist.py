@@ -114,7 +114,12 @@ class VersionList(MappableObject):
         copied_version_list = VersionList()
         for primary_data_version, version_record in self.version_set.items():
 
-            mrr_or_tree: Union[MetadataRootRecord, FileTree] = version_record.element.read_in()
+            mrr_or_tree = version_record.element
+            if mrr_or_tree.mapped is False:
+                mrr_or_tree.read_in()
+                write_out = True
+            else:
+                write_out = False
 
             copied_version_list.set_versioned_element(
                 primary_data_version,
@@ -122,8 +127,9 @@ class VersionList(MappableObject):
                 path_prefix / version_record.path,
                 mrr_or_tree.deepcopy(new_mapper_family, new_destination))
 
-            version_record.element.write_out(new_destination)
-            version_record.element.purge()
+            if write_out is True:
+                mrr_or_tree.write_out(new_destination)
+                mrr_or_tree.purge()
 
         return copied_version_list
 

@@ -42,24 +42,5 @@ class TestVersionList(unittest.TestCase):
         print(copied_version_list)
 
 
-class XTestDeepCopy(unittest.TestCase):
-
-    def xtest_copy_from_memory(self):
-        with \
-                tempfile.TemporaryDirectory() as original_dir, \
-                tempfile.TemporaryDirectory() as copy_dir:
-
-            subprocess.run(["git", "init", original_dir])
-            subprocess.run(["git", "init", copy_dir])
-
-    def xtest_copy_from_backend(self):
-        with \
-                tempfile.TemporaryDirectory() as original_dir, \
-                tempfile.TemporaryDirectory() as copy_dir:
-
-            subprocess.run(["git", "init", original_dir])
-            subprocess.run(["git", "init", copy_dir])
-
-
 if __name__ == '__main__':
     unittest.main()
