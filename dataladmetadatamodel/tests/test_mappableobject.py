@@ -3,7 +3,7 @@ from typing import Iterable
 from unittest.mock import MagicMock
 
 from dataladmetadatamodel.mappableobject import MappableObject
-from dataladmetadatamodel.mapper.xxx import set_mapper
+from dataladmetadatamodel.mapper import set_mapper
 
 
 class SUTMappableObject(MappableObject):

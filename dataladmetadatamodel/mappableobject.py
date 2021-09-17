@@ -21,7 +21,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.mapped = reference is None
 
     def read_in(self, backend_type="git") -> "MappableObject":
-        from dataladmetadatamodel.mapper.xxx import get_mapper
+        from dataladmetadatamodel.mapper import get_mapper
 
         if self.mapped is False:
             assert self.reference is not None
@@ -37,7 +37,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
 
-        from dataladmetadatamodel.mapper.xxx import get_mapper
+        from dataladmetadatamodel.mapper import get_mapper
 
         if not self.mapped:
             assert self.reference is not None, f"mapper object {self} has no reference"
