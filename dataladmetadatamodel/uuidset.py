@@ -57,19 +57,15 @@ class UUIDSet(MappableObject):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None
+                 new_destination: Optional[str] = None
                  ) -> "UUIDSet":
 
-        raise NotImplementedError
+        """ copy a UUID set optionally with a new mapper or a new destination """
+        copied_uuid_set = UUIDSet()
 
-        """ copy a UUID set optionally with a new mapper or a new realm """
-        new_mapper_family = new_mapper_family or self.mapper_family
-        new_realm = new_realm or self.realm
-        copied_uuid_set = UUIDSet(new_mapper_family, new_realm)
-
-        for uuid, version_list_connector in self.uuid_set.items():
-            copied_uuid_set.uuid_set[uuid] = version_list_connector.deepcopy(
+        for uuid, version_list in self.uuid_set.items():
+            copied_uuid_set.uuid_set[uuid] = version_list.deepcopy(
                 new_mapper_family,
-                new_realm)
+                new_destination)
 
         return copied_uuid_set

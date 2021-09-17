@@ -21,7 +21,6 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.mapped = reference is None
         assert isinstance(reference, (type(None), Reference)), f"object {self} initialized with invalid reference: {reference}"
 
-
     def read_in(self, backend_type="git") -> "MappableObject":
         from dataladmetadatamodel.mapper import get_mapper
 

@@ -38,7 +38,10 @@ class FileTree(MappableObject, TreeNode):
                 yield tree_node.value
 
     def purge_impl(self, force: bool):
-        logger.warning(f"{type(self).__name__}: purge_impl not implemented")
+        for name, tree_node in super().get_paths_recursive():
+            if tree_node.value is not None:
+                yield tree_node.value.purge(force)
+        TreeNode.__init__(self)
 
     def add_directory(self, name):
         self.touch()
