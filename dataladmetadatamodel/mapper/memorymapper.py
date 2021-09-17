@@ -1,11 +1,11 @@
 from collections import defaultdict
 from typing import Any
 
-from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-class MemoryMapper(BaseMapper):
+class MemoryMapper(Mapper):
     instance = None
 
     def __init__(self):
