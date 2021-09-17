@@ -18,20 +18,32 @@ class VersionListGitMapper(Mapper):
     def _get_version_records(self, reference: Reference) -> dict:
         from dataladmetadatamodel.datasettree import DatasetTree
         from dataladmetadatamodel.metadatapath import MetadataPath
+        from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
         from dataladmetadatamodel.versionlist import VersionRecord
 
         assert isinstance(reference, Reference)
         assert reference.mapper_family == "git"
 
         json_object = git_load_json(reference.realm, reference.location)
-        version_records = {
-            pdm_assoc["primary_data_version"]: VersionRecord(
+
+        version_records = {}
+        for pdm_assoc in json_object:
+
+            reference = Reference.from_json_obj(pdm_assoc["dataset_tree"])
+            if reference.class_name == "DatasetTree":
+                mrr_or_tree = DatasetTree(reference)
+            elif reference.class_name == "MetadataRootRecord":
+                mrr_or_tree = MetadataRootRecord(None, None, None, None, reference)
+            else:
+                raise ValueError(
+                    f"unexpected tree class in primary data-metadata "
+                    f"assoc: ({reference.class_name}")
+
+            version_records[pdm_assoc["primary_data_version"]] = VersionRecord(
                 pdm_assoc["time_stamp"],
                 MetadataPath(pdm_assoc["path"]),
-                DatasetTree(Reference.from_json_obj(pdm_assoc["dataset_tree"]))
-            )
-            for pdm_assoc in json_object
-        }
+                mrr_or_tree)
+
         return version_records
 
     def map_in_impl(self,

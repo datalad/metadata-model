@@ -18,7 +18,7 @@ class TestReferenceMapper(unittest.TestCase):
 
             save.configure_mock(return_value=location_0)
 
-            none_reference = Reference.get_none_reference()
+            none_reference = Reference.get_none_reference("some class")
             ReferenceGitMapper(test_realm_name).unmap(none_reference)
             representation = save.call_args[0][1]
             self.assertEqual(
@@ -27,7 +27,7 @@ class TestReferenceMapper(unittest.TestCase):
                     "@": {"type": "Reference", "version": version_string},
                     "mapper_family": "*None*",
                     "realm": "*None*",
-                    "class_name": "*None*",
+                    "class_name": "some class",
                     "location": "*None*"
                 }
             )

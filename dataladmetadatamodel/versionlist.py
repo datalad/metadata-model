@@ -7,6 +7,7 @@ from typing import (
 )
 
 from dataladmetadatamodel.datasettree import DatasetTree
+from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
@@ -48,7 +49,9 @@ class VersionList(MappableObject):
             version_record.element.purge(force)
 
     def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
-        yield from self.version_set.values()
+        yield from map(
+            lambda version_record: version_record.element,
+            self.version_set.values())
 
     def _get_version_record(self, primary_data_version) -> VersionRecord:
         return self.version_set[primary_data_version]
@@ -100,26 +103,24 @@ class VersionList(MappableObject):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None,
+                 new_destination: Optional[str] = None,
                  path_prefix: Optional[MetadataPath] = None
                  ) -> "VersionList":
 
-        #new_mapper_family = new_mapper_family or self.mapper_family
-        #new_realm = new_realm or self.realm
         path_prefix = path_prefix or MetadataPath("")
 
-        copied_version_list = VersionList(new_mapper_family, new_realm)
-
+        copied_version_list = VersionList(new_mapper_family, new_destination)
         for primary_data_version, version_record in self.version_set.items():
 
-            metadata_root_record = version_record.element.read_in()
+            mrr_or_tree: Union[MetadataRootRecord, FileTree] = version_record.element.read_in()
 
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                metadata_root_record.deepcopy(new_mapper_family, new_realm))
+                mrr_or_tree.deepcopy(new_mapper_family, new_destination))
 
+            version_record.element.write_out(new_destination)
             version_record.element.purge()
 
         return copied_version_list
@@ -171,13 +172,13 @@ class TreeVersionList(VersionList):
         copied_version_list = TreeVersionList()
         for primary_data_version, version_record in self.version_set.items():
 
-            metadata_root_record: MetadataRootRecord = version_record.element.read_in()
+            mrr_or_tree: Union[MetadataRootRecord, FileTree] = version_record.element.read_in()
 
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                metadata_root_record.deepcopy(new_mapper_family, new_destination))
+                mrr_or_tree.deepcopy(new_mapper_family, new_destination))
 
             version_record.element.write_out(new_destination)
             version_record.element.purge()

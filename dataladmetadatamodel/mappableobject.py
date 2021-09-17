@@ -36,7 +36,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                   destination: Optional[str] = None,
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
-
+        force_write = True  # CM REMOVE ME
         from dataladmetadatamodel.mapper import get_mapper
 
         if not self.mapped:

@@ -210,7 +210,7 @@ class FileTreeGitMapper(Mapper):
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.treenode import TreeNode
 
-        if reference.location != empty_tree_location:
+        if not reference.is_none_reference():
 
             git_tree_info = git_read_tree(reference.realm, reference.location)
             file_tree.mapper_private_data["git"] = git_tree_info
@@ -255,7 +255,7 @@ class FileTreeGitMapper(Mapper):
                 destination)
 
         if file_tree_hash is None:
-            return Reference.get_none_reference()
+            return Reference.get_none_reference("FileTree")
 
         add_tree_reference(GitReference.FILE_TREE, file_tree_hash)
         return Reference("git", destination, "FileTree", file_tree_hash)

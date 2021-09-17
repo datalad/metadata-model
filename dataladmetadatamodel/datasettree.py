@@ -32,8 +32,8 @@ class DatasetTree(MappableObject, TreeNode):
         return node is not None and node.value is not None
 
     def purge_impl(self, force: bool):
-        # purge all metadata root record objects
-        raise NotImplementedError
+        for sub_object in self.get_modifiable_sub_objects():
+            sub_object.purge(force)
 
     def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
         for _, tree_node in self.get_paths_recursive():

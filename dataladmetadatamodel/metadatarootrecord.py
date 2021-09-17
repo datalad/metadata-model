@@ -55,9 +55,6 @@ class MetadataRootRecord(MappableObject):
                  new_realm: Optional[str] = None
                  ) -> "MetadataRootRecord":
 
-        #new_mapper_family = new_mapper_family or self.mapper_family
-        #new_realm = new_realm or self.realm
-
         copied_metadata_root_record = MetadataRootRecord(
             self.dataset_identifier,
             self.dataset_version,

@@ -40,7 +40,7 @@ class Reference:
             f"location={repr(self.location)})")
 
     def is_none_reference(self) -> bool:
-        return self.location == none_location and self.class_name == none_class_name
+        return self.location == none_location
 
     def to_json_str(self):
         return json.dumps(self.to_json_obj())
@@ -73,8 +73,8 @@ class Reference:
         )
 
     @classmethod
-    def get_none_reference(cls) -> "Reference":
+    def get_none_reference(cls, referred_class_name: str) -> "Reference":
         return cls(none_mapper_family_name,
                    none_realm,
-                   none_class_name,
+                   referred_class_name,
                    none_location)
