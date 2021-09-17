@@ -1,6 +1,10 @@
 import time
 import unittest
-from typing import Any, List
+from typing import (
+    Any,
+    List,
+    Optional
+)
 from uuid import UUID
 
 from dataladmetadatamodel.datasettree import DatasetTree
@@ -9,6 +13,7 @@ from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 uuid_pattern = "0000000000000000000000000000{:04x}"
@@ -199,11 +204,19 @@ class MMDummy:
     def deepcopy(self, *args, **kwargs):
         return MMDummy("copy of: " + self.info)
 
-    def read_in(self):
+    def read_in(self, backend_type="git") -> Any:
         return self
 
-    def write_out(self):
-        return "MMDummy-Reference"
+    def write_out(self,
+                  destination: Optional[str] = None,
+                  backend_type: str = "git",
+                  force_write: bool = False) -> Reference:
+
+        return Reference(
+            "git",
+            "test"
+            "MMDummy",
+            "location:zer000000")
 
     def purge(self, force: bool = False):
         return

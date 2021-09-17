@@ -34,6 +34,8 @@ class DatasetTree(MappableObject, TreeNode):
     def purge_impl(self, force: bool):
         for sub_object in self.get_modifiable_sub_objects():
             sub_object.purge(force)
+        # Remove dataset tree
+        TreeNode.__init__(self)
 
     def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
         for _, tree_node in self.get_paths_recursive():

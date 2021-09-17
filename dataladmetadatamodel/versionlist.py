@@ -47,6 +47,7 @@ class VersionList(MappableObject):
     def purge_impl(self, force: bool):
         for version, version_record in self.version_set.items():
             version_record.element.purge(force)
+        self.version_set = dict()
 
     def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
         yield from map(
@@ -90,7 +91,8 @@ class VersionList(MappableObject):
             element)
 
     def unget_versioned_element(self,
-                                primary_data_version: str):
+                                primary_data_version: str,
+                                new_destination: Optional[str] = None):
         """
         Remove a metadata record from memory. First, persist the
         current status via save_object ---which will write it to
@@ -98,7 +100,7 @@ class VersionList(MappableObject):
         from memory.
         """
         version_record = self.version_set[primary_data_version]
-        version_record.element.write_out()
+        version_record.element.write_out(new_destination)
         version_record.element.purge()
 
     def deepcopy(self,
@@ -109,7 +111,7 @@ class VersionList(MappableObject):
 
         path_prefix = path_prefix or MetadataPath("")
 
-        copied_version_list = VersionList(new_mapper_family, new_destination)
+        copied_version_list = VersionList()
         for primary_data_version, version_record in self.version_set.items():
 
             mrr_or_tree: Union[MetadataRootRecord, FileTree] = version_record.element.read_in()
@@ -157,9 +159,11 @@ class TreeVersionList(VersionList):
             dataset_tree)
 
     def unget_dataset_tree(self,
-                           primary_data_version: str):
+                           primary_data_version: str,
+                           new_destination: Optional[str] = None):
 
-        super().unget_versioned_element(primary_data_version)
+        super().unget_versioned_element(primary_data_version,
+                                        new_destination)
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,

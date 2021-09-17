@@ -53,7 +53,7 @@ class TestVersionListMapper(unittest.TestCase):
             save_tree.configure_mock(return_value=get_location(2))
             save_json_2.configure_mock(return_value=get_location(3))
 
-            version_list = VersionList({
+            version_list = VersionList(initial_set={
                 "v0": VersionRecord(
                     str("1.1"),
                     MetadataPath("subset0"),

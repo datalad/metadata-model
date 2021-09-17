@@ -19,6 +19,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.reference = reference
         self.mapper_private_data = dict()
         self.mapped = reference is None
+        assert isinstance(reference, (type(None), Reference)), f"object {self} initialized with invalid reference: {reference}"
+
 
     def read_in(self, backend_type="git") -> "MappableObject":
         from dataladmetadatamodel.mapper import get_mapper
@@ -36,11 +38,11 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                   destination: Optional[str] = None,
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
-        force_write = True  # CM REMOVE ME
+
         from dataladmetadatamodel.mapper import get_mapper
 
         if not self.mapped:
-            assert self.reference is not None, f"mapper object {self} has no reference"
+            assert isinstance(self.reference, Reference), f"write_out: object {self} has no valid reference: {self.reference}"
             return self.reference
 
         if self.reference:
@@ -63,7 +65,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 type(self).__name__,
                 backend_type).map_out(self, destination, force_write)
             self.set_saved_on(destination)
-        assert self.reference is not None, f"mapper object {self} has no reference"
+        assert isinstance(self.reference, Reference), f"write_out: object {self} has no valid reference: {self.reference}"
         return self.reference
 
     def purge(self, force: bool = False):

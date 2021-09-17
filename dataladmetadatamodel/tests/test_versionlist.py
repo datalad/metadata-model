@@ -22,7 +22,7 @@ class TestVersionList(unittest.TestCase):
         version_list = VersionList()
 
     def test_deepcopy(self):
-        version_list = VersionList({
+        version_list = VersionList(initial_set={
             "v1": VersionRecord(
                 "0.1",
                 MetadataPath("a"),
