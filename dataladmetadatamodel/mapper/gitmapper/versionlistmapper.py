@@ -52,17 +52,15 @@ class VersionListGitMapper(Mapper):
         from dataladmetadatamodel.versionlist import VersionList
 
         assert isinstance(version_list, VersionList)
-        for primary_data_version, version_record in version_list.version_set.items():
-            version_record.write_out()
-
         json_object = [
             {
                 "primary_data_version": primary_data_version,
                 "time_stamp": version_record.time_stamp,
                 "path": version_record.path.as_posix(),
-                "dataset_tree": version_record.reference.to_json_obj()
+                "dataset_tree": version_record.element.write_out(destination).to_json_obj()
             }
-            for primary_data_version, version_record in version_list.version_set.items()]
+            for primary_data_version, version_record in version_list.version_set.items()
+        ]
 
         location = git_save_json(destination, json_object)
         return Reference("git", destination, "VersionList", location)
