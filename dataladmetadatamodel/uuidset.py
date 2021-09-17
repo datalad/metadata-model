@@ -20,7 +20,7 @@ class UUIDSet(MappableObject):
         self.uuid_set = initial_set or dict()
 
     def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
-        raise NotImplementedError
+        return self.uuid_set.values()
 
     def purge_impl(self, force: bool):
         for version_list in self.uuid_set.values():
