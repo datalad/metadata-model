@@ -39,6 +39,13 @@ class Reference:
             f"class_name='{self.class_name}', "
             f"location={repr(self.location)})")
 
+    def assign_from(self, other: "Reference"):
+        self.realm = other.realm
+        self.mapper_family = other.mapper_family
+        self.class_name = other.class_name
+        self.location = other.location
+        self.modified = other.modified
+
     def is_none_reference(self) -> bool:
         return self.location == none_location
 

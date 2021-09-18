@@ -1,27 +1,37 @@
 from typing import Any
 
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
-    git_load_str,
-    git_save_str
+    git_load_json,
+    git_save_json
 )
-from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-class ReferenceGitMapper(BaseMapper):
+class ReferenceGitMapper(Mapper):
 
-    def map_impl(self, ref: Reference) -> Reference:
-        assert isinstance(ref, Reference)
-        assert ref.mapper_family == "git"
-        if ref.is_none_reference():
-            return Reference.get_none_reference("Reference")
-        ref_json_str = git_load_str(self.realm, ref.location)
-        return Reference.from_json_str(ref_json_str)
+    def map_in_impl(self,
+                    reference_to_map_in: Reference,
+                    reference: Reference) -> None:
 
-    def unmap_impl(self, ref: Any) -> Reference:
-        assert isinstance(ref, Reference)
+        assert isinstance(reference_to_map_in, Reference)
+        assert isinstance(reference, Reference)
+        assert reference.mapper_family == "git"
+
+        reference_to_map_in.assign_from(
+            Reference.from_json_obj(
+                git_load_json(
+                    reference.realm,
+                    reference.location)))
+
+    def map_out_impl(self,
+                     reference_to_map_out: Reference,
+                     destination: str,
+                     force_write: bool) -> Reference:
+
+        assert isinstance(reference_to_map_out, Reference)
         return Reference(
             "git",
-            self.realm,
+            destination,
             "Reference",
-            git_save_str(self.realm, ref.to_json_str()))
+            git_save_json(destination, reference_to_map_out.to_json_obj()))
