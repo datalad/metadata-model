@@ -17,8 +17,20 @@ from dataladmetadatamodel.versionlist import VersionList
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-uuid_pattern = "0000000000000000000000000000{:04x}"
-version_pattern = "000000000000000000000000000000000000{:04x}"
+uuid_pattern = "9900{:04x}00000000000000000000{:04x}"
+version_pattern = "ea{:04x}000000000000000000000000000000{:04x}"
+
+
+def get_uuid(n: int) -> UUID:
+    return UUID(uuid_pattern.format(n, n))
+
+
+def get_location(n: int) -> str:
+    return version_pattern.format(n, n)
+
+
+def get_version(n: int) -> str:
+    return get_location(n)
 
 
 def assert_equal(test_case: unittest.TestCase,
@@ -209,8 +221,8 @@ def create_dataset_tree(dataset_paths: List[MetadataPath],
         file_tree = create_file_tree(file_tree_paths)
 
         mrr = MetadataRootRecord(
-            UUID(uuid_pattern.format(index)),
-            version_pattern.format(index),
+            get_uuid(index),
+            get_version(index),
             metadata,
             file_tree)
         dataset_tree.add_dataset(path, mrr)
@@ -219,26 +231,29 @@ def create_dataset_tree(dataset_paths: List[MetadataPath],
 
 
 class MMDummy:
-    def __init__(self, info: str = ""):
+    def __init__(self,
+                 info: str = "",
+                 is_mapped: bool = False):
         self.info = info or f"MMDummy created at {time.time()}"
-        self.mapped = False
+        self.mapped = is_mapped
 
     def deepcopy(self, *args, **kwargs):
-        return MMDummy("copy of: " + self.info)
+        return MMDummy("copy of: " + self.info, True)
 
     def read_in(self, backend_type="git") -> Any:
+        self.mapped = True
         return self
 
     def write_out(self,
                   destination: Optional[str] = None,
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
-
         return Reference(
             "git",
             "test"
             "MMDummy",
-            "location:zer000000")
+            get_location(0x51))
 
     def purge(self, force: bool = False):
+        self.mapped = False
         return
