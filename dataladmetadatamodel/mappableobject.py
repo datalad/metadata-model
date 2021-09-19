@@ -44,7 +44,9 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         from dataladmetadatamodel.mapper import get_mapper
 
         if not self.mapped:
-            assert isinstance(self.reference, Reference), f"write_out: object {self} has no valid reference: {self.reference}"
+            assert isinstance(self.reference, Reference), \
+                f"write_out: object {self} has no valid " \
+                f"reference: {self.reference}"
             return self.reference
 
         if self.reference:
@@ -78,7 +80,6 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 logger.warning(f"Forcefully purging unsaved object: {self}")
             self.purge_impl(force)
             self.mapped = False
-            self.set_unsaved()
 
     @abstractmethod
     def purge_impl(self, force: bool):

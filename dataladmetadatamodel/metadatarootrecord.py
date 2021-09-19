@@ -52,15 +52,18 @@ class MetadataRootRecord(MappableObject):
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None
+                 new_destination: Optional[str] = None
                  ) -> "MetadataRootRecord":
 
         copied_metadata_root_record = MetadataRootRecord(
             self.dataset_identifier,
             self.dataset_version,
-            self.dataset_level_metadata.deepcopy(new_mapper_family, new_realm),
-            self.file_tree.deepcopy(new_mapper_family, new_realm),
-            copy(self.reference),
+            self.dataset_level_metadata.deepcopy(new_mapper_family,new_destination),
+            self.file_tree.deepcopy(new_mapper_family, new_destination),
+            None,
             self.backend_type)
+
+        copied_metadata_root_record.write_out(new_destination)
+        copied_metadata_root_record.purge()
 
         return copied_metadata_root_record

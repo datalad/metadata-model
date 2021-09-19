@@ -13,6 +13,7 @@ from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.uuidset import UUIDSet
 from dataladmetadatamodel.versionlist import VersionList
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -188,6 +189,19 @@ def assert_version_lists_equal(test_case: unittest.TestCase,
             assert_dataset_trees_equal(test_case, a_entry[2], b_entry[2], unsafe)
         else:
             assert_mrr_equal(test_case, a_entry[2], b_entry[2], unsafe)
+
+
+def assert_uuid_sets_equal(test_case: unittest.TestCase,
+                           a_uuid_set: UUIDSet,
+                           b_uuid_set: UUIDSet):
+
+    for dataset_id in a_uuid_set.uuids():
+        a_version_list = a_uuid_set.get_version_list(dataset_id)
+        b_version_list = b_uuid_set.get_version_list(dataset_id)
+        assert_version_lists_equal(test_case,
+                                   a_version_list,
+                                   b_version_list,
+                                   True)
 
 
 def create_file_tree(paths: List[MetadataPath]) -> FileTree:

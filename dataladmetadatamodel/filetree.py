@@ -108,11 +108,15 @@ class FileTree(MappableObject, TreeNode):
                  new_mapper_family: Optional[str] = None,
                  new_destination: Optional[str] = None) -> "FileTree":
 
+        needs_purge = False
+        if self.mapped is False:
+            self.read_in()
+            needs_purge = True
+
         copied_file_tree = FileTree()
 
         for path, metadata in self.get_paths_recursive(True):
             if metadata is not None:
-
                 if metadata.mapped is False:
                     metadata.read_in()
                     write_out = True
@@ -125,8 +129,6 @@ class FileTree(MappableObject, TreeNode):
                     metadata.write_out()
                     metadata.purge()
 
-                copied_metadata.write_out(destination=new_destination)
-                copied_metadata.purge()
             else:
                 copied_metadata = None
 
@@ -134,5 +136,11 @@ class FileTree(MappableObject, TreeNode):
                 path,
                 TreeNode(value=copied_metadata),
                 allow_leaf_node_conversion=True)
+
+        copied_file_tree.write_out(new_destination)
+        copied_file_tree.purge()
+
+        if needs_purge is True:
+            self.purge()
 
         return copied_file_tree

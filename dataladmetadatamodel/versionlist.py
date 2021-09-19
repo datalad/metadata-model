@@ -132,17 +132,23 @@ class VersionList(MappableObject):
             else:
                 purge_original = False
 
+            copied_mrr_or_tree = mrr_or_tree.deepcopy(
+                new_mapper_family,
+                new_destination)
+            copied_mrr_or_tree.write_out(new_destination)
+            copied_mrr_or_tree.purge()
+
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                mrr_or_tree.deepcopy(
-                    new_mapper_family,
-                    new_destination))
+                copied_mrr_or_tree)
 
             if purge_original is True:
                 mrr_or_tree.purge()
 
+        copied_version_list.write_out(new_destination)
+        copied_version_list.purge()
         return copied_version_list
 
 

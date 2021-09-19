@@ -11,25 +11,17 @@ from dataladmetadatamodel.uuidset import (
 )
 from dataladmetadatamodel.versionlist import VersionRecord
 
-from .utils import assert_version_lists_equal
+from .utils import (
+    assert_uuid_sets_equal,
+    assert_version_lists_equal,
+    create_dataset_tree,
+    get_uuid
+)
 
 
-uuid_0 = UUID("00000000000000000000000000000000")
-uuid_1 = UUID("00000000000000000000000000000001")
-uuid_2 = UUID("00000000000000000000000000000002")
-
-
-def assert_uuid_sets_equal(test_case: unittest.TestCase,
-                           a_uuid_set: UUIDSet,
-                           b_uuid_set: UUIDSet):
-
-    for dataset_id in a_uuid_set.uuids():
-        a_version_list = a_uuid_set.get_version_list(dataset_id)
-        b_version_list = b_uuid_set.get_version_list(dataset_id)
-        assert_version_lists_equal(test_case,
-                                   a_version_list,
-                                   b_version_list,
-                                   True)
+uuid_0 = get_uuid(0)
+uuid_1 = get_uuid(1)
+uuid_2 = get_uuid(2)
 
 
 class TestUUIDSet(unittest.TestCase):
