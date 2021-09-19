@@ -72,15 +72,15 @@ class VersionList(MappableObject):
         return (
             version_record.time_stamp,
             version_record.path,
-            version_record.element.read_in())
+            version_record.element)
 
     def get_versioned_elements(self
-                               ) -> Iterable[Tuple[str, MetadataPath, MappableObject]]:
+                               ) -> Iterable[Tuple[str, Tuple[str, MetadataPath, MappableObject]]]:
         """
         Get an iterable of all versions and their records
         """
         for version, version_record in self.version_set.items():
-            yield (
+            yield version, (
                 version_record.time_stamp,
                 version_record.path,
                 version_record.element)
@@ -132,18 +132,13 @@ class VersionList(MappableObject):
             else:
                 purge_original = False
 
-            copied_mrr_or_tree = mrr_or_tree.deepcopy(
-                new_mapper_family,
-                new_destination)
-
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                copied_mrr_or_tree)
-
-            copied_mrr_or_tree.write_out(new_destination)
-            copied_mrr_or_tree.purge()
+                mrr_or_tree.deepcopy(
+                    new_mapper_family,
+                    new_destination))
 
             if purge_original is True:
                 mrr_or_tree.purge()

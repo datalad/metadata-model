@@ -233,12 +233,14 @@ def create_dataset_tree(dataset_paths: List[MetadataPath],
 class MMDummy:
     def __init__(self,
                  info: str = "",
-                 is_mapped: bool = False):
+                 is_mapped: bool = False,
+                 copied_from: Optional["MMDummy"] = None):
         self.info = info or f"MMDummy created at {time.time()}"
         self.mapped = is_mapped
+        self.copied_from = copied_from
 
     def deepcopy(self, *args, **kwargs):
-        return MMDummy("copy of: " + self.info, True)
+        return MMDummy(self.info, False, self)
 
     def read_in(self, backend_type="git") -> Any:
         self.mapped = True

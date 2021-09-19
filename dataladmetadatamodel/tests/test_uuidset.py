@@ -63,6 +63,7 @@ class TestUUIDSet(unittest.TestCase):
             })
 
             copied_uuid_set = uuid_set.deepcopy(new_destination=copy_dir)
+            copied_uuid_set.read_in()
             assert_uuid_sets_equal(self, uuid_set, copied_uuid_set)
 
     def test_copy_from_backend(self):
@@ -91,9 +92,15 @@ class TestUUIDSet(unittest.TestCase):
             })
 
             uuid_set.write_out(original_dir)
-            uuid_set.purge()
             uuid_set_copy = uuid_set.deepcopy(new_destination=copy_dir)
 
+            # assert that the purged uuid-sets are equal
+            uuid_set.purge()
+            assert_uuid_sets_equal(self, uuid_set, uuid_set_copy)
+
+            # load both and compare the uuid set level
+            uuid_set.read_in()
+            uuid_set_copy.read_in()
             assert_uuid_sets_equal(self, uuid_set, uuid_set_copy)
 
 
