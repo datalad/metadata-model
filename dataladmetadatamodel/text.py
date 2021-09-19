@@ -28,5 +28,7 @@ class Text(MappableObject):
     def purge_impl(self, force: bool):
         self.content = None
 
-    def deepcopy(self) -> "Text":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None) -> "Text":
         return Text(content=self.content, reference=self.reference)

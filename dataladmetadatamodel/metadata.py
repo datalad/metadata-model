@@ -301,21 +301,12 @@ class Metadata(MappableObject):
         metadata.set_unsaved()
         return metadata
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_destination: Optional[str] = None) -> "Metadata":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None) -> "Metadata":
 
-        needs_purge = False
-        if not self.mapped:
-            self.read_in()
-            needs_purge = True
-
-        assert self.mapped is True
         copied_metadata = Metadata()
         for extractor_name, instance_set in self.instance_sets.items():
             copied_metadata.instance_sets[extractor_name] = copy.deepcopy(instance_set)
-
-        if needs_purge is True:
-            self.purge()
 
         return copied_metadata

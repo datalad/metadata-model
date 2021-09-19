@@ -50,10 +50,9 @@ class MetadataRootRecord(MappableObject):
     def get_dataset_level_metadata(self):
         return self.dataset_level_metadata.read_in(self.backend_type)
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_destination: Optional[str] = None
-                 ) -> "MetadataRootRecord":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None) -> "MetadataRootRecord":
 
         copied_metadata_root_record = MetadataRootRecord(
             self.dataset_identifier,

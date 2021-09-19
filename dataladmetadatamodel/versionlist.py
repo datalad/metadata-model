@@ -114,38 +114,22 @@ class VersionList(MappableObject):
         version_record.element.write_out(new_destination)
         version_record.element.purge()
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_destination: Optional[str] = None,
-                 path_prefix: Optional[MetadataPath] = None
-                 ) -> "VersionList":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs
+                      ) -> "VersionList":
 
-        path_prefix = path_prefix or MetadataPath("")
+        path_prefix = kwargs.get("path_prefix", MetadataPath(""))
 
         copied_version_list = VersionList()
         for primary_data_version, version_record in self.version_set.items():
-
-            mrr_or_tree = version_record.element
-            if mrr_or_tree.mapped is False:
-                mrr_or_tree.read_in()
-                purge_original = True
-            else:
-                purge_original = False
-
-            copied_mrr_or_tree = mrr_or_tree.deepcopy(
-                new_mapper_family,
-                new_destination)
-            copied_mrr_or_tree.write_out(new_destination)
-            copied_mrr_or_tree.purge()
-
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                copied_mrr_or_tree)
-
-            if purge_original is True:
-                mrr_or_tree.purge()
+                version_record.element.deepcopy(new_mapper_family,
+                                                new_destination))
 
         copied_version_list.write_out(new_destination)
         copied_version_list.purge()
@@ -189,26 +173,21 @@ class TreeVersionList(VersionList):
         super().unget_versioned_element(primary_data_version,
                                         new_destination)
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_destination: Optional[str] = None,
-                 path_prefix: Optional[MetadataPath] = None
-                 ) -> "TreeVersionList":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs
+                      ) -> "TreeVersionList":
 
-        path_prefix = path_prefix or MetadataPath("")
+        path_prefix = kwargs.get("path_prefix", MetadataPath(""))
 
         copied_version_list = TreeVersionList()
         for primary_data_version, version_record in self.version_set.items():
-
-            mrr_or_tree: Union[MetadataRootRecord, FileTree] = version_record.element.read_in()
 
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                mrr_or_tree.deepcopy(new_mapper_family, new_destination))
-
-            version_record.element.write_out(new_destination)
-            version_record.element.purge()
+                version_record.element.deepcopy(new_mapper_family, new_destination))
 
         return copied_version_list

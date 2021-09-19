@@ -81,6 +81,30 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             self.purge_impl(force)
             self.mapped = False
 
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_destination: Optional[str] = None,
+                 **kwargs) -> "MappableObject":
+
+        needs_purge = False
+        if self.mapped is False:
+            self.read_in()
+            needs_purge = True
+
+        result = self.deepcopy_impl(new_mapper_family, new_destination, **kwargs)
+
+        if needs_purge is True:
+            self.purge()
+
+        return result
+
+    @abstractmethod
+    def deepcopy_impl(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_destination: Optional[str] = None,
+                 **kwargs) -> "MappableObject":
+        raise NotImplementedError
+
     @abstractmethod
     def purge_impl(self, force: bool):
         raise NotImplementedError

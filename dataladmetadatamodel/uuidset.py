@@ -56,25 +56,16 @@ class UUIDSet(MappableObject):
         self.uuid_set[uuid].write_out()
         self.uuid_set[uuid].purge()
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_destination: Optional[str] = None
-                 ) -> "UUIDSet":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None
+                      ) -> "UUIDSet":
 
         copied_uuid_set = UUIDSet()
         for uuid, version_list in self.uuid_set.items():
-
-            purge_original = False
-            if version_list.mapped is False:
-                version_list.read_in()
-                purge_original = True
-
             copied_uuid_set.uuid_set[uuid] = version_list.deepcopy(
                 new_mapper_family,
                 new_destination)
-
-            if purge_original:
-                version_list.purge()
 
         copied_uuid_set.write_out(new_destination)
         copied_uuid_set.purge()

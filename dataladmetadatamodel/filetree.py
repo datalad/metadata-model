@@ -104,14 +104,9 @@ class FileTree(MappableObject, TreeNode):
             metadata_content
         )
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_destination: Optional[str] = None) -> "FileTree":
-
-        needs_purge = False
-        if self.mapped is False:
-            self.read_in()
-            needs_purge = True
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None) -> "FileTree":
 
         copied_file_tree = FileTree()
 
@@ -139,8 +134,5 @@ class FileTree(MappableObject, TreeNode):
 
         copied_file_tree.write_out(new_destination)
         copied_file_tree.purge()
-
-        if needs_purge is True:
-            self.purge()
 
         return copied_file_tree
