@@ -1,5 +1,8 @@
 import unittest
-from typing import Iterable
+from typing import (
+    Iterable,
+    Optional
+)
 from unittest.mock import MagicMock
 
 from dataladmetadatamodel.mappableobject import MappableObject
@@ -11,6 +14,12 @@ class SUTMappableObject(MappableObject):
     def __init__(self, reference=None):
         super().__init__(reference)
         self.something = "Something " * 100
+
+    def deepcopy_impl(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_destination: Optional[str] = None,
+                 **kwargs) -> "MappableObject":
+        return self
 
     def purge_impl(self, force: bool):
         self.something = None
