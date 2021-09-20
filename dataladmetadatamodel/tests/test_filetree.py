@@ -1,5 +1,6 @@
 import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -99,6 +100,52 @@ class TestFileTree(unittest.TestCase):
 
 
 class TestMapping(unittest.TestCase):
+
+    def test_adding(self):
+        # check file tree adding is working
+        with tempfile.TemporaryDirectory() as metadata_store:
+
+            subprocess.run(["git", "init", metadata_store])
+
+            file_tree = create_file_tree_with_metadata(
+                default_paths,
+                [Metadata() for _ in default_paths])
+            reference = file_tree.write_out(metadata_store)
+
+            file_tree = FileTree(reference).read_in()
+            additional_paths = [MetadataPath(f"x/y.{n}") for n in range(10)]
+            for additional_path in additional_paths:
+                file_tree.add_metadata(additional_path, Metadata())
+            reference = file_tree.write_out()
+
+            file_tree = FileTree(reference).read_in()
+            read_paths = [pair[0] for pair in file_tree.get_paths_recursive()]
+            for path in default_paths + additional_paths:
+                self.assertIn(path, read_paths)
+
+    def test_adding_to_massive_tree(self):
+        # check file tree adding is working
+        with tempfile.TemporaryDirectory() as metadata_store:
+
+            subprocess.run(["git", "init", metadata_store])
+
+            file_tree = FileTree()
+            for first_part in range(10):
+                for second_part in range(10):
+                    for third_part in range(10):
+                        metadata_path = MetadataPath(f"{first_part:03}/"
+                                                     f"{second_part:03}/"
+                                                     f"{third_part:03}")
+                        file_tree.add_metadata(metadata_path, Metadata())
+
+            reference = file_tree.write_out(metadata_store)
+
+            file_tree = FileTree(reference).read_in()
+            additional_paths = [MetadataPath(f"x/y.{n}") for n in range(10)]
+
+            start_time = time.time()
+            file_tree.add_metadata(MetadataPath("5/5/xxx"), Metadata())
+            duration = time.time() - start_time
 
     def test_shallow_file_tree_mapping(self):
         # assert that file trees content is not mapped by default
