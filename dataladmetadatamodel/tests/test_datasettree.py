@@ -101,7 +101,7 @@ class TestDeepCopy(unittest.TestCase):
                                                file_test_paths)
 
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
-            flush_object_references(Path(copy_dir))
+            dataset_tree_copy.read_in()
 
             assert_dataset_trees_equal(
                 self,
@@ -121,11 +121,9 @@ class TestDeepCopy(unittest.TestCase):
                                                file_test_paths)
 
             dataset_tree.write_out(original_dir)
-            flush_object_references(Path(original_dir))
 
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
-            dataset_tree_copy.write_out(copy_dir)
-            flush_object_references(Path(copy_dir))
+            dataset_tree_copy.read_in()
 
             assert_dataset_trees_equal(
                 self,

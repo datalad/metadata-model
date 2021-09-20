@@ -308,5 +308,6 @@ class Metadata(MappableObject):
         copied_metadata = Metadata()
         for extractor_name, instance_set in self.instance_sets.items():
             copied_metadata.instance_sets[extractor_name] = copy.deepcopy(instance_set)
-
+        copied_metadata.write_out(new_destination)
+        copied_metadata.purge()
         return copied_metadata
