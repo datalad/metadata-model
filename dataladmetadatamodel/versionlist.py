@@ -189,4 +189,6 @@ class TreeVersionList(VersionList):
                 path_prefix / version_record.path,
                 version_record.element.deepcopy(new_mapper_family, new_destination))
 
+        copied_version_list.write_out(new_destination)
+        copied_version_list.purge()
         return copied_version_list
