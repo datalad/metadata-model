@@ -1,15 +1,13 @@
 import subprocess
 import tempfile
 import unittest
-from pathlib import Path
-from uuid import UUID
 
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
-from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 from dataladmetadatamodel.tests.utils import (
+    get_uuid,
     assert_dataset_trees_equal,
     create_dataset_tree
 )
@@ -32,7 +30,7 @@ dataset_test_paths = [
     MetadataPath("d3/d3.1")]
 
 
-uuid_0 = UUID("00000000000000000000000000000000")
+uuid_0 = get_uuid(0)
 
 
 class TestDatasetTree(unittest.TestCase):

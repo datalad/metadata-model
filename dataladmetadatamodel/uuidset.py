@@ -58,8 +58,8 @@ class UUIDSet(MappableObject):
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
-                      new_destination: Optional[str] = None
-                      ) -> "UUIDSet":
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "UUIDSet":
 
         copied_uuid_set = UUIDSet()
         for uuid, version_list in self.uuid_set.items():

@@ -116,7 +116,8 @@ class DatasetTree(MappableObject, TreeNode):
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
-                      new_destination: Optional[str] = None) -> "DatasetTree":
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "DatasetTree":
 
         copied_dataset_tree = DatasetTree()
         for path, node in self.get_paths_recursive(True):

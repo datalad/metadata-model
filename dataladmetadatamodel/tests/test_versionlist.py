@@ -3,7 +3,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.versionlist import (
     VersionList,
@@ -12,12 +11,8 @@ from dataladmetadatamodel.versionlist import (
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 from .utils import (
-    MMDummy,
-    assert_version_lists_equal,
     assert_dataset_trees_equal,
-    create_dataset_tree,
-    get_uuid,
-    get_version
+    create_dataset_tree
 )
 
 
@@ -108,6 +103,7 @@ class TestVersionList(unittest.TestCase):
             for _, (_, _, copied_dataset_tree) in copied_version_list.get_versioned_elements():
                 self.assertFalse(copied_dataset_tree.mapped)
 
+            # Compare the version lists, taking modified dataset tree paths into account
             for primary_version, (_, path, dataset_tree) in version_list.get_versioned_elements():
                 expected_path = path_prefix / path
                 _, copy_path, copied_dataset_tree = copied_version_list.get_versioned_element(primary_version)
@@ -120,12 +116,3 @@ class TestVersionList(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-# TODO: ensure that copies are unmapped.
-#  That means, after:
-#  copied_object = original_object.deepcopy(backend_type, destination)
-#  is executed, the copied_object is written out and purged.
-
-# TODO: unify purge behaviour.
-#  Purge should clear all attributes of mappable object subclass instances

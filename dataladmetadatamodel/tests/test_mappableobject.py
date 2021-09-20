@@ -16,9 +16,9 @@ class SUTMappableObject(MappableObject):
         self.something = "Something " * 100
 
     def deepcopy_impl(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_destination: Optional[str] = None,
-                 **kwargs) -> "MappableObject":
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "MappableObject":
         return self
 
     def purge_impl(self, force: bool):

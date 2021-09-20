@@ -5,7 +5,8 @@ import time
 from pathlib import Path
 from typing import (
     Optional,
-    Tuple
+    Tuple,
+    Union
 )
 from uuid import UUID
 
@@ -48,7 +49,7 @@ def _get_uuid_set_reference(
 
 def get_top_level_metadata_objects(
         mapper_family: str,
-        realm: Tuple[str, Path]
+        realm: Union[str, Path]
         ) -> Tuple[Optional[TreeVersionList], Optional[UUIDSet]]:
 
     """

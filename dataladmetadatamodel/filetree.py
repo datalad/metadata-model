@@ -106,7 +106,8 @@ class FileTree(MappableObject, TreeNode):
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
-                      new_destination: Optional[str] = None) -> "FileTree":
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "FileTree":
 
         copied_file_tree = FileTree()
 

@@ -36,9 +36,9 @@ class TestModifiableObject(unittest.TestCase):
 
     def test_sub_object_modification(self):
         class Bag(ModifiableObject):
-            def __init__(self, sub_objects: List[ModifiableObject]):
+            def __init__(self, _sub_objects: List[ModifiableObject]):
                 super().__init__()
-                self.sub_objects = sub_objects
+                self.sub_objects = _sub_objects
 
             def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
                 return self.sub_objects

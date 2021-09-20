@@ -303,7 +303,8 @@ class Metadata(MappableObject):
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
-                      new_destination: Optional[str] = None) -> "Metadata":
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "Metadata":
 
         copied_metadata = Metadata()
         for extractor_name, instance_set in self.instance_sets.items():

@@ -100,9 +100,9 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
 
     @abstractmethod
     def deepcopy_impl(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_destination: Optional[str] = None,
-                 **kwargs) -> "MappableObject":
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "MappableObject":
         raise NotImplementedError
 
     @abstractmethod

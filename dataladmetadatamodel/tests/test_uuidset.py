@@ -1,7 +1,6 @@
 import subprocess
 import tempfile
 import unittest
-from uuid import UUID
 
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.metadatapath import MetadataPath
@@ -13,8 +12,6 @@ from dataladmetadatamodel.versionlist import VersionRecord
 
 from .utils import (
     assert_uuid_sets_equal,
-    assert_version_lists_equal,
-    create_dataset_tree,
     get_uuid
 )
 

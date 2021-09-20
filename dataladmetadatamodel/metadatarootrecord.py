@@ -52,7 +52,8 @@ class MetadataRootRecord(MappableObject):
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
-                      new_destination: Optional[str] = None) -> "MetadataRootRecord":
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "MetadataRootRecord":
 
         copied_metadata_root_record = MetadataRootRecord(
             self.dataset_identifier,

@@ -30,5 +30,6 @@ class Text(MappableObject):
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
-                      new_destination: Optional[str] = None) -> "Text":
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "Text":
         return Text(content=self.content, reference=self.reference)

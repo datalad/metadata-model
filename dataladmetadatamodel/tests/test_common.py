@@ -1,14 +1,14 @@
 import unittest
-from uuid import UUID
 
 from dataladmetadatamodel.common import (
     get_top_level_metadata_objects,
     get_top_nodes_and_metadata_root_record
 )
 from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.tests.utils import get_uuid
 
 
-uuid_0 = UUID("00000000000000000000000000000000")
+uuid_0 = get_uuid(0)
 
 
 class TestTopLevelObjects(unittest.TestCase):

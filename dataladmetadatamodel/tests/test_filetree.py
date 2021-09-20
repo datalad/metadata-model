@@ -11,7 +11,6 @@ from dataladmetadatamodel.metadata import (
 )
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
-from dataladmetadatamodel.mapper.reference import Reference
 from dataladmetadatamodel.tests.utils import (
     assert_file_trees_equal,
     create_file_tree_with_metadata
