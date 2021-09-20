@@ -2,10 +2,12 @@ name: Run nose tests
 on:
   push:
     branches:
-      - master
+      - main
+      - enh_simplify
   pull_request:
     branches:
       - master
+      - enh_simplify
 
 jobs:
   build:
