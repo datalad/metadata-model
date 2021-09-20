@@ -1,3 +1,4 @@
+from typing import Optional
 
 from dataladmetadatamodel.mapper.gitmapper.objectreference import (
     GitReference,
@@ -18,7 +19,8 @@ class DatasetTreeGitMapper(Mapper):
 
     def _save_dataset_tree(self,
                            node: "TreeNode",
-                           destination: str) -> str:
+                           destination: str
+                           ) -> Optional[str]:
         dir_entries = []
 
         if node.value is not None:
@@ -26,21 +28,26 @@ class DatasetTreeGitMapper(Mapper):
                 MetadataRootRecord
 
             assert isinstance(node.value, MetadataRootRecord)
-            reference = node.value.write_out(destination)
+            mrr_reference = node.value.write_out(destination)
             dir_entries.append((
                 "100644",
                 "blob",
-                reference.location,
+                mrr_reference.location,
                 DATALAD_ROOT_RECORD_NAME))
 
         for name, child_node in node.child_nodes.items():
-            dir_entries.append((
-                "040000",
-                "tree",
-                self._save_dataset_tree(child_node, destination),
-                name))
+            sub_dir_hash = self._save_dataset_tree(child_node, destination)
+            if sub_dir_hash:
+                dir_entries.append((
+                    "040000",
+                    "tree",
+                    sub_dir_hash,
+                    name))
 
-        return git_save_tree(destination, set(dir_entries))
+        if dir_entries:
+            return git_save_tree(destination, dir_entries)
+        else:
+            return None
 
     def map_in_impl(self,
                     dataset_tree: "DatasetTree",
