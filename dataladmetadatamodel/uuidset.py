@@ -7,6 +7,7 @@ from typing import (
 from uuid import UUID
 
 from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.versionlist import VersionList
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -19,7 +20,7 @@ class UUIDSet(MappableObject):
         super().__init__(reference)
         self.uuid_set = initial_set or dict()
 
-    def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
         return self.uuid_set.values()
 
     def purge_impl(self, force: bool):

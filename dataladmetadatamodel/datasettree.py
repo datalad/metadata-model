@@ -9,6 +9,7 @@ from typing import (
 from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.treenode import TreeNode
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -37,7 +38,7 @@ class DatasetTree(MappableObject, TreeNode):
         # Remove dataset tree
         TreeNode.__init__(self)
 
-    def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
         for _, tree_node in self.get_paths_recursive():
             if tree_node.value is not None:
                 yield tree_node.value

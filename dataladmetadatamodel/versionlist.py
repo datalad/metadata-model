@@ -7,7 +7,6 @@ from typing import (
 )
 
 from dataladmetadatamodel.datasettree import DatasetTree
-from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
@@ -49,7 +48,7 @@ class VersionList(MappableObject):
             version_record.element.purge(force)
         self.version_set = dict()
 
-    def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
         yield from map(
             lambda version_record: version_record.element,
             self.version_set.values())
@@ -69,6 +68,7 @@ class VersionList(MappableObject):
         If it is not mapped yet, it will be mapped.
         """
         version_record = self._get_version_record(primary_data_version)
+        version_record.element.read_in()
         return (
             version_record.time_stamp,
             version_record.path,

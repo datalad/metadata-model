@@ -22,7 +22,7 @@ class Text(MappableObject):
         super().__init__(reference)
         self.content = content
 
-    def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
         return []
 
     def purge_impl(self, force: bool):

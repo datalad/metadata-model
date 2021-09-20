@@ -2,7 +2,10 @@ from abc import (
     ABCMeta,
     abstractmethod
 )
-from typing import Optional
+from typing import (
+    Iterable,
+    Optional
+)
 
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.modifiableobject import ModifiableObject
@@ -23,6 +26,21 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.mapper_private_data = dict()
         self.mapped = reference is None
         assert isinstance(reference, (type(None), Reference)), f"object {self} initialized with invalid reference: {reference}"
+
+    def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
+        """
+        Mapped objects might be mapped (in memory) or not mapped
+        (stored on secondary storage and purged in order to consume
+        as little memory as possible).
+        If on abject is not mapped, we assume that it is not modified
+        because modifying means: "read-in", "modify", "write-out", and
+        "purge". Since "purge" will only succeed if the object was
+        unmapped, a purged object does not have to be checked for
+        modifications.
+        """
+        if not self.mapped:
+            return []
+        return self.get_modifiable_sub_objects_impl()
 
     def read_in(self, backend_type="git") -> "MappableObject":
         from dataladmetadatamodel.mapper import get_mapper
@@ -97,6 +115,10 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             self.purge()
 
         return result
+
+    @abstractmethod
+    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
+        raise NotImplementedError
 
     @abstractmethod
     def deepcopy_impl(self,

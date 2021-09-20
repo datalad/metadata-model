@@ -236,7 +236,7 @@ class Metadata(MappableObject):
     def purge_impl(self, force: bool):
         self.instance_sets = dict()
 
-    def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
         return []
 
     def extractors(self) -> Generator[str, None, None]:
