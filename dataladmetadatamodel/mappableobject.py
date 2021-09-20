@@ -90,12 +90,10 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         assert isinstance(self.reference, Reference), f"write_out: object {self} has no valid reference: {self.reference}"
         return self.reference
 
-    def purge(self, force: bool = False):
+    def purge(self):
         if self.mapped:
             if len(self.saved_on) == 0:
-                if not force:
-                    raise ValueError(f"purge: called with unsaved object: {self}")
-                logger.warning(f"Forcefully purging unsaved object: {self}")
+                raise ValueError(f"purge: called with unsaved object: {self}")
             self.purge_impl()
             self.mapped = False
 

@@ -56,10 +56,9 @@ class TestMappableObject(unittest.TestCase):
         mo.purge()
         self.test_mapper.map_out.assert_called_once_with(mo, "/tmp/t", False)
 
-    def test_forced_purge(self):
+    def test_purge_unsaved(self):
         mo = SUTMappableObject(None)
-        mo.purge(force=True)
-        self.test_mapper.map_out.assert_not_called()
+        self.assertRaises(ValueError, mo.purge)
 
 
 if __name__ == '__main__':
