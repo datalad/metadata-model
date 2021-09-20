@@ -1,10 +1,8 @@
-from copy import copy
 from uuid import UUID
 from typing import (
     Iterable,
     Optional
 )
-from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
@@ -27,12 +25,12 @@ class MetadataRootRecord(MappableObject):
         self.file_tree = file_tree
         self.backend_type = backend_type
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return [self.dataset_level_metadata, self.file_tree]
 
-    def purge_impl(self, force: bool):
-        self.dataset_level_metadata.purge(force)
-        self.file_tree.purge(force)
+    def purge_impl(self):
+        self.dataset_level_metadata.purge()
+        self.file_tree.purge()
         self.dataset_level_metadata = None
         self.file_tree = None
 

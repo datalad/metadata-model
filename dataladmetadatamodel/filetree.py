@@ -12,7 +12,6 @@ from dataladmetadatamodel.metadata import (
     Metadata
 )
 from dataladmetadatamodel.metadatapath import MetadataPath
-from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.treenode import TreeNode
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -32,12 +31,12 @@ class FileTree(MappableObject, TreeNode):
         # The check for node.value is not None takes care of root paths
         return node is not None and node.value is not None
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         for name, tree_node in super().get_paths_recursive():
             if tree_node.value is not None:
                 yield tree_node.value
 
-    def purge_impl(self, force: bool):
+    def purge_impl(self):
         for name, tree_node in super().get_paths_recursive():
             if tree_node.value is not None:
                 yield tree_node.value.purge(force)

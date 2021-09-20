@@ -8,7 +8,6 @@ from typing import (
 
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.mappableobject import MappableObject
-from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mapper.reference import Reference
@@ -43,12 +42,12 @@ class VersionList(MappableObject):
         super().__init__(reference)
         self.version_set: Dict[str, VersionRecord] = initial_set or dict()
 
-    def purge_impl(self, force: bool):
+    def purge_impl(self):
         for version, version_record in self.version_set.items():
-            version_record.element.purge(force)
+            version_record.element.purge()
         self.version_set = dict()
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         yield from map(
             lambda version_record: version_record.element,
             self.version_set.values())

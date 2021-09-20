@@ -16,7 +16,6 @@ from dataladmetadatamodel import (
     version_string
 )
 from dataladmetadatamodel.mappableobject import MappableObject
-from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -233,10 +232,10 @@ class Metadata(MappableObject):
     def __eq__(self, other):
         return self.instance_sets == other.instance_sets
 
-    def purge_impl(self, force: bool):
+    def purge_impl(self):
         self.instance_sets = dict()
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return []
 
     def extractors(self) -> Generator[str, None, None]:

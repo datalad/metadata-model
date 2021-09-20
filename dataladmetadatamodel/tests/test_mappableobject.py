@@ -21,7 +21,7 @@ class SUTMappableObject(MappableObject):
                       **kwargs) -> "MappableObject":
         return self
 
-    def purge_impl(self, force: bool):
+    def purge_impl(self):
         self.something = None
 
     def get_modifiable_sub_objects_impl(self) -> Iterable:

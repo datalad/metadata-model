@@ -32,9 +32,9 @@ class DatasetTree(MappableObject, TreeNode):
         node = self.get_node_at_path(path)
         return node is not None and node.value is not None
 
-    def purge_impl(self, force: bool):
+    def purge_impl(self):
         for sub_object in self.get_modifiable_sub_objects():
-            sub_object.purge(force)
+            sub_object.purge()
         # Remove dataset tree
         TreeNode.__init__(self)
 

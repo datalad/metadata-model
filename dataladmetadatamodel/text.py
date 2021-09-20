@@ -9,7 +9,6 @@ from typing import (
 )
 
 from dataladmetadatamodel.mappableobject import MappableObject
-from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -22,10 +21,10 @@ class Text(MappableObject):
         super().__init__(reference)
         self.content = content
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return []
 
-    def purge_impl(self, force: bool):
+    def purge_impl(self):
         self.content = None
 
     def deepcopy_impl(self,

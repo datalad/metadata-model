@@ -27,7 +27,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.mapped = reference is None
         assert isinstance(reference, (type(None), Reference)), f"object {self} initialized with invalid reference: {reference}"
 
-    def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects(self) -> Iterable["MappableObject"]:
         """
         Mapped objects might be mapped (in memory) or not mapped
         (stored on secondary storage and purged in order to consume
@@ -96,7 +96,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 if not force:
                     raise ValueError(f"purge: called with unsaved object: {self}")
                 logger.warning(f"Forcefully purging unsaved object: {self}")
-            self.purge_impl(force)
+            self.purge_impl()
             self.mapped = False
 
     def deepcopy(self,
@@ -117,7 +117,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         return result
 
     @abstractmethod
-    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
+    def get_modifiable_sub_objects_impl(self) -> Iterable["MappableObject"]:
         raise NotImplementedError
 
     @abstractmethod
@@ -128,5 +128,5 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def purge_impl(self, force: bool):
+    def purge_impl(self):
         raise NotImplementedError
