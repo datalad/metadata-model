@@ -3,7 +3,6 @@ import time
 from typing import Dict, Optional, Tuple
 from uuid import UUID
 
-from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 
@@ -31,7 +30,7 @@ def create_metadata_root_record(mapper_family,
         parameter_set_count
     )
 
-    metadata = Metadata(mapper_family, realm)
+    metadata = Metadata()
     for count in range(parameter_set_count):
         parameters = {
             "ds_parameter_0": f"value_0.{count}",

@@ -6,12 +6,8 @@ from typing import (
     Union
 )
 
-from dataladmetadatamodel.connector import (
-    ConnectedObject,
-    Connector
-)
 from dataladmetadatamodel.datasettree import DatasetTree
-from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mapper.reference import Reference
@@ -21,11 +17,11 @@ class VersionRecord:
     def __init__(self,
                  time_stamp: str,
                  path: Optional[MetadataPath],
-                 element_connector: Connector):
+                 element: Union[DatasetTree, MetadataRootRecord]):
 
         self.time_stamp = time_stamp
         self.path = path or MetadataPath("")
-        self.element_connector = element_connector
+        self.element = element
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
@@ -35,66 +31,58 @@ class VersionRecord:
         return VersionRecord(
             self.time_stamp,
             self.path,
-            self.element_connector.deepcopy(new_mapper_family, new_realm)
-        )
+            self.element.deepcopy(new_mapper_family, new_realm))
 
 
-class VersionList(ConnectedObject):
+class VersionList(MappableObject):
     def __init__(self,
-                 mapper_family: str,
-                 realm: str,
-                 initial_set: Optional[Dict[str, VersionRecord]] = None):
+                 initial_set: Optional[Dict[str, VersionRecord]] = None,
+                 reference: Optional[Reference] = None):
 
-        super().__init__()
-        self.mapper_family = mapper_family
-        self.realm = realm
-        self.version_set = initial_set or dict()
+        super().__init__(reference)
+        self.version_set: Dict[str, VersionRecord] = initial_set or dict()
+
+    def purge_impl(self):
+        for version, version_record in self.version_set.items():
+            version_record.element.purge()
+        self.version_set = dict()
+
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+        yield from map(
+            lambda version_record: version_record.element,
+            self.version_set.values())
 
     def _get_version_record(self, primary_data_version) -> VersionRecord:
         return self.version_set[primary_data_version]
-
-    def _get_dst_connector(self, primary_data_version) -> Connector:
-        return self._get_version_record(primary_data_version).element_connector
-
-    def is_modified(self) -> bool:
-        return (
-            super().is_modified()
-            or any(
-                map(
-                    lambda vr: vr.element_connector.is_object_modified(),
-                    self.version_set.values())))
-
-    def save(self) -> Reference:
-        """
-        This method persists the bottom-half of all modified
-        connectors by delegating it to the ConnectorDict. Then
-        it saves the properties of the VersionList and the top-half
-        of the connectors with the appropriate class mapper.
-        """
-        self.un_touch()
-
-        for primary_data_version, version_record in self.version_set.items():
-            version_record.element_connector.save_object()
-
-        return self.unmap_myself(self.mapper_family, self.realm)
 
     def versions(self) -> Iterable:
         return self.version_set.keys()
 
     def get_versioned_element(self,
                               primary_data_version: str
-                              ) -> Tuple[str, MetadataPath, Union[DatasetTree, MetadataRootRecord]]:
-
+                              ) -> Tuple[str, MetadataPath, MappableObject]:
         """
         Get the dataset tree or metadata root record,
         its timestamp and path for the given version.
         If it is not mapped yet, it will be mapped.
         """
         version_record = self._get_version_record(primary_data_version)
+        version_record.element.read_in()
         return (
             version_record.time_stamp,
             version_record.path,
-            version_record.element_connector.load_object())
+            version_record.element)
+
+    def get_versioned_elements(self
+                               ) -> Iterable[Tuple[str, Tuple[str, MetadataPath, MappableObject]]]:
+        """
+        Get an iterable of all versions and their records
+        """
+        for version, version_record in self.version_set.items():
+            yield version, (
+                version_record.time_stamp,
+                version_record.path,
+                version_record.element)
 
     def set_versioned_element(self,
                               primary_data_version: str,
@@ -107,48 +95,43 @@ class VersionList(ConnectedObject):
         The entry is marked as dirty.
         """
         self.touch()
-
         self.version_set[primary_data_version] = VersionRecord(
             time_stamp,
             path,
-            Connector.from_object(element))
+            element)
 
     def unget_versioned_element(self,
-                                primary_data_version: str):
+                                primary_data_version: str,
+                                new_destination: Optional[str] = None):
         """
         Remove a metadata record from memory. First, persist the
         current status via save_object ---which will write it to
         the backend, if it was changed or--- then purge it
         from memory.
         """
-        dst_connector = self._get_dst_connector(primary_data_version)
-        dst_connector.save_object()
-        dst_connector.purge()
+        version_record = self.version_set[primary_data_version]
+        version_record.element.write_out(new_destination)
+        version_record.element.purge()
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None,
-                 path_prefix: Optional[MetadataPath] = None
-                 ) -> "VersionList":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs
+                      ) -> "VersionList":
 
-        new_mapper_family = new_mapper_family or self.mapper_family
-        new_realm = new_realm or self.realm
-        path_prefix = path_prefix or MetadataPath("")
+        path_prefix = kwargs.get("path_prefix", MetadataPath(""))
 
-        copied_version_list = VersionList(new_mapper_family, new_realm)
-
+        copied_version_list = VersionList()
         for primary_data_version, version_record in self.version_set.items():
-
-            metadata_root_record = version_record.element_connector.load_object()
-
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                metadata_root_record.deepcopy(new_mapper_family, new_realm))
+                version_record.element.deepcopy(new_mapper_family,
+                                                new_destination))
 
-            version_record.element_connector.purge()
-
+        copied_version_list.write_out(new_destination)
+        copied_version_list.purge()
         return copied_version_list
 
 
@@ -158,15 +141,6 @@ class TreeVersionList(VersionList):
     specific mapping, for example in the git mapper, which will
     update a reference, if mapping an TreeVersionList instance.
     """
-    def save(self) -> Reference:
-
-        self.un_touch()
-
-        # Save all dataset tree connectors that are mapped
-        for primary_data_version, version_record in self.version_set.items():
-            version_record.element_connector.save_object()
-
-        return self.unmap_myself(self.mapper_family, self.realm)
 
     def get_dataset_tree(self,
                          primary_data_version: str
@@ -174,6 +148,7 @@ class TreeVersionList(VersionList):
 
         time_stamp, _, dataset_tree = super().get_versioned_element(
             primary_data_version)
+        assert isinstance(dataset_tree, DatasetTree)
         return time_stamp, dataset_tree
 
     def set_dataset_tree(self,
@@ -191,32 +166,29 @@ class TreeVersionList(VersionList):
             dataset_tree)
 
     def unget_dataset_tree(self,
-                           primary_data_version: str):
+                           primary_data_version: str,
+                           new_destination: Optional[str] = None):
 
-        super().unget_versioned_element(primary_data_version)
+        super().unget_versioned_element(primary_data_version,
+                                        new_destination)
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None,
-                 path_prefix: Optional[MetadataPath] = None
-                 ) -> "TreeVersionList":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs
+                      ) -> "TreeVersionList":
 
-        new_mapper_family = new_mapper_family or self.mapper_family
-        new_realm = new_realm or self.realm
-        path_prefix = path_prefix or MetadataPath("")
+        path_prefix = kwargs.get("path_prefix", MetadataPath(""))
 
-        copied_version_list = TreeVersionList(new_mapper_family, new_realm)
-
+        copied_version_list = TreeVersionList()
         for primary_data_version, version_record in self.version_set.items():
-
-            metadata_root_record = version_record.element_connector.load_object()
 
             copied_version_list.set_versioned_element(
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                metadata_root_record.deepcopy(new_mapper_family, new_realm))
+                version_record.element.deepcopy(new_mapper_family, new_destination))
 
-            version_record.element_connector.purge()
-
+        copied_version_list.write_out(new_destination)
+        copied_version_list.purge()
         return copied_version_list

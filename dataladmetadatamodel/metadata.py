@@ -15,8 +15,7 @@ from dataladmetadatamodel import (
     check_serialized_version,
     version_string
 )
-from dataladmetadatamodel.connector import ConnectedObject
-from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -215,7 +214,7 @@ class MetadataInstanceSet:
                and self.instances == other.instances
 
 
-class Metadata(ConnectedObject):
+class Metadata(MappableObject):
     """
     Holds entries for all metadata of a single object.
     Metadata is identified on the first level by its
@@ -225,37 +224,28 @@ class Metadata(ConnectedObject):
     the extractor result, aka the real metadata.
     """
     def __init__(self,
-                 mapper_family: str,
-                 realm: str):
+                 reference: Optional[Reference] = None):
 
-        super().__init__()
-        self.mapper_family = mapper_family
-        self.realm = realm
+        super().__init__(reference)
         self.instance_sets: Dict[str, MetadataInstanceSet] = dict()
 
-    def to_json(self) -> str:
-        return json.dumps({
-            "@": dict(
-                type="Metadata",
-                version=version_string
-            ),
-            "mapper_family": self.mapper_family,
-            "realm": self.realm,
-            "instance_sets": {
-                format_name: instance_set.to_json_obj()
-                for format_name, instance_set in self.instance_sets.items()
-            }
-        })
+    def __eq__(self, other):
+        return self.instance_sets == other.instance_sets
 
-    def save(self) -> Reference:
-        self.un_touch()
-        return get_mapper(self.mapper_family, "Metadata")(self.realm).unmap(self)
+    def purge_impl(self):
+        self.instance_sets = dict()
+
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+        return []
 
     def extractors(self) -> Generator[str, None, None]:
         yield from self.instance_sets.keys()
 
     def extractor_runs(self) -> Generator[Tuple[str, MetadataInstanceSet], None, None]:
         yield from self.instance_sets.items()
+
+    def extractor_runs_for_extractor(self, extractor_name: str) -> MetadataInstanceSet:
+        return self.instance_sets[extractor_name]
 
     def add_extractor_run(self,
                           time_stamp: Optional[float],
@@ -281,39 +271,43 @@ class Metadata(ConnectedObject):
 
         self.instance_sets[extractor_name] = instance_set
 
-    @classmethod
-    def from_json(cls, json_str: str):
+    def to_json(self) -> str:
+        return json.dumps({
+            "@": dict(
+                type="Metadata",
+                version=version_string
+            ),
+            "instance_sets": {
+                format_name: instance_set.to_json_obj()
+                for format_name, instance_set in self.instance_sets.items()
+            }
+        })
+
+    def init_from_json(self, json_str) -> None:
         obj = json.loads(json_str)
-        assert obj["@"]["type"] == "Metadata"
         check_serialized_version(obj)
 
-        metadata = cls(
-            obj["mapper_family"],
-            obj["realm"]
-        )
-
+        assert obj["@"]["type"] == "Metadata"
         for format_name, instance_set_json_obj in obj["instance_sets"].items():
-            metadata.instance_sets[format_name] = \
+            self.instance_sets[format_name] = \
                 MetadataInstanceSet.from_json_obj(instance_set_json_obj)
 
+    @classmethod
+    def from_json(cls, json_str: str) -> "Metadata":
+        metadata = cls(None)
+        metadata.init_from_json(json_str)
+        metadata.mapped = True
+        metadata.set_unsaved()
         return metadata
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None) -> "Metadata":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "Metadata":
 
-        new_mapper_family = new_mapper_family or self.mapper_family
-        new_realm = new_realm or self.realm
-
-        copied_metadata = Metadata(new_mapper_family, new_realm)
+        copied_metadata = Metadata()
         for extractor_name, instance_set in self.instance_sets.items():
-
-            # copy the instance set, i.e. the model object
-            copied_metadata.instance_sets[extractor_name] = \
-                copy.deepcopy(instance_set)
-            del instance_set
-
+            copied_metadata.instance_sets[extractor_name] = copy.deepcopy(instance_set)
+        copied_metadata.write_out(new_destination)
+        copied_metadata.purge()
         return copied_metadata
-
-    def __eq__(self, other):
-        return self.instance_sets == other.instance_sets

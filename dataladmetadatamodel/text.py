@@ -3,32 +3,32 @@ Instances of the Text class just contain
 text. Their main use is as dummy-element
 during model development.
 """
-from typing import Optional
+from typing import (
+    Iterable,
+    Optional
+)
 
-from dataladmetadatamodel.connector import ConnectedObject
-from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-class Text(ConnectedObject):
+class Text(MappableObject):
 
     def __init__(self,
-                 mapper_family: str,
-                 realm: str,
-                 content: str):
+                 content: Optional[str] = None,
+                 reference: Optional[Reference] = None):
 
-        super().__init__()
-        self.mapper_family = mapper_family
-        self.realm = realm
+        super().__init__(reference)
         self.content = content
 
-    def save(self) -> Reference:
-        self.un_touch()
-        return self.unmap_myself(self.mapper_family, self.realm)
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+        return []
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None
-                 ) -> "Text":
+    def purge_impl(self):
+        self.content = None
 
-        return Text(new_mapper_family, new_realm, self.content)
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "Text":
+        return Text(content=self.content, reference=self.reference)

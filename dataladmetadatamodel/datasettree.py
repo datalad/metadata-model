@@ -1,14 +1,15 @@
 import enum
 from typing import (
+    Iterable,
     List,
     Optional,
     Tuple
 )
 
-from dataladmetadatamodel.connector import ConnectedObject
-from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.treenode import TreeNode
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -19,20 +20,28 @@ class NodeType(enum.Enum):
     INTERNAL = enum.auto()
 
 
-class DatasetTree(ConnectedObject, TreeNode):
+class DatasetTree(MappableObject, TreeNode):
     def __init__(self,
-                 mapper_family: str,
-                 realm: str):
+                 reference: Optional[Reference] = None):
 
-        ConnectedObject.__init__(self)
+        MappableObject.__init__(self, reference)
         TreeNode.__init__(self)
-        self.mapper_family = mapper_family
-        self.realm = realm
 
     def __contains__(self, path: MetadataPath) -> bool:
         # The check for node.value <> None takes care of root paths
         node = self.get_node_at_path(path)
         return node is not None and node.value is not None
+
+    def purge_impl(self):
+        for sub_object in self.get_modifiable_sub_objects():
+            sub_object.purge()
+        # Remove dataset tree
+        TreeNode.__init__(self)
+
+    def get_modifiable_sub_objects_impl(self) -> Iterable[ModifiableObject]:
+        for _, tree_node in self.get_paths_recursive():
+            if tree_node.value is not None:
+                yield tree_node.value
 
     def node_type(self):
         if self.is_leaf_node():
@@ -67,9 +76,6 @@ class DatasetTree(ConnectedObject, TreeNode):
                     subtree: "DatasetTree",
                     subtree_path: MetadataPath):
 
-        assert subtree.mapper_family == self.mapper_family
-        assert subtree.realm == self.realm
-
         self.touch()
 
         sub_node = TreeNode(subtree.value)
@@ -95,22 +101,8 @@ class DatasetTree(ConnectedObject, TreeNode):
         name_to_delete, _ = all_nodes_in_path[-1]
         del containing_node.child_nodes[name_to_delete]
 
-    def get_metadata_root_record(self, path: MetadataPath):
+    def get_metadata_root_record(self, path: MetadataPath) -> MetadataRootRecord:
         return self.get_node_at_path(path).value
-
-    def save(self) -> Reference:
-        """
-        Persists the dataset tree. First save connected
-        components in all metadata root records, if they
-        are mapped or modified. Then persist the dataset-tree
-        itself, with the class mapper.
-        """
-        self.un_touch()
-
-        for _, file_node in self.get_paths_recursive(False):
-            file_node.value.save()
-
-        return self.unmap_myself(self.mapper_family, self.realm)
 
     def get_dataset_paths(self) -> List[
                                        Tuple[
@@ -123,18 +115,18 @@ class DatasetTree(ConnectedObject, TreeNode):
             if node.value is not None
         ]
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None) -> "DatasetTree":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "DatasetTree":
 
-        copied_dataset_tree = DatasetTree(
-            new_mapper_family or self.mapper_family,
-            new_realm or self.realm)
-
+        copied_dataset_tree = DatasetTree()
         for path, node in self.get_paths_recursive(True):
             if node.value is not None:
                 assert isinstance(node.value, MetadataRootRecord)
-                copied_value = node.value.deepcopy(new_mapper_family, new_realm)
+                copied_value = node.value.deepcopy(new_mapper_family, new_destination)
                 copied_dataset_tree.add_dataset(path, copied_value)
 
+        copied_dataset_tree.write_out(new_destination)
+        copied_dataset_tree.purge()
         return copied_dataset_tree

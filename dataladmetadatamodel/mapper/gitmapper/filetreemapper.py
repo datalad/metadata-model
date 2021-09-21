@@ -5,16 +5,16 @@ from typing import (
     Optional
 )
 
-from dataladmetadatamodel.mapper.basemapper import BaseMapper
+from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_ls_tree_recursive,
-    git_save_str,
     git_save_tree
 )
 from dataladmetadatamodel.mapper.gitmapper.objectreference import (
     GitReference,
     add_tree_reference
 )
+from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
 
 
@@ -46,12 +46,17 @@ def get_children_at(git_tree_info: Dict[str, GitTreeEntry],
     selected_entries = [
         entry
         for entry in git_tree_info.values()
-        if len(entry.parts) == len(node_parts) + 1 and entry.parts[:-1] == node_parts
-    ]
+        if (
+            len(entry.parts) == len(node_parts) + 1
+            and entry.parts[:-1] == node_parts)]
+
     return selected_entries
 
 
-def get_node_at(git_tree_info: Dict[str, GitTreeEntry], path: str) -> Optional[GitTreeEntry]:
+def get_node_at(git_tree_info: Dict[str, GitTreeEntry],
+                path: str
+                ) -> Optional[GitTreeEntry]:
+
     return git_tree_info.get(path, None)
 
 
@@ -92,40 +97,54 @@ def git_read_tree(realm: str, location: str) -> Dict[str, GitTreeEntry]:
     }
 
 
-class FileTreeGitMapper(BaseMapper):
+class FileTreeGitMapper(Mapper):
 
     def _save_new_file_tree(self,
-                            node: "TreeNode"
+                            node: "TreeNode",
+                            destination: str
                             ) -> Optional[str]:
-        from dataladmetadatamodel.connector import Connector
-        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
+
+        from dataladmetadatamodel.metadata import Metadata
 
         dir_entries = []
         for name, child_node in node.child_nodes.items():
 
             if child_node.is_leaf_node():
-                metadata_connector = child_node.value
-                assert isinstance(child_node.value, PersistedReferenceConnector)
-                reference = metadata_connector.save_object()
-                dir_entries.append(("100644", "blob", reference.location, name))
+
+                metadata: Metadata = child_node.value
+                assert isinstance(metadata, Metadata)
+
+                metadata_reference = metadata.write_out(destination)
+
+                dir_entries.append((
+                    "100644",
+                    "blob",
+                    metadata_reference.location,
+                    name))
 
             else:
-                sub_dir_hash = self._save_new_file_tree(child_node)
+
+                sub_dir_hash = self._save_new_file_tree(child_node, destination)
                 if sub_dir_hash:
-                    dir_entries.append(("040000", "tree", sub_dir_hash, name))
+                    dir_entries.append((
+                        "040000",
+                        "tree",
+                        sub_dir_hash,
+                        name))
 
         if dir_entries:
-            return git_save_tree(self.realm, dir_entries)
+            return git_save_tree(destination, dir_entries)
         else:
             return None
 
     def _save_existing_file_tree(self,
                                  node: "TreeNode",
                                  path: str,
-                                 git_tree_info: Dict[str, GitTreeEntry]
+                                 git_tree_info: Dict[str, GitTreeEntry],
+                                 destination: str
                                  ) -> [bool, str]:
 
-        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
+        from dataladmetadatamodel.metadata import Metadata
 
         # TODO: check for deleted entries
         level_changed = False
@@ -136,26 +155,40 @@ class FileTreeGitMapper(BaseMapper):
 
             # Add potential new nodes
             if child_node.is_leaf_node():
-                add_nodes_for_path(git_tree_info, "100644", "blob", child_node_path)
+                add_nodes_for_path(git_tree_info,
+                                   "100644",
+                                   "blob",
+                                   child_node_path)
             else:
-                add_nodes_for_path(git_tree_info, "040000", "tree", child_node_path)
+                add_nodes_for_path(git_tree_info,
+                                   "040000",
+                                   "tree",
+                                   child_node_path)
 
             entry = get_node_at(git_tree_info, child_node_path)
 
             if child_node.is_leaf_node():
 
-                file_tree_connector = child_node.value
-                assert isinstance(file_tree_connector, PersistedReferenceConnector)
-                reference = file_tree_connector.save_object()
+                metadata: Metadata = child_node.value
+                assert isinstance(metadata, Metadata)
+
+                metadata_reference: Reference = metadata.write_out(
+                    destination,
+                    "git")
 
                 # Check whether the entry was created or the hash has changed
-                if entry.hash != reference.location:
-                    entry.hash = reference.location
+                if entry.hash != metadata_reference.location:
+                    entry.hash = metadata_reference.location
                     level_changed = True
 
             else:
 
-                sub_tree_changed, child_tree_hash = self._save_existing_file_tree(child_node, child_node_path, git_tree_info)
+                sub_tree_changed, child_tree_hash = self._save_existing_file_tree(
+                    child_node,
+                    child_node_path,
+                    git_tree_info,
+                    destination)
+
                 if sub_tree_changed and child_tree_hash != entry.hash:
                     entry.hash = child_tree_hash
                     level_changed = True
@@ -164,55 +197,65 @@ class FileTreeGitMapper(BaseMapper):
             dir_entries = [
                 (entry.flag, entry.type, entry.hash, entry.path.split("/")[-1])
                 for entry in get_children_at(git_tree_info, path)
-                if entry.type != "root"
-            ]
-            return True, git_save_tree(self.realm, set(dir_entries))
+                if entry.type != "root"]
+            return True, git_save_tree(destination, set(dir_entries))
         else:
             return False, git_tree_info[path].hash
 
-    def map_impl(self, ref: Reference) -> "FileTree":
-        from dataladmetadatamodel.filetree import FileTree
+    def map_in_impl(self,
+                    file_tree: "FileTree",
+                    reference: Reference) -> None:
+
+        from dataladmetadatamodel.metadata import Metadata
         from dataladmetadatamodel.metadatapath import MetadataPath
         from dataladmetadatamodel.treenode import TreeNode
-        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
 
-        file_tree = FileTree("git", self.realm)
-        if ref.location != empty_tree_location:
+        if not reference.is_none_reference():
 
-            git_tree_info = git_read_tree(self.realm, ref.location)
+            git_tree_info = git_read_tree(reference.realm, reference.location)
             file_tree.mapper_private_data["git"] = git_tree_info
 
             for entry in git_tree_info.values():
                 if entry.type == "blob":
-                    file_tree_connector = PersistedReferenceConnector(
-                        Reference("git", self.realm, "None", entry.hash),
-                        None,
-                        False)
                     file_tree.add_node_hierarchy(
                         MetadataPath(entry.path),
-                        TreeNode(file_tree_connector))
+                        TreeNode(
+                            Metadata(
+                                Reference(
+                                    "git",
+                                    reference.realm,
+                                    "Metadata",
+                                    entry.hash))))
 
         return file_tree
 
-    def unmap_impl(self, obj) -> Reference:
-        """ Save FileTree as git file tree """
+    def map_out_impl(self,
+                     file_tree: "FileTree",
+                     destination: str,
+                     force_write: bool) -> Reference:
+        """
+        Persists all file node values, i.e. all mapped metadata,
+        if they are mapped or modified, then save the tree itself,
+        with the class mapper.
+        """
         from dataladmetadatamodel.filetree import FileTree
 
-        assert isinstance(obj, FileTree)
-        git_tree_info = obj.mapper_private_data.get("git", None)
+        assert isinstance(file_tree, FileTree)
 
+        git_tree_info = file_tree.mapper_private_data.get("git", None)
         if git_tree_info is None:
-            file_tree_hash = self._save_new_file_tree(obj)
+            file_tree_hash = self._save_new_file_tree(
+                file_tree,
+                destination)
         else:
-            _, file_tree_hash = self._save_existing_file_tree(obj, "", git_tree_info)
+            _, file_tree_hash = self._save_existing_file_tree(
+                file_tree,
+                "",
+                git_tree_info,
+                destination)
 
         if file_tree_hash is None:
-            return Reference.get_none_reference()
+            return Reference.get_none_reference("FileTree")
 
         add_tree_reference(GitReference.FILE_TREE, file_tree_hash)
-        return Reference("git", self.realm, "FileTree", file_tree_hash)
-
-    @staticmethod
-    def get_connector_class():
-        from dataladmetadatamodel.mapper.gitmapper.persistedreferenceconnector import PersistedReferenceConnector
-        return PersistedReferenceConnector
+        return Reference("git", destination, "FileTree", file_tree_hash)

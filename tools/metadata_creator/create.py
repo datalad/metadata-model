@@ -5,7 +5,6 @@ from time import time
 from typing import Dict, List, Tuple, Union
 from uuid import UUID
 
-from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import ExtractorConfiguration, Metadata
@@ -182,34 +181,26 @@ def main(argv):
         return "000102030405060708090a0b0c0d0e0f1011{counter:04x}".format(counter=counter)
 
     dataset_tree = _create_dataset_tree(mapper_family, realm)
-    dataset_tree_version_list = TreeVersionList(
-        mapper_family,
-        realm,
-        {
-            dataset_tree.value.dataset_version: VersionRecord(
-                get_time_str(time_counter),
-                None,
-                Connector.from_object(dataset_tree)
-            )
-        }
-    )
+    dataset_tree_version_list = TreeVersionList(initial_set={
+        dataset_tree.value.dataset_version: VersionRecord(
+            get_time_str(time_counter),
+            None,
+            Connector.from_object(dataset_tree)
+        )
+    })
 
     # Extract the UUID Set from the dataset tree:
     uuid_version_lists = {}
     datasets = dataset_tree.get_dataset_paths()
     for path, metadata_root_record in datasets:
         uuid_version_lists[metadata_root_record.dataset_identifier] = Connector.from_object(
-            VersionList(
-                mapper_family,
-                realm,
-                {
-                    get_primary_data_version(version_counter): VersionRecord(
-                        get_time_str(time_counter),
-                        path,
-                        Connector.from_object(metadata_root_record)
-                    )
-                }
-            )
+            VersionList(initial_set={
+                get_primary_data_version(version_counter): VersionRecord(
+                    get_time_str(time_counter),
+                    path,
+                    Connector.from_object(metadata_root_record)
+                )
+            })
         )
         version_counter += 1
         time_counter += 1

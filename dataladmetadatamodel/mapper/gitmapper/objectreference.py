@@ -6,16 +6,6 @@ from typing import (
     Tuple
 )
 
-from dataladmetadatamodel.mapper.gitmapper.utils import (
-    lock_backend,
-    unlock_backend
-)
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
-    git_ls_tree,
-    git_update_ref,
-    git_save_tree
-)
-
 
 class GitReference(enum.Enum):
     TREE_VERSION_LIST = "refs/datalad/dataset-tree-version-list"
@@ -45,6 +35,13 @@ def add_object_reference(git_reference: GitReference,
 
 def flush_object_references(realm: Path):
     global CACHED_OBJECT_REFERENCES
+
+    from dataladmetadatamodel.mapper.gitmapper.utils import lock_backend, unlock_backend
+    from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+        git_ls_tree,
+        git_update_ref,
+        git_save_tree
+    )
 
     lock_backend(realm)
     for git_reference, cached_tree_entries in CACHED_OBJECT_REFERENCES.items():

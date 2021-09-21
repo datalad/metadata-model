@@ -1,49 +1,91 @@
-import json
+import time
 import unittest
 from unittest import mock
+from uuid import UUID
 
-from ....versionlist import VersionList
 from .... import version_string
-from ...reference import Reference
-from ..referencemapper import ReferenceGitMapper
+from ....tests.utils import create_file_tree
+from dataladmetadatamodel.metadata import Metadata
+from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
+from dataladmetadatamodel.versionlist import (
+    VersionList,
+    VersionRecord
+)
 
 
 test_realm_name = "ewkd0iasd"
+
+uuid_0 = UUID("00000000000000000000000000000000")
+
+
+def get_location(n: int) -> str:
+    return f"a{n:04}0000000000000000000000000000000{n:04}"
 
 
 class TestVersionListMapper(unittest.TestCase):
 
     def test_basic_unmapping(self):
-        with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_save_str") as save:
-            save.configure_mock(return_value="000002222")
-            none_reference = Reference.get_none_reference()
-            ReferenceGitMapper(test_realm_name).unmap(none_reference)
-            representation = save.call_args[0][1]
+
+        with mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_save_json") as save_json, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatamapper.git_save_str") as save_str, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_update_ref") as update_ref:
+
+            save_json.configure_mock(return_value=get_location(0))
+            save_str.configure_mock(return_value=get_location(1))
+
+            version_list = VersionList()
+            version_list.write_out("/tmp/t1")
+            representation = save_json.call_args[0][1]
+            self.assertEqual(representation, [])
+
+
+    def test_complex_unmapping(self):
+
+        with mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_save_json") as save_json, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatamapper.git_save_str") as save_str, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatarootrecordmapper.git_save_json") as save_json_2, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper.filetreemapper.git_save_tree") as save_tree, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_update_ref") as update_ref:
+
+            save_json.configure_mock(return_value=get_location(0))
+            save_str.configure_mock(return_value=get_location(1))
+            save_tree.configure_mock(return_value=get_location(2))
+            save_json_2.configure_mock(return_value=get_location(3))
+
+            version_list = VersionList(initial_set={
+                "v0": VersionRecord(
+                    str("1.1"),
+                    MetadataPath("subset0"),
+                    MetadataRootRecord(
+                        uuid_0,
+                        "version1",
+                        Metadata(),
+                        create_file_tree([MetadataPath("a/b"), MetadataPath("d/e")])
+                    )
+                )
+            })
+
+            version_list.write_out("/tmp/t1")
+            representation = save_json.call_args[0][1]
             self.assertEqual(
-                json.loads(representation),
-                {
-                    "@": {"type": "Reference", "version": version_string},
-                    "mapper_family": "*None*",
-                    "realm": "*None*",
-                    "class_name": "*None*",
-                    "location": "*None*"
-                }
+                representation,
+                [{
+                    'primary_data_version': 'v0',
+                    'time_stamp': '1.1',
+                    'path': 'subset0',
+                    'dataset_tree': {
+                        '@': {
+                            'type': 'Reference',
+                            'version': '2.0'
+                        },
+                        'mapper_family': 'git',
+                        'realm': '/tmp/t1',
+                        'class_name': 'MetadataRootRecord',
+                        'location': 'a000300000000000000000000000000000000003'
+                    }
+                }]
             )
-
-    def test_none_reference_mapping(self):
-
-        with mock.patch("dataladmetadatamodel.mapper.gitmapper.referencemapper.git_load_str") as load:
-            load.return_value = json.dumps(
-                {
-                    "@": {"type": "Reference", "version": version_string},
-                    "mapper_family": "*None*",
-                    "realm": "*None*",
-                    "class_name": "*None*",
-                    "location": "*None*"
-                })
-            loaded_ref = ReferenceGitMapper(test_realm_name).map(
-                Reference("git", test_realm_name, "Reference", "ignored due to patch"))
-            self.assertTrue(loaded_ref.is_none_reference())
 
 
 if __name__ == '__main__':

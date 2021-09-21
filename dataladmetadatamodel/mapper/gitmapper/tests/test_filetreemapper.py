@@ -1,12 +1,9 @@
 import logging
 import subprocess
 import unittest
-from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
 
-from ..objectreference import flush_object_references
-from ..filetreemapper import FileTreeGitMapper
 from ....filetree import FileTree
 from ....metadata import Metadata
 from ....metadatapath import MetadataPath
@@ -27,12 +24,16 @@ initial_paths = [
 
 class TestFileTreeMapper(unittest.TestCase):
 
-    def save_load_compare(self, file_tree: FileTree, realm: str, expected_paths: List[MetadataPath]) -> FileTree:
-        reference = file_tree.save()
-        file_tree = None
-        flush_object_references(Path(realm))
+    def save_load_compare(self,
+                          file_tree: FileTree,
+                          destination: str,
+                          expected_paths: List[MetadataPath]) -> FileTree:
 
-        new_file_tree = FileTreeGitMapper(realm).map(reference)
+        reference = file_tree.write_out(destination)
+        file_tree = None
+
+        new_file_tree = FileTree(reference)
+        new_file_tree.read_in()
         loaded_paths = [p[0] for p in new_file_tree.get_paths_recursive()]
 
         self.assertEqual(len(loaded_paths), len(expected_paths))
@@ -44,22 +45,19 @@ class TestFileTreeMapper(unittest.TestCase):
         with TemporaryDirectory() as temp_file:
             subprocess.run(["git", "init", temp_file], check=True)
 
-            file_tree = create_file_tree_with_metadata(
-                "git",
-                temp_file,
-                initial_paths,
-                [
-                    Metadata("git", temp_file)
-                    for _ in initial_paths
-                ])
+            file_tree = create_file_tree_with_metadata(initial_paths, [
+                Metadata()
+                for _ in initial_paths
+            ])
 
             new_file_tree = self.save_load_compare(file_tree, temp_file, initial_paths)
 
-            new_file_tree.add_metadata(MetadataPath("s/t/u"), Metadata("git", temp_file))
+            new_file_tree.add_metadata(MetadataPath("s/t/u"), Metadata())
             new_paths = [p[0] for p in new_file_tree.get_paths_recursive()]
             self.assertEqual(len(initial_paths) + 1, len(new_paths))
 
             updated_file_tree = self.save_load_compare(new_file_tree, temp_file, new_paths)
+            return
 
 
 if __name__ == '__main__':

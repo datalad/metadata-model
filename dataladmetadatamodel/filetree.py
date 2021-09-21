@@ -6,9 +6,7 @@ from typing import (
 )
 
 from dataladmetadatamodel import JSONObject
-from dataladmetadatamodel.connector import ConnectedObject
-from dataladmetadatamodel.log import logger
-from dataladmetadatamodel.mapper import get_mapper
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
     Metadata
@@ -18,17 +16,12 @@ from dataladmetadatamodel.treenode import TreeNode
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-class FileTree(ConnectedObject, TreeNode):
+class FileTree(MappableObject, TreeNode):
     def __init__(self,
-                 mapper_family: str,
-                 realm: str):
+                 reference: Optional[Reference] = None):
 
-        ConnectedObject.__init__(self)
+        MappableObject.__init__(self, reference)
         TreeNode.__init__(self)
-        self.mapper_family = mapper_family
-        self.realm = realm
-        self.mapper = get_mapper(mapper_family, "FileTree")
-        self.connector_class = self.mapper.get_connector_class()
 
     def __contains__(self, path: Union[str, MetadataPath]) -> bool:
         # Allow strings as input as well
@@ -37,6 +30,17 @@ class FileTree(ConnectedObject, TreeNode):
         node = self.get_node_at_path(path)
         # The check for node.value is not None takes care of root paths
         return node is not None and node.value is not None
+
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+        for name, tree_node in super().get_paths_recursive():
+            if tree_node.value is not None:
+                yield tree_node.value
+
+    def purge_impl(self):
+        for name, tree_node in super().get_paths_recursive():
+            if tree_node.value is not None:
+                yield tree_node.value.purge(force)
+        TreeNode.__init__(self)
 
     def add_directory(self, name):
         self.touch()
@@ -48,50 +52,33 @@ class FileTree(ConnectedObject, TreeNode):
 
     def add_metadata(self,
                      path: MetadataPath,
-                     metadata: Optional[Metadata] = None):
+                     metadata: Metadata):
         self.touch()
-        self.add_node_hierarchy(
-            path,
-            TreeNode(value=self.connector_class(None, metadata, True)))
+        self.add_node_hierarchy(path, TreeNode(value=metadata))
 
     def get_metadata(self, path: MetadataPath) -> Optional[Metadata]:
-        return self.get_node_at_path(path).value.load_object()
+        value = self.get_node_at_path(path).value
+        if value is not None:
+            return value.read_in()
+        return None
 
     def set_metadata(self, path: MetadataPath, metadata: Metadata):
         self.touch()
         self.get_node_at_path(path).value.set(metadata)
 
-    def unget_metadata(self, path: MetadataPath):
+    def unget_metadata(self, path: MetadataPath, destination: str):
         value = self.get_node_at_path(path).value
-        value.save_object()
+        value.write_out(destination)
         value.purge()
-
-    def save(self) -> Reference:
-        """
-        Persists all file node values, i.e. all mapped metadata,
-        if they are mapped or modified, then save the tree itself,
-        with the class mapper.
-        """
-        self.un_touch()
-
-        for path, metadata_connector in self.get_paths_recursive(False):
-            if metadata_connector is not None:
-                metadata_connector.save_object()
-            else:
-                logger.debug(f"Path {path} has None metadata connector associated")
-
-        return self.unmap_myself(self.mapper_family, self.realm)
 
     def get_paths_recursive(self,
                             show_intermediate: Optional[bool] = False
-                            ) -> Iterable[Tuple[MetadataPath, "Connector"]]:
+                            ) -> Iterable[Tuple[MetadataPath, Metadata]]:
 
         for name, tree_node in super().get_paths_recursive(show_intermediate):
             yield name, tree_node.value
 
     def add_extractor_run(self,
-                          mapper_family,
-                          realm,
                           path,
                           time_stamp: Optional[float],
                           extractor_name: str,
@@ -105,7 +92,7 @@ class FileTree(ConnectedObject, TreeNode):
         try:
             metadata = self.get_metadata(path)
         except AttributeError:
-            metadata = Metadata(mapper_family, realm)
+            metadata = Metadata()
             self.add_metadata(path, metadata)
 
         metadata.add_extractor_run(
@@ -117,26 +104,24 @@ class FileTree(ConnectedObject, TreeNode):
             metadata_content
         )
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None) -> "FileTree":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "FileTree":
 
-        copied_file_tree = FileTree(
-            new_mapper_family or self.mapper_family,
-            new_realm or self.realm)
+        copied_file_tree = FileTree()
 
-        for path, connector in self.get_paths_recursive(True):
-            if connector is not None:
-                copied_connector = connector.deepcopy(
-                    new_mapper_family,
-                    new_realm)
+        for path, metadata in self.get_paths_recursive(True):
+            if metadata is not None:
+                copied_metadata = metadata.deepcopy(new_mapper_family, new_destination)
             else:
-                copied_connector = None
-
+                copied_metadata = None
             copied_file_tree.add_node_hierarchy(
                 path,
-                TreeNode(
-                    value=copied_connector),
+                TreeNode(value=copied_metadata),
                 allow_leaf_node_conversion=True)
+
+        copied_file_tree.write_out(new_destination)
+        copied_file_tree.purge()
 
         return copied_file_tree

@@ -2,13 +2,14 @@
 Commonly used functionality
 """
 import time
+from pathlib import Path
 from typing import (
     Optional,
-    Tuple
+    Tuple,
+    Union
 )
 from uuid import UUID
 
-from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import Metadata
@@ -22,9 +23,33 @@ from dataladmetadatamodel.versionlist import (
 from dataladmetadatamodel.mapper.reference import Reference
 
 
+def _get_tree_version_list_reference(
+        mapper_family: str,
+        realm: str,
+        location: str) -> Reference:
+
+    return Reference(
+        mapper_family,
+        realm,
+        "TreeVersionList",
+        location)
+
+
+def _get_uuid_set_reference(
+        mapper_family: str,
+        realm: str,
+        location: str) -> Reference:
+
+    return Reference(
+        mapper_family,
+        realm,
+        "UUIDSet",
+        location)
+
+
 def get_top_level_metadata_objects(
         mapper_family: str,
-        realm: str
+        realm: Union[str, Path]
         ) -> Tuple[Optional[TreeVersionList], Optional[UUIDSet]]:
 
     """
@@ -38,24 +63,20 @@ def get_top_level_metadata_objects(
         get_uuid_set_location,
         get_tree_version_list_location)
 
-    tree_version_list_connector = Connector.from_reference(
-        Reference(
+    tree_version_list = TreeVersionList(
+        reference=_get_tree_version_list_reference(
             mapper_family,
-            realm,
-            "TreeVersionList",
+            str(realm),
             get_tree_version_list_location(mapper_family)))
 
-    uuid_set_connector = Connector.from_reference(
-        Reference(
+    uuid_set = UUIDSet(
+        reference=_get_uuid_set_reference(
             mapper_family,
-            realm,
-            "UUIDSet",
+            str(realm),
             get_uuid_set_location(mapper_family)))
 
     try:
-        return (
-            tree_version_list_connector.load_object(),
-            uuid_set_connector.load_object())
+        return tree_version_list.read_in(), uuid_set.read_in()
     except RuntimeError:
         return None, None
 
@@ -66,7 +87,8 @@ def get_top_nodes_and_metadata_root_record(
         dataset_id: UUID,
         primary_data_version: str,
         dataset_tree_path: MetadataPath,
-        auto_create: Optional[bool] = False):
+        auto_create: Optional[bool] = False
+) -> Tuple[Optional[TreeVersionList], Optional[UUIDSet], Optional[MetadataRootRecord]]:
 
     """
     Return the top nodes and metadata root record for a given dataset id
@@ -88,10 +110,10 @@ def get_top_nodes_and_metadata_root_record(
         realm)
 
     if tree_version_list is None and auto_create:
-        tree_version_list = TreeVersionList(mapper_family, realm)
+        tree_version_list = TreeVersionList()
 
     if uuid_set is None and auto_create:
-        uuid_set = UUIDSet(mapper_family, realm)
+        uuid_set = UUIDSet()
 
     if uuid_set is None or tree_version_list is None:
         return None, None, None
@@ -101,7 +123,7 @@ def get_top_nodes_and_metadata_root_record(
     else:
         if auto_create is False:
             return None, None, None
-        uuid_version_list = VersionList(mapper_family, realm)
+        uuid_version_list = VersionList()
         uuid_set.set_version_list(dataset_id, uuid_version_list)
 
     # Get the dataset tree
@@ -112,7 +134,7 @@ def get_top_nodes_and_metadata_root_record(
         if auto_create is False:
             return None, None, None
         time_stamp = str(time.time())
-        dataset_tree = DatasetTree(mapper_family, realm)
+        dataset_tree = DatasetTree()
         tree_version_list.set_dataset_tree(
             primary_data_version,
             time_stamp,
@@ -122,15 +144,13 @@ def get_top_nodes_and_metadata_root_record(
         if auto_create is False:
             return None, None, None
 
-        dataset_level_metadata = Metadata(mapper_family, realm)
-        file_tree = FileTree(mapper_family, realm)
+        dataset_level_metadata = Metadata()
+        file_tree = FileTree()
         metadata_root_record = MetadataRootRecord(
-            mapper_family,
-            realm,
             dataset_id,
             primary_data_version,
-            Connector.from_object(dataset_level_metadata),
-            Connector.from_object(file_tree))
+            dataset_level_metadata,
+            file_tree)
         dataset_tree.add_dataset(dataset_tree_path, metadata_root_record)
     else:
         metadata_root_record = dataset_tree.get_metadata_root_record(

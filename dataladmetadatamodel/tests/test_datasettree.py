@@ -1,17 +1,13 @@
 import subprocess
 import tempfile
 import unittest
-from pathlib import Path
-from uuid import UUID
 
-from dataladmetadatamodel.connector import Connector
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
-from dataladmetadatamodel.mapper.basemapper import BaseMapper
-from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 from dataladmetadatamodel.tests.utils import (
+    get_uuid,
     assert_dataset_trees_equal,
     create_dataset_tree
 )
@@ -34,7 +30,7 @@ dataset_test_paths = [
     MetadataPath("d3/d3.1")]
 
 
-uuid_0 = UUID("00000000000000000000000000000000")
+uuid_0 = get_uuid(0)
 
 
 class TestDatasetTree(unittest.TestCase):
@@ -46,12 +42,8 @@ class TestDatasetTree(unittest.TestCase):
             MetadataPath("b"),
             MetadataPath("c/d/e")]
 
-        dataset_tree = DatasetTree("git", "/tmp")
-        mrr = MetadataRootRecord(
-            "git", "/tmp", uuid_0, "00112233",
-            Connector.from_object(None),
-            Connector.from_object(None)
-        )
+        dataset_tree = DatasetTree()
+        mrr = MetadataRootRecord(uuid_0, "00112233", None, None)
         for path in paths:
             dataset_tree.add_dataset(path, mrr)
 
@@ -64,12 +56,8 @@ class TestDatasetTree(unittest.TestCase):
             self.assertEqual(entry[1], mrr)
 
     def test_root_node(self):
-        dataset_tree = DatasetTree("git", "/tmp")
-        mrr = MetadataRootRecord(
-            "git", "/tmp", uuid_0, "00112233",
-            Connector.from_object(None),
-            Connector.from_object(None)
-        )
+        dataset_tree = DatasetTree()
+        mrr = MetadataRootRecord(uuid_0, "00112233", None, None)
         dataset_tree.add_dataset(MetadataPath(""), mrr)
         self.assertEqual(dataset_tree.value, mrr)
 
@@ -82,12 +70,9 @@ class TestDatasetTree(unittest.TestCase):
     def test_all_nodes_in_path(self):
         # Ensure that get_all_nodes_in_path returns
         # all nodes, and that they are in correct order
-        dataset_tree = DatasetTree("git", "/tmp")
-        mrr = MetadataRootRecord(
-            "git", "/tmp", uuid_0, "00112233",
-            Connector.from_object(None),
-            Connector.from_object(None)
-        )
+        dataset_tree = DatasetTree()
+        mrr = MetadataRootRecord(uuid_0, "00112233", None, None)
+
         for path in dataset_test_paths:
             dataset_tree.add_dataset(path, mrr)
 
@@ -97,7 +82,6 @@ class TestDatasetTree(unittest.TestCase):
             del all_nodes[0]
             if all_nodes:
                 all_names = tuple(map(lambda nn: nn[0], all_nodes))
-                print(all_names)
                 self.assertEqual(all_names, path.parts)
 
 
@@ -111,14 +95,11 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
 
-            dataset_tree = create_dataset_tree(
-                "git",
-                original_dir,
-                dataset_test_paths,
-                file_test_paths)
+            dataset_tree = create_dataset_tree(dataset_test_paths,
+                                               file_test_paths)
 
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
-            flush_object_references(Path(copy_dir))
+            dataset_tree_copy.read_in()
 
             assert_dataset_trees_equal(
                 self,
@@ -134,44 +115,33 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", original_dir])
             subprocess.run(["git", "init", copy_dir])
 
-            dataset_tree = create_dataset_tree(
-                "git",
-                original_dir,
-                dataset_test_paths,
-                file_test_paths)
+            dataset_tree = create_dataset_tree(dataset_test_paths,
+                                               file_test_paths)
 
-            dataset_tree.save()
-            flush_object_references(Path(original_dir))
+            dataset_tree.write_out(original_dir)
 
             dataset_tree_copy = dataset_tree.deepcopy("git", copy_dir)
-            flush_object_references(Path(copy_dir))
+            dataset_tree_copy.read_in()
 
             assert_dataset_trees_equal(
                 self,
                 dataset_tree,
                 dataset_tree_copy,
-                False)
+                True)
 
 
 class TestSubTreeManipulation(unittest.TestCase):
-    def get_mrr(
-            self,
-            mapper: str,
-            realm: str) -> MetadataRootRecord:
-
-        return MetadataRootRecord(
-            mapper, realm, uuid_0, "00112233",
-            Connector.from_object(None),
-            Connector.from_object(None))
+    def get_mrr(self) -> MetadataRootRecord:
+        return MetadataRootRecord(uuid_0, "00112233", None, None)
 
     def test_subtree_adding(self):
-        mrr_1 = self.get_mrr("memory", "")
-        mrr_2 = self.get_mrr("memory", "")
+        mrr_1 = self.get_mrr()
+        mrr_2 = self.get_mrr()
 
-        tree = DatasetTree("memory", "")
+        tree = DatasetTree()
         tree.add_dataset(MetadataPath("a/b/c"), mrr_1)
 
-        subtree = DatasetTree("memory", "")
+        subtree = DatasetTree()
         subtree.add_dataset(MetadataPath("d/e/f"), mrr_2)
 
         tree.add_subtree(subtree, MetadataPath("a/x"))
@@ -185,13 +155,13 @@ class TestSubTreeManipulation(unittest.TestCase):
         self.assertEqual(node.value, mrr_2)
 
     def test_subtree_adding_with_conversion(self):
-        mrr_1 = self.get_mrr("memory", "")
-        mrr_2 = self.get_mrr("memory", "")
+        mrr_1 = self.get_mrr()
+        mrr_2 = self.get_mrr()
 
-        tree = DatasetTree("memory", "")
+        tree = DatasetTree()
         tree.add_dataset(MetadataPath("a/b/c"), mrr_1)
 
-        subtree = DatasetTree("memory", "")
+        subtree = DatasetTree()
         subtree.add_dataset(MetadataPath("e/f"), mrr_2)
 
         tree.add_subtree(subtree, MetadataPath("a/b/c/d"))
@@ -205,11 +175,11 @@ class TestSubTreeManipulation(unittest.TestCase):
         self.assertEqual(node.value, mrr_2)
 
     def test_subtree_adding_on_existing_path(self):
-        tree = DatasetTree("memory", "")
-        tree.add_dataset(MetadataPath("a/b/c/d"), self.get_mrr("memory", ""))
+        tree = DatasetTree()
+        tree.add_dataset(MetadataPath("a/b/c/d"), self.get_mrr())
 
-        subtree = DatasetTree("memory", "")
-        subtree.add_dataset(MetadataPath("e/f"), self.get_mrr("memory", ""))
+        subtree = DatasetTree()
+        subtree.add_dataset(MetadataPath("e/f"), self.get_mrr())
 
         self.assertRaises(
             ValueError,
@@ -217,10 +187,10 @@ class TestSubTreeManipulation(unittest.TestCase):
             subtree, MetadataPath("a/b/c/d"))
 
     def test_subtree_deletion(self):
-        mrr_1 = self.get_mrr("memory", "")
-        mrr_2 = self.get_mrr("memory", "")
+        mrr_1 = self.get_mrr()
+        mrr_2 = self.get_mrr()
 
-        tree = DatasetTree("memory", "")
+        tree = DatasetTree()
         tree.add_dataset(MetadataPath("a/b/c"), mrr_1)
         tree.add_dataset(MetadataPath("a/b/c/d/e/f"), mrr_2)
 

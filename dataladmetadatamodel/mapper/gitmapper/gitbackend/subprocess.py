@@ -1,7 +1,15 @@
 import json
 import shlex
 import subprocess
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union
+)
 
 from dataladmetadatamodel.log import logger
 
@@ -72,12 +80,12 @@ def git_text_result(cmd_line):
     return "\n".join(result)
 
 
-def git_load_str(repo_dir, object_reference) -> str:
+def git_load_str(repo_dir: str, object_reference: str) -> str:
     cmd_line = git_command_line(repo_dir, "show", [object_reference])
     return git_text_result(cmd_line)
 
 
-def git_load_json(repo_dir, object_reference) -> Union[Dict, List]:
+def git_load_json(repo_dir: str, object_reference: str) -> Union[Dict, List]:
     return json.loads(git_load_str(repo_dir, object_reference))
 
 
@@ -104,7 +112,7 @@ def git_save_json(repo_dir, json_object: Union[Dict, List]) -> str:
 
 
 def git_save_tree(repo_dir,
-                  entry_set: Set[Tuple[str, str, str, str]]
+                  entry_set: Iterable[Tuple[str, str, str, str]]
                   ) -> str:
 
     tree_spec = "\n".join([

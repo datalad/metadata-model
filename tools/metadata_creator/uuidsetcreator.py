@@ -30,7 +30,7 @@ def create_uuid_set(mapper_family: str,
             print(f"cannot determine version of dataset at {dir_entry.path}", file=sys.stderr)
             continue
 
-        version_list = VersionList(mapper_family, realm)
+        version_list = VersionList()
         version_list.set_versioned_element(
             version,
             str(time.time()),
@@ -68,7 +68,7 @@ def create_uuid_set_for_mrrs(mapper_family: str,
 
         version_list = uuid_version_list.get(
             uuid,
-            VersionList(mapper_family, realm))
+            VersionList())
 
         version_list.set_versioned_element(
             dataset_version,

@@ -1,46 +1,31 @@
 from typing import (
     Dict,
+    Iterable,
     Optional
 )
 
 from uuid import UUID
 
-from dataladmetadatamodel.mapper import get_mapper
-from dataladmetadatamodel.mapper.reference import Reference
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.versionlist import VersionList
-from dataladmetadatamodel.connector import (
-    ConnectedObject,
-    Connector
-)
-from dataladmetadatamodel.connectordict import ConnectorDict
+from dataladmetadatamodel.mapper.reference import Reference
 
 
-class UUIDSet(ConnectedObject):
+class UUIDSet(MappableObject):
     def __init__(self,
-                 mapper_family: str,
-                 realm: str,
-                 initial_set: Optional[Dict[UUID, Connector]] = None):
+                 initial_set: Optional[Dict[UUID, VersionList]] = None,
+                 reference: Optional[Reference] = None):
 
-        super().__init__()
-        self.mapper_family = mapper_family
-        self.realm = realm
-        self.uuid_set = ConnectorDict()
+        super().__init__(reference)
+        self.uuid_set = initial_set or dict()
 
-        if initial_set:
-            self.uuid_set.update(initial_set)
+    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+        return self.uuid_set.values()
 
-    def save(self) -> Reference:
-        """
-        This method persists the bottom-half of all modified
-        connectors by delegating it to the ConnectorDict. Then
-        it saves the properties of the UUIDSet and the top-half
-        of the connectors with the appropriate class mapper.
-        """
-        self.un_touch()
-
-        self.uuid_set.save()
-
-        return self.unmap_myself(self.mapper_family, self.realm)
+    def purge_impl(self):
+        for version_list in self.uuid_set.values():
+            version_list.purge()
+        self.uuid_set = dict()
 
     def uuids(self):
         return self.uuid_set.keys()
@@ -54,36 +39,34 @@ class UUIDSet(ConnectedObject):
         The entry is marked as dirty.
         """
         self.touch()
-        self.uuid_set[uuid] = Connector.from_object(version_list)
+        self.uuid_set[uuid] = version_list
 
     def get_version_list(self, uuid) -> VersionList:
         """
         Get the version list for uuid. If it is not mapped yet,
         it will be mapped.
         """
-        return self.uuid_set[uuid].load_object()
+        return self.uuid_set[uuid].read_in()
 
     def unget_version_list(self, uuid):
         """
         Remove a version list from memory. First, persist the
         current status, if it was changed.
         """
-        self.uuid_set[uuid].save_object()
+        self.uuid_set[uuid].write_out()
         self.uuid_set[uuid].purge()
 
-    def deepcopy(self,
-                 new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None
-                 ) -> "UUIDSet":
+    def deepcopy_impl(self,
+                      new_mapper_family: Optional[str] = None,
+                      new_destination: Optional[str] = None,
+                      **kwargs) -> "UUIDSet":
 
-        """ copy a UUID set optionally with a new mapper or a new realm """
-        new_mapper_family = new_mapper_family or self.mapper_family
-        new_realm = new_realm or self.realm
-        copied_uuid_set = UUIDSet(new_mapper_family, new_realm)
-
-        for uuid, version_list_connector in self.uuid_set.items():
-            copied_uuid_set.uuid_set[uuid] = version_list_connector.deepcopy(
+        copied_uuid_set = UUIDSet()
+        for uuid, version_list in self.uuid_set.items():
+            copied_uuid_set.uuid_set[uuid] = version_list.deepcopy(
                 new_mapper_family,
-                new_realm)
+                new_destination)
 
+        copied_uuid_set.write_out(new_destination)
+        copied_uuid_set.purge()
         return copied_uuid_set
