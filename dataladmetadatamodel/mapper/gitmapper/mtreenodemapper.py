@@ -58,8 +58,8 @@ class MTreeNodeGitMapper(Mapper):
             (
                 "040000" if isinstance(child_node, MTreeNode) else "100644",
                 "tree" if isinstance(child_node, MTreeNode) else "blob",
-                child_name,
-                child_node.reference.location
+                child_node.reference.location,
+                child_name
             )
             for child_name, child_node in mtree_node.child_nodes.items()
         ]
