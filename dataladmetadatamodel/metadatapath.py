@@ -27,3 +27,6 @@ class MetadataPath(PurePosixPath):
             ""
             if path_str == "."
             else path_str)
+
+    def __len__(self):
+        return len(self.parts)

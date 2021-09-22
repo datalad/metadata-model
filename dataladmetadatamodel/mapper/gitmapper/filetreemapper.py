@@ -5,7 +5,6 @@ from typing import (
     Optional
 )
 
-from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_ls_tree_recursive,
     git_save_tree

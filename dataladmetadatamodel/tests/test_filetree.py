@@ -130,6 +130,8 @@ class TestMapping(unittest.TestCase):
             subprocess.run(["git", "init", metadata_store])
 
             file_tree = FileTree()
+
+            start_time = time.time()
             for first_part in range(10):
                 for second_part in range(10):
                     for third_part in range(10):
@@ -137,15 +139,28 @@ class TestMapping(unittest.TestCase):
                                                      f"{second_part:03}/"
                                                      f"{third_part:03}")
                         file_tree.add_metadata(metadata_path, Metadata())
+            initialisation_duration = time.time() - start_time
+            print(f"Initialised: {initialisation_duration:4f}")
 
+            start_time = time.time()
             reference = file_tree.write_out(metadata_store)
+            write_out_duration = time.time() - start_time
+            print(f"Written out: {write_out_duration:4f}")
 
+            start_time = time.time()
             file_tree = FileTree(reference).read_in()
-            additional_paths = [MetadataPath(f"x/y.{n}") for n in range(10)]
+            read_in_duration = time.time() - start_time
+            print(f"Read in: {read_in_duration:4f}")
 
             start_time = time.time()
             file_tree.add_metadata(MetadataPath("5/5/xxx"), Metadata())
-            duration = time.time() - start_time
+            add_duration = time.time() - start_time
+            print(f"Added single entry: {add_duration:4f}")
+
+            start_time = time.time()
+            file_tree.write_out()
+            write_out_2nd_duration = time.time() - start_time
+            print(f"Written out single entry: {write_out_2nd_duration:4f}")
 
     def test_shallow_file_tree_mapping(self):
         # assert that file trees content is not mapped by default
