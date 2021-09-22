@@ -9,7 +9,7 @@ from ....filetree import FileTree
 from ....metadata import Metadata
 from ....metadatapath import MetadataPath
 from ....metadatarootrecord import MetadataRootRecord
-from ....tests.utils import create_dataset_tree
+from ....tests.utils import create_dataset_tree, create_file_tree
 
 
 initial_dataset_paths = [
@@ -21,7 +21,6 @@ initial_dataset_paths = [
 ]
 
 initial_file_paths = [
-    MetadataPath(""),
     MetadataPath("a/b/c"),
     MetadataPath("a/b/a"),
     MetadataPath("b"),
@@ -55,11 +54,14 @@ class TestDatasetTreeMapper(unittest.TestCase):
             subprocess.run(["git", "init", temp_file], check=True)
 
             dataset_tree = create_dataset_tree(initial_dataset_paths, initial_file_paths)
-            new_dataset_tree = self.save_load_compare(dataset_tree, temp_file, initial_dataset_paths)
+            new_dataset_tree = self.save_load_compare(
+                dataset_tree,
+                temp_file,
+                list(map(lambda p: p / ".datalad_metadata_root_record", initial_dataset_paths)))
 
             new_dataset_tree.add_dataset(
                 MetadataPath("s/t/u"),
-                MetadataRootRecord(uuid_0, "11111", Metadata(), FileTree()))
+                MetadataRootRecord(uuid_0, "11111", Metadata(), create_file_tree([MetadataPath("a")])))
             new_paths = [p[0] for p in new_dataset_tree.get_paths_recursive()]
             self.assertEqual(len(initial_dataset_paths) + 1, len(new_paths))
 

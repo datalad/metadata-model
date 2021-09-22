@@ -189,7 +189,7 @@ class MTreeNode(MappableObject):
                     yield MetadataPath(child_name) / sub_path, tree_node
 
         if purge_self:
-            self.write_out()
+            #self.write_out()
             self.purge()
 
     x = """
