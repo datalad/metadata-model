@@ -89,12 +89,20 @@ def git_load_json(repo_dir: str, object_reference: str) -> Union[Dict, List]:
     return json.loads(git_load_str(repo_dir, object_reference))
 
 
+def git_read_tree_node(repo_dir,
+                       object_reference) -> List[str]:
+    cmd_line = git_command_line(repo_dir, "cat-file", ["-p", object_reference])
+    return checked_execute(cmd_line)[0]
+
+
 def git_ls_tree(repo_dir, object_reference) -> List[str]:
+    raise DeprecationWarning
     cmd_line = git_command_line(repo_dir, "ls-tree", [object_reference])
     return checked_execute(cmd_line)[0]
 
 
 def git_ls_tree_recursive(repo_dir, object_reference, show_intermediate=False) -> List[str]:
+    raise DeprecationWarning
     if show_intermediate is True:
         cmd_line = git_command_line(repo_dir, "ls-tree", ["-r", "-t", object_reference])
     else:
@@ -111,10 +119,22 @@ def git_save_json(repo_dir, json_object: Union[Dict, List]) -> str:
     return git_save_str(repo_dir, json.dumps(json_object))
 
 
+def git_save_tree_node(repo_dir,
+                       entry_set: Iterable[Tuple[str, str, str, str]]
+                       ) -> str:
+
+    tree_spec = "\n".join([
+        f"{flag} {node_type} {object_hash}\t{name}"
+        for flag, node_type, object_hash, name in entry_set
+    ]) + "\n"
+    cmd_line = git_command_line(repo_dir, "mktree", ["--missing", ])
+    return checked_execute(cmd_line, stdin_content=tree_spec)[0][0]
+
+
 def git_save_tree(repo_dir,
                   entry_set: Iterable[Tuple[str, str, str, str]]
                   ) -> str:
-
+    raise DeprecationWarning
     tree_spec = "\n".join([
         f"{flag} {node_type} {object_hash}\t{name}"
         for flag, node_type, object_hash, name in entry_set

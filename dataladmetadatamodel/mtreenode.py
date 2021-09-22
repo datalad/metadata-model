@@ -1,4 +1,5 @@
 from typing import (
+    Any,
     Iterable,
     List,
     Optional,
@@ -13,8 +14,11 @@ from dataladmetadatamodel.mapper.reference import Reference
 
 class MTreeNode(MappableObject):
     def __init__(self,
+                 leaf_class: Any,
                  reference: Optional[Reference] = None):
         super().__init__(reference)
+        self.leaf_class = leaf_class
+        self.leaf_class_name = type(self.leaf_class).__name__
         self.child_nodes = dict()
 
     def __contains__(self, path: MetadataPath) -> bool:
@@ -36,9 +40,9 @@ class MTreeNode(MappableObject):
                       new_destination: Optional[str] = None,
                       **kwargs) -> "MappableObject":
 
-        copied_mtree_node = MTreeNode()
+        copied_mtree_node = MTreeNode(self.leaf_class)
         for child_name, child_node in self.child_nodes.items():
-            copied_mtree_node._add_child(
+            copied_mtree_node.add_child(
                 child_name,
                 child_node.deepcopy(
                     new_mapper_family,
@@ -54,10 +58,10 @@ class MTreeNode(MappableObject):
     def get_child(self,
                   child_name: Union[str, MetadataPath]
                   ) -> Optional[MappableObject]:
+
         if isinstance(child_name, MetadataPath):
             child_name = str(child_name.parts[0])
         return self.child_nodes.get(child_name, None)
-
 
     def add_child(self, node_name: str, child: MappableObject):
         """
@@ -91,25 +95,73 @@ class MTreeNode(MappableObject):
 
     def add_child_at(self,
                      child: MappableObject,
-                     path: MetadataPath,
-                     anchor: "MTreeNode"):
+                     path: MetadataPath):
 
-        assert len(path) > 0, "name required"
+        assert len(path) > 0, "child name required"
 
         path_element = path.parts[0]
-        existing_child = anchor.get_child(path_element)
+        existing_child = self.get_child(path_element)
+
         if len(path) == 1:
             if isinstance(existing_child, MTreeNode):
-                raise ValueError(f"cannot convert {existing_child} to {child}")
-            anchor.add_child(path.parts[0], child)
+                raise ValueError(
+                    f"tree-node named {path_element} exists: "
+                    f"{existing_child}, cannot be converted "
+                    f"to {child}")
+
+            # Add the final object to self
+            self.add_child(path.parts[0], child)
+
         else:
-            if existing_child is not None:
-                if not isinstance(existing_child, MTreeNode):
-                    raise ValueError(f"path does not exist ({existing_child} is not an MTreeNode")
+
+            if existing_child is None:
+                # Create an intermediate node, if it doesn't exist
+                existing_child = MTreeNode(self.leaf_class)
+                self.add_child(path_element, existing_child)
+
+            if not isinstance(existing_child, MTreeNode):
+                raise ValueError(
+                    f"non tree-node named {path_element} exists: "
+                    f"{existing_child}, cannot be converted to a "
+                    f"tree-node")
+
+            existing_child.add_child_at(
+                child,
+                MetadataPath(
+                    "/".join(path.parts[1:])))
+
+    def get_object_at_path(self,
+                           path: Optional[MetadataPath] = None
+                           ) -> Optional["MTreeNode"]:
+
+        # Linear search for path
+        path = path or MetadataPath("")
+        current_node = self
+        for element in path.parts:
+            if not isinstance(current_node, MTreeNode):
+                return None
+            current_node = current_node.get_child(element)
+            if current_node is None:
+                return None
+        return current_node
+
+    def get_paths_recursive(self,
+                            show_intermediate: Optional[bool] = False
+                            ) -> Iterable[Tuple[MetadataPath, "MappableObject"]]:
+
+        if show_intermediate:
+            yield MetadataPath(""), self
+
+        for child_name, child_node in self.child_nodes.items():
+            if not isinstance(child_node, MTreeNode):
+                yield MetadataPath(child_name), child_node
             else:
-                existing_child = MTreeNode()
-                anchor.add_child(path_element, existing_child)
-            self.add_child_at(child, MatadataPath(path.parts[1:]), existing_child)
+                for sub_path, tree_node in child_node.get_paths_recursive(
+                        show_intermediate):
+                    yield MetadataPath(child_name) / sub_path, tree_node
+
+    def xxx_is_leaf_node(self):
+        return len(self.child_nodes) == 0
 
     x = """
     def add_node_hierarchy(self,

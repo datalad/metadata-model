@@ -1,11 +1,8 @@
-from typing import (
-    Dict,
-    List,
-    Optional
-)
+from typing import Any
 
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
-    git_save_tree
+    git_read_tree_node,
+    git_save_tree_node
 )
 from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
@@ -17,55 +14,53 @@ class MTreeNodeGitMapper(Mapper):
                     mtree_node: "MTreeNode",
                     reference: Reference) -> None:
 
-        from dataladmetadatamodel.metadata import Metadata
         from dataladmetadatamodel.mtreenode import MTreeNode
 
-        if not reference.is_none_reference():
+        assert not reference.is_none_reference()
+        assert isinstance(mtree_node, MTreeNode)
 
-            git_tree_info = git_read_tree(reference.realm, reference.location)
-            file_tree.mapper_private_data["git"] = git_tree_info
+        lines = git_read_tree_node(reference.realm,
+                                   reference.location)
 
-            for entry in git_tree_info.values():
-                if entry.type == "blob":
-                    file_tree.add_node_hierarchy(
-                        MetadataPath(entry.path),
-                        TreeNode(
-                            Metadata(
-                                Reference(
-                                    "git",
-                                    reference.realm,
-                                    "Metadata",
-                                    entry.hash))))
+        for entry in [line.split() for line in lines]:
+            if entry[1] == "tree":
+                child = MTreeNode(
+                    Reference("git",
+                              reference.realm,
+                              "MTreeNode",
+                              entry[2]))
 
-        return file_tree
+            elif entry[1] == "blob":
+                child = mtree_node.leaf_class(
+                    Reference("git",
+                              reference.realm,
+                              mtree_node.leaf_class_name,
+                              entry[2]))
+
+            else:
+                raise ValueError(f"unknown git tree entry type: {entry[1]}")
+            mtree_node.add_child(entry[3], child)
 
     def map_out_impl(self,
                      mtree_node: "MTreeNode",
                      destination: str,
                      force_write: bool) -> Reference:
 
-        """
-        Persists this tree node.
-        """
         from dataladmetadatamodel.mtreenode import MTreeNode
 
         assert isinstance(mtree_node, MTreeNode)
 
-        if mtree_node.is_leaf_node():
-            return mtree_node.value.write_out(destination)
-
-        assert mtree_node.value is None
-        for child_name, child_node in mtree_node.child_nodes.values():
+        for child_node in mtree_node.child_nodes.values():
             child_node.write_out(destination)
 
         dir_entries = [
             (
-                "100644" if child_node.is_leaf_node() else "040000",
-                "blob" if child_node.is_leaf_node() else "tree",
+                "040000" if isinstance(child_node, MTreeNode) else "100644",
+                "tree" if isinstance(child_node, MTreeNode) else "blob",
                 child_name,
                 child_node.reference.location
             )
             for child_name, child_node in mtree_node.child_nodes.items()
         ]
-        mtree_node_location = git_save_tree(destination, dir_entries)
+        mtree_node_location = git_save_tree_node(destination, dir_entries)
         return Reference("git", destination, "MTreeNode", mtree_node_location)
