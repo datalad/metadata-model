@@ -57,8 +57,8 @@ def initialize_object_store():
         VersionListGitMapper
     )
 
-    set_mapper("DatasetTree", "git", MTreeNodeGitMapper("DatasetTree"))
-    set_mapper("FileTree", "git", MTreeNodeGitMapper("FileTree"))
+    set_mapper("DatasetTree", "git", MTreeNodeGitMapper("MTreeNode"))
+    set_mapper("FileTree", "git", MTreeNodeGitMapper("MTreeNode"))
     set_mapper("Metadata", "git", MetadataGitMapper("Metadata"))
     set_mapper("MetadataRootRecord", "git", MetadataRootRecordGitMapper("MetadataRootRecord"))
     set_mapper("MTreeNode", "git", MTreeNodeGitMapper("MTreeNode"))

@@ -86,18 +86,6 @@ class TestFileTree(unittest.TestCase):
                 extractor_configuration,
                 metadata_content))
 
-    def test_root_node(self):
-        file_tree = FileTree()
-        metadata_node = Metadata()
-        file_tree.add_metadata(MetadataPath(""), metadata_node)
-
-        self.assertIs(file_tree.value, metadata_node)
-        returned_entries = tuple(file_tree.get_paths_recursive())
-
-        self.assertEqual(len(returned_entries), 1)
-        self.assertEqual(returned_entries[0][0], MetadataPath(""))
-        self.assertIs(returned_entries[0][1], metadata_node)
-
 
 class TestMapping(unittest.TestCase):
 
@@ -175,12 +163,13 @@ class TestMapping(unittest.TestCase):
             file_tree = FileTree()
             for path in paths:
                 file_tree.add_metadata(path, Metadata())
+                file_tree.unget_metadata(path, metadata_store)
 
             reference = file_tree.write_out(metadata_store)
             flush_object_references(Path(metadata_store))
 
             new_file_tree = FileTree(reference).read_in()
-            self.assertFalse(new_file_tree.child_nodes["a"].value.mapped)
+            self.assertFalse(new_file_tree.child_nodes["a"].mapped)
 
 
 class TestDeepCopy(unittest.TestCase):
@@ -194,7 +183,7 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", copy_dir])
 
             file_tree = FileTree()
-            for path in ["", "/a/b/c/d", "/a/b/d", "/a/x"]:
+            for path in ["/a/b/c/d", "/a/b/d", "/a/x"]:
                 file_tree.add_metadata(
                     MetadataPath(path),
                     Metadata())
@@ -218,6 +207,7 @@ class TestDeepCopy(unittest.TestCase):
             file_tree = FileTree()
             for path in paths:
                 file_tree.add_metadata(path, Metadata())
+                file_tree.unget_metadata(path, original_dir)
             file_tree.write_out(original_dir)
 
             file_tree_copy = file_tree.deepcopy(new_destination=copy_dir)
