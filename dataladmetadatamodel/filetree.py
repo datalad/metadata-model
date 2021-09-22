@@ -12,10 +12,58 @@ from dataladmetadatamodel.metadata import (
     Metadata
 )
 from dataladmetadatamodel.metadatapath import MetadataPath
-from dataladmetadatamodel.treenode import TreeNode
+from dataladmetadatamodel.mtreenode import MTreeNode
 from dataladmetadatamodel.mapper.reference import Reference
 
 
+class FileTree(MTreeNode):
+    def __init__(self,
+                 reference: Optional[Reference] = None):
+        super().__init__(
+            leaf_class=Metadata,
+            reference=reference)
+
+    def __contains__(self, path: MetadataPath) -> bool:
+        return self.contains_child(path)
+
+    def add_metadata(self,
+                     path: MetadataPath,
+                     metadata: Metadata):
+
+        self.add_child_at(metadata, path)
+
+    def get_metadata(self,
+                     path: MetadataPath
+                     ) -> Optional[Metadata]:
+
+        return self.get_object_at_path(path)
+
+    def add_extractor_run(self,
+                          path,
+                          time_stamp: Optional[float],
+                          extractor_name: str,
+                          author_name: str,
+                          author_email: str,
+                          configuration: ExtractorConfiguration,
+                          metadata_content: JSONObject):
+
+        try:
+            metadata = self.get_metadata(path)
+        except AttributeError:
+            metadata = Metadata()
+            self.add_metadata(path, metadata)
+
+        metadata.add_extractor_run(
+            time_stamp,
+            extractor_name,
+            author_name,
+            author_email,
+            configuration,
+            metadata_content
+        )
+
+
+x = """
 class FileTree(MappableObject, TreeNode):
     def __init__(self,
                  reference: Optional[Reference] = None):
@@ -125,3 +173,4 @@ class FileTree(MappableObject, TreeNode):
         copied_file_tree.purge()
 
         return copied_file_tree
+"""

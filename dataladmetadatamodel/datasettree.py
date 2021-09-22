@@ -1,25 +1,52 @@
-import enum
-from typing import (
-    Iterable,
-    List,
-    Optional,
-    Tuple
-)
+from typing import Optional
 
-from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
-from dataladmetadatamodel.modifiableobject import ModifiableObject
-from dataladmetadatamodel.treenode import TreeNode
+from dataladmetadatamodel.mtreenode import MTreeNode
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-class NodeType(enum.Enum):
-    DIRECTORY = enum.auto()
-    DATASET = enum.auto()
-    INTERNAL = enum.auto()
+datalad_root_record_name = ".datalad_metadata_root_record"
 
 
+class DatasetTree(MTreeNode):
+    def __init__(self,
+                 reference: Optional[Reference] = None):
+        super().__init__(
+            leaf_class=MetadataRootRecord,
+            reference=reference)
+
+    def __contains__(self, path: MetadataPath) -> bool:
+        return self.contains_child(path)
+
+    def add_dataset(self,
+                    path: MetadataPath,
+                    metadata_root_record: MetadataRootRecord):
+
+        self.add_child_at(
+            metadata_root_record,
+            path / datalad_root_record_name)
+
+    def get_metadata_root_record(self,
+                                 path: MetadataPath
+                                 ) -> MetadataRootRecord:
+
+        mrr = self.get_object_at_path(path / datalad_root_record_name)
+        assert isinstance(mrr, MetadataRootRecord)
+        return mrr
+
+    def add_subtree(self,
+                    subtree: MTreeNode,
+                    subtree_path: MetadataPath):
+
+        self.add_child_at(subtree, subtree_path)
+
+    def delete_subtree(self,
+                       subtree_path: MetadataPath):
+        self.remove_child_at(subtree_path)
+
+
+x = """
 class DatasetTree(MappableObject, TreeNode):
     def __init__(self,
                  reference: Optional[Reference] = None):
@@ -130,3 +157,4 @@ class DatasetTree(MappableObject, TreeNode):
         copied_dataset_tree.write_out(new_destination)
         copied_dataset_tree.purge()
         return copied_dataset_tree
+"""

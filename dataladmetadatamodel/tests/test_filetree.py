@@ -169,13 +169,12 @@ class TestMapping(unittest.TestCase):
             subprocess.run(["git", "init", metadata_store])
 
             paths = [
-                MetadataPath(""),
-                MetadataPath("a")]
+                MetadataPath("a"),
+                MetadataPath("b")]
 
             file_tree = FileTree()
             for path in paths:
                 file_tree.add_metadata(path, Metadata())
-                file_tree.unget_metadata(path, metadata_store)
 
             reference = file_tree.write_out(metadata_store)
             flush_object_references(Path(metadata_store))
@@ -212,7 +211,6 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", copy_dir])
 
             paths = [
-                MetadataPath(""),
                 MetadataPath("a/b/c/d"),
                 MetadataPath("a/b/d"),
                 MetadataPath("a/x")]
@@ -220,10 +218,10 @@ class TestDeepCopy(unittest.TestCase):
             file_tree = FileTree()
             for path in paths:
                 file_tree.add_metadata(path, Metadata())
-                file_tree.unget_metadata(path, original_dir)
             file_tree.write_out(original_dir)
 
             file_tree_copy = file_tree.deepcopy(new_destination=copy_dir)
+            file_tree_copy.read_in()
 
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 
