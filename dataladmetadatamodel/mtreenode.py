@@ -54,7 +54,7 @@ class MTreeNode(MappableObject):
                     new_mapper_family,
                     new_destination))
 
-        copied_mtree_node.write_out()
+        copied_mtree_node.write_out(new_destination)
         copied_mtree_node.purge()
         return copied_mtree_node
 
@@ -139,6 +139,20 @@ class MTreeNode(MappableObject):
                 child,
                 MetadataPath(
                     "/".join(path.parts[1:])))
+
+    def remove_child(self,
+                     child_name: str):
+
+        self.ensure_mapped()
+        self.touch()
+        del self.child_nodes[child_name]
+
+    def remove_child_at(self,
+                        path: MetadataPath):
+
+        containing_path = MetadataPath("/".join(path.parts[:-1]))
+        containing_node = self.get_child(containing_path)
+        containing_node.remove_child(path.parts[-1])
 
     def get_object_at_path(self,
                            path: Optional[MetadataPath] = None
