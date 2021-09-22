@@ -40,7 +40,7 @@ class MTreeNodeGitMapper(Mapper):
 
             else:
                 raise ValueError(f"unknown git tree entry type: {entry[1]}")
-            mtree_node.add_child(entry[3], child)
+            mtree_node.child_nodes[entry[3]] = child
 
     def map_out_impl(self,
                      mtree_node: "MTreeNode",
