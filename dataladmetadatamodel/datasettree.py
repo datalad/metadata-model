@@ -1,4 +1,8 @@
-from typing import Optional
+from typing import (
+    List,
+    Optional,
+    Tuple
+)
 
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
@@ -19,6 +23,9 @@ class DatasetTree(MTreeNode):
     def __contains__(self, path: MetadataPath) -> bool:
         return self.contains_child(path)
 
+    def new_node(self):
+        return DatasetTree()
+
     def add_dataset(self,
                     path: MetadataPath,
                     metadata_root_record: MetadataRootRecord):
@@ -29,11 +36,21 @@ class DatasetTree(MTreeNode):
 
     def get_metadata_root_record(self,
                                  path: MetadataPath
-                                 ) -> MetadataRootRecord:
+                                 ) -> Optional[MetadataRootRecord]:
 
         mrr = self.get_object_at_path(path / datalad_root_record_name)
+        if mrr is None:
+            return None
         assert isinstance(mrr, MetadataRootRecord)
         return mrr
+
+    def get_dataset_paths(self
+                          ) -> List[Tuple[MetadataPath, MetadataRootRecord]]:
+        return [
+            (MetadataPath("/".join(path.parts[:-1])), node)
+            for path, node in self.get_paths_recursive()
+            if path.parts[-1] == datalad_root_record_name
+        ]
 
     def add_subtree(self,
                     subtree: MTreeNode,

@@ -139,8 +139,8 @@ def assert_dataset_trees_equal(test_case: unittest.TestCase,
 
         assert_mrr_equal(
             test_case,
-            a_mrr,
-            b_mrr,
+            a_mrr.read_in(),
+            b_mrr.read_in(),
             a_purge_unsafe)
 
 

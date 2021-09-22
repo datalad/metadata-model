@@ -25,7 +25,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.reference = reference
         self.mapper_private_data = dict()
         self.mapped = reference is None
-        assert isinstance(reference, (type(None), Reference)), f"object {self} initialized with invalid reference: {reference}"
+        assert isinstance(reference, (type(None), Reference)), \
+            f"object {self} initialized with invalid reference: {reference}"
 
     def get_modifiable_sub_objects(self) -> Iterable["MappableObject"]:
         """
