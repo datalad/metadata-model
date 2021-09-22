@@ -49,6 +49,7 @@ class MTreeNodeGitMapper(Mapper):
         from dataladmetadatamodel.mtreenode import MTreeNode
 
         assert isinstance(mtree_node, MTreeNode)
+        assert mtree_node.child_nodes
 
         for child_node in mtree_node.child_nodes.values():
             child_node.write_out(destination)
