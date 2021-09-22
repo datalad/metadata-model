@@ -31,6 +31,10 @@ class MetadataRootRecord(MappableObject):
         self.file_tree = file_tree
         self.backend_type = backend_type
 
+    @staticmethod
+    def get_empty_instance(reference: Optional[Reference] = None):
+        return MetadataRootRecord(None, None, None, None, reference)
+
     def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return [
             child

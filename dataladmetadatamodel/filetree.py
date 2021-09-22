@@ -26,6 +26,9 @@ class FileTree(MTreeNode):
     def __contains__(self, path: MetadataPath) -> bool:
         return self.contains_child(path)
 
+    def new_node(self):
+        return FileTree()
+
     def add_metadata(self,
                      path: MetadataPath,
                      metadata: Metadata):

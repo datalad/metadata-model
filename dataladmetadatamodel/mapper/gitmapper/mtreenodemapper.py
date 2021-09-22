@@ -32,7 +32,7 @@ class MTreeNodeGitMapper(Mapper):
                                         entry[2]))
 
             elif entry[1] == "blob":
-                child = mtree_node.leaf_class(
+                child = mtree_node.leaf_class.get_empty_instance(
                     reference=Reference("git",
                                         reference.realm,
                                         mtree_node.leaf_class_name,
