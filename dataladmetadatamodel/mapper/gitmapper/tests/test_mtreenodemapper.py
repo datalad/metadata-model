@@ -92,8 +92,29 @@ class TestMTreeNodeMapper(unittest.TestCase):
             root_node = create_tree(file_names, sub_dir_names)
             reference = root_node.write_out(realm)
 
-            print("\n".join(git_ls_tree(reference.realm, reference.location)))
-            print("\n".join(git_ls_tree_recursive(reference.realm, reference.location)))
+            new_node = MTreeNode(leaf_class=Text, reference=reference)
+            new_node.read_in()
+
+            tree_elements = list(new_node.get_paths_recursive())
+            self.assertEqual(len(tree_elements),
+                             len(file_names) * len(sub_dir_names))
+            self.assertEqual(
+                [str(tree_element[0]) for tree_element in tree_elements],
+                [
+                    sub_dir_name + "/" + file_name
+                    for sub_dir_name in sub_dir_names
+                    for file_name in file_names
+                ]
+            )
+
+            self.assertEqual(
+                [tree_element[1].read_in().content for tree_element in tree_elements],
+                [
+                    f"content of: /{sub_dir_name}/{file_name}"
+                    for sub_dir_name in sub_dir_names
+                    for file_name in file_names
+                ]
+            )
 
 
 if __name__ == '__main__':

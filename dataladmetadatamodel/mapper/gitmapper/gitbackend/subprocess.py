@@ -132,7 +132,6 @@ def git_save_tree_node(repo_dir,
 def git_save_tree(repo_dir,
                   entry_set: Iterable[Tuple[str, str, str, str]]
                   ) -> str:
-    raise DeprecationWarning
     tree_spec = "\n".join([
         f"{flag} {node_type} {object_hash}\t{name}"
         for flag, node_type, object_hash, name in entry_set
