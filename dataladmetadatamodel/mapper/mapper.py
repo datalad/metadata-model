@@ -26,19 +26,22 @@ class Mapper(metaclass=ABCMeta):
                mappable_object: "MappableObject",
                reference: Reference) -> None:
 
-        assert not reference.is_none_reference()
-        assert type(mappable_object).__name__ == self.class_name
-
-        # TODO: this will be fixed when we use non-mappable proxies
-        #  for DatasetTree and FileTree
-        if reference.class_name == "MTreeNode":
-            assert self.class_name in ("MTreeNode", "DatasetTree", "FileTree"), \
-                f"Reference class name ({reference.class_name}) " \
-                f"does not match self.class_name ({self.class_name})"
+        # TODO: this is not too nice, but required since FileTree and
+        #  DatasetTree are sub-classes of MTreeNode which just add some
+        #  methods.
+        mo_class_name = type(mappable_object).__name__
+        if mo_class_name in ("FileTree", "DatasetTree"):
+            assert self.class_name == "MTreeNode", \
+            f"Mappable object class name ({mo_class_name}) " \
+            f"does not match this mapper's class_name ({self.class_name})"
         else:
-            assert reference.class_name == self.class_name, \
-                f"Reference class name ({reference.class_name}) " \
-                f"does not match self.class_name ({self.class_name})"
+            assert mo_class_name == self.class_name, \
+            f"Mappable object class name ({mo_class_name}) " \
+            f"does not match this mapper's class_name ({self.class_name})"
+
+        assert reference.class_name == self.class_name, \
+            f"Reference class name ({reference.class_name}) " \
+            f"does not match self.class_name ({self.class_name})"
 
         self.map_in_impl(mappable_object, reference)
 

@@ -38,6 +38,13 @@ class FileTree(MTreeNode):
 
         return self.get_object_at_path(path)
 
+    def unget_metadata(self,
+                       path: MetadataPath,
+                       destination: Optional[str] = None):
+        metadata = self.get_metadata(path)
+        metadata.write_out(destination)
+        metadata.purge()
+
     def add_extractor_run(self,
                           path,
                           time_stamp: Optional[float],
