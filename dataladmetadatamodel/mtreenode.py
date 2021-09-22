@@ -27,6 +27,12 @@ class MTreeNode(MappableObject):
     def __str__(self):
         return f"<{type(self).__name__}: children: {self.child_nodes.keys()}>"
 
+    def ensure_mapped(self) -> bool:
+        if not self.mapped:
+            self.read_in()
+            return True
+        return False
+
     def get_modifiable_sub_objects_impl(self) -> Iterable["MappableObject"]:
         yield from self.child_nodes.values()
 
@@ -52,16 +58,18 @@ class MTreeNode(MappableObject):
         copied_mtree_node.purge()
         return copied_mtree_node
 
-    def contains_child(self, child_name: Union[str, MetadataPath]) -> bool:
+    def contains_child(self,
+                       child_name: Union[str, MetadataPath]
+                       ) -> bool:
+
         return self.get_child(child_name) is not None
 
     def get_child(self,
                   child_name: Union[str, MetadataPath]
                   ) -> Optional[MappableObject]:
 
-        if isinstance(child_name, MetadataPath):
-            child_name = str(child_name.parts[0])
-        return self.child_nodes.get(child_name, None)
+        self.ensure_mapped()
+        return self.child_nodes.get(str(child_name), None)
 
     def add_child(self, node_name: str, child: MappableObject):
         """
@@ -81,6 +89,8 @@ class MTreeNode(MappableObject):
         assert len(set(map(lambda nn: nn[0], children))) == len(children)
 
         new_names = set(map(lambda nn: nn[0], children))
+
+        self.ensure_mapped()
         duplicated_names = set(self.child_nodes.keys()) & new_names
         if duplicated_names:
             raise ValueError(
@@ -152,11 +162,7 @@ class MTreeNode(MappableObject):
         if show_intermediate:
             yield MetadataPath(""), self
 
-        purge_self = False
-        if not self.mapped:
-            self.read_in()
-            purge_self = True
-
+        purge_self = self.ensure_mapped()
         for child_name, child_node in self.child_nodes.items():
             if not isinstance(child_node, MTreeNode):
                 yield MetadataPath(child_name), child_node
@@ -167,9 +173,6 @@ class MTreeNode(MappableObject):
 
         if purge_self:
             self.purge()
-
-    def xxx_is_leaf_node(self):
-        return len(self.child_nodes) == 0
 
     x = """
     def add_node_hierarchy(self,

@@ -4,6 +4,7 @@ import unittest
 from typing import List
 from unittest import mock
 
+from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mtreenode import MTreeNode
 from dataladmetadatamodel.text import Text
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
@@ -92,10 +93,12 @@ class TestMTreeNodeMapper(unittest.TestCase):
             root_node = create_tree(file_names, sub_dir_names)
             reference = root_node.write_out(realm)
 
-            new_node = MTreeNode(leaf_class=Text, reference=reference)
-            new_node.read_in()
+            new_root_node = MTreeNode(leaf_class=Text, reference=reference)
+            new_root_node.read_in()
 
-            tree_elements = list(new_node.get_paths_recursive())
+            print(new_root_node.get_object_at_path(MetadataPath("sub0/a")))
+
+            tree_elements = list(new_root_node.get_paths_recursive())
             self.assertEqual(len(tree_elements),
                              len(file_names) * len(sub_dir_names))
             self.assertEqual(
@@ -108,7 +111,10 @@ class TestMTreeNodeMapper(unittest.TestCase):
             )
 
             self.assertEqual(
-                [tree_element[1].read_in().content for tree_element in tree_elements],
+                [
+                    tree_element[1].read_in().content
+                    for tree_element in tree_elements
+                ],
                 [
                     f"content of: /{sub_dir_name}/{file_name}"
                     for sub_dir_name in sub_dir_names
