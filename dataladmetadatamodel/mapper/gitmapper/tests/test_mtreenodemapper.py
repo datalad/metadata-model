@@ -1,12 +1,34 @@
+import subprocess
+import tempfile
 import unittest
+from typing import List
 from unittest import mock
 
 from dataladmetadatamodel.mtreenode import MTreeNode
 from dataladmetadatamodel.text import Text
+from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+    git_ls_tree,
+    git_ls_tree_recursive
+)
 
 
 tree_location = "a000000000000000000000000000000000000000"
 file_location = "a001000000000000000000000000000000000001"
+
+
+def create_tree(file_names: List[str],
+                sub_dir_names: List[str]
+                ) -> MTreeNode:
+
+    root_node = MTreeNode(Text)
+    for sub_dir_name in sub_dir_names:
+        sub_tree_node = MTreeNode(Text)
+        for file_name in file_names:
+            sub_tree_node.add_child(
+                file_name,
+                Text(f"content of: /{sub_dir_name}/{file_name}"))
+        root_node.add_child(sub_dir_name, sub_tree_node)
+    return root_node
 
 
 class TestMTreeNodeMapper(unittest.TestCase):
@@ -17,19 +39,12 @@ class TestMTreeNodeMapper(unittest.TestCase):
         file_names = ["a", "b", "c"]
         sub_dir_names = ["sub0", "sub1", "sub2"]
 
-        root_node = MTreeNode(Text)
-        for sub_dir_name in sub_dir_names:
-            sub_tree_node = MTreeNode(Text)
-            for file_name in file_names:
-                sub_tree_node.add_child(
-                    file_name,
-                    Text(f"content of: /{sub_dir_name}/{file_name}"))
-            root_node.add_child(sub_dir_name, sub_tree_node)
+        root_node = create_tree(file_names, sub_dir_names)
 
         with \
                 mock.patch(
-                "dataladmetadatamodel.mapper.gitmapper"
-                ".mtreenodemapper.git_save_tree_node") as save_tree_node, \
+                    "dataladmetadatamodel.mapper.gitmapper"
+                    ".mtreenodemapper.git_save_tree_node") as save_tree_node, \
                 mock.patch(
                     "dataladmetadatamodel.mapper.gitmapper" 
                     ".textmapper.git_save_str") as save_str:
@@ -37,7 +52,7 @@ class TestMTreeNodeMapper(unittest.TestCase):
             save_tree_node.configure_mock(return_value=tree_location)
             save_str.configure_mock(return_value=file_location)
 
-            reference = root_node.write_out(realm, "git")
+            root_node.write_out(realm, "git")
 
             # Expect one (root) plus three (sub-dir trees) calls
             self.assertEqual(save_tree_node.call_count, 4)
@@ -46,11 +61,11 @@ class TestMTreeNodeMapper(unittest.TestCase):
                 mock.call(
                     realm,
                     [
-                        ("100644", "blob", file_name, file_location)
+                        ("100644", "blob", file_location, file_name)
                         for file_name in file_names
                     ]
                 )
-                for _ in range(3)
+                for _ in range(len(sub_dir_names))
             ]
             save_tree_node.assert_has_calls(expected_sub_tree_calls, any_order=True)
 
@@ -58,12 +73,27 @@ class TestMTreeNodeMapper(unittest.TestCase):
                 mock.call(
                     realm,
                     [
-                        ("040000", "tree", sub_dir_name, tree_location)
+                        ("040000", "tree", tree_location, sub_dir_name)
                         for sub_dir_name in sub_dir_names
                     ]
                 )
             ]
             save_tree_node.assert_has_calls(expected_root_calls, any_order=True)
+
+
+    def test_mapping_end_to_end(self):
+        file_names = ["a", "b", "c"]
+        sub_dir_names = ["sub0", "sub1", "sub2"]
+
+        with tempfile.TemporaryDirectory() as realm:
+
+            subprocess.run(["git", "init", realm])
+
+            root_node = create_tree(file_names, sub_dir_names)
+            reference = root_node.write_out(realm)
+
+            print("\n".join(git_ls_tree(reference.realm, reference.location)))
+            print("\n".join(git_ls_tree_recursive(reference.realm, reference.location)))
 
 
 if __name__ == '__main__':

@@ -96,13 +96,11 @@ def git_read_tree_node(repo_dir,
 
 
 def git_ls_tree(repo_dir, object_reference) -> List[str]:
-    raise DeprecationWarning
     cmd_line = git_command_line(repo_dir, "ls-tree", [object_reference])
     return checked_execute(cmd_line)[0]
 
 
 def git_ls_tree_recursive(repo_dir, object_reference, show_intermediate=False) -> List[str]:
-    raise DeprecationWarning
     if show_intermediate is True:
         cmd_line = git_command_line(repo_dir, "ls-tree", ["-r", "-t", object_reference])
     else:
