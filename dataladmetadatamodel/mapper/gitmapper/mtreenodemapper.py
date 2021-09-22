@@ -25,17 +25,18 @@ class MTreeNodeGitMapper(Mapper):
         for entry in [line.split() for line in lines]:
             if entry[1] == "tree":
                 child = MTreeNode(
-                    Reference("git",
-                              reference.realm,
-                              "MTreeNode",
-                              entry[2]))
+                    leaf_class=mtree_node.leaf_class,
+                    reference=Reference("git",
+                                        reference.realm,
+                                        "MTreeNode",
+                                        entry[2]))
 
             elif entry[1] == "blob":
                 child = mtree_node.leaf_class(
-                    Reference("git",
-                              reference.realm,
-                              mtree_node.leaf_class_name,
-                              entry[2]))
+                    reference=Reference("git",
+                                        reference.realm,
+                                        mtree_node.leaf_class_name,
+                                        entry[2]))
 
             else:
                 raise ValueError(f"unknown git tree entry type: {entry[1]}")

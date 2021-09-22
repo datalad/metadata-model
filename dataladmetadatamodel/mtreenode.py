@@ -18,7 +18,7 @@ class MTreeNode(MappableObject):
                  reference: Optional[Reference] = None):
         super().__init__(reference)
         self.leaf_class = leaf_class
-        self.leaf_class_name = type(self.leaf_class).__name__
+        self.leaf_class_name = leaf_class.__name__
         self.child_nodes = dict()
 
     def __contains__(self, path: MetadataPath) -> bool:
@@ -31,7 +31,7 @@ class MTreeNode(MappableObject):
         yield from self.child_nodes.values()
 
     def purge_impl(self):
-        for child_node in self.child_nodes:
+        for child_node in self.child_nodes.values():
             child_node.purge()
         self.child_nodes = dict()
 
@@ -152,6 +152,11 @@ class MTreeNode(MappableObject):
         if show_intermediate:
             yield MetadataPath(""), self
 
+        purge_self = False
+        if not self.mapped:
+            self.read_in()
+            purge_self = True
+
         for child_name, child_node in self.child_nodes.items():
             if not isinstance(child_node, MTreeNode):
                 yield MetadataPath(child_name), child_node
@@ -159,6 +164,9 @@ class MTreeNode(MappableObject):
                 for sub_path, tree_node in child_node.get_paths_recursive(
                         show_intermediate):
                     yield MetadataPath(child_name) / sub_path, tree_node
+
+        if purge_self:
+            self.purge()
 
     def xxx_is_leaf_node(self):
         return len(self.child_nodes) == 0
