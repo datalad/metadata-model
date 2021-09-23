@@ -31,7 +31,7 @@ class VersionListGitMapper(Mapper):
 
             reference = Reference.from_json_obj(pdm_assoc["dataset_tree"])
             if reference.class_name in ("DatasetTree", "MTreeNode"):
-                mrr_or_tree = DatasetTree(reference)
+                mrr_or_tree = DatasetTree(reference=reference)
             elif reference.class_name == "MetadataRootRecord":
                 mrr_or_tree = MetadataRootRecord(None, None, None, None, reference)
             else:
