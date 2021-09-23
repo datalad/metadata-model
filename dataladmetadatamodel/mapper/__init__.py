@@ -45,10 +45,9 @@ def set_mapper(class_name: str, backend_type: str, mapper: "Mapper"):
 
 
 def initialize_object_store():
-    from .gitmapper.datasettreemapper import DatasetTreeGitMapper
-    from .gitmapper.filetreemapper import FileTreeGitMapper
     from .gitmapper.metadatamapper import MetadataGitMapper
     from .gitmapper.metadatarootrecordmapper import MetadataRootRecordGitMapper
+    from .gitmapper.mtreenodemapper import MTreeNodeGitMapper
     from .gitmapper.textmapper import TextGitMapper
     from .gitmapper.uuidsetmapper import UUIDSetGitMapper
     from .gitmapper.versionlistmapper import (
@@ -56,10 +55,11 @@ def initialize_object_store():
         VersionListGitMapper
     )
 
-    set_mapper("DatasetTree", "git", DatasetTreeGitMapper("DatasetTree"))
-    set_mapper("FileTree", "git", FileTreeGitMapper("FileTree"))
+    set_mapper("DatasetTree", "git", MTreeNodeGitMapper("MTreeNode"))
+    set_mapper("FileTree", "git", MTreeNodeGitMapper("MTreeNode"))
     set_mapper("Metadata", "git", MetadataGitMapper("Metadata"))
     set_mapper("MetadataRootRecord", "git", MetadataRootRecordGitMapper("MetadataRootRecord"))
+    set_mapper("MTreeNode", "git", MTreeNodeGitMapper("MTreeNode"))
     set_mapper("Text", "git", TextGitMapper("Text"))
     set_mapper("TreeVersionList", "git", TreeVersionListGitMapper("TreeVersionList"))
     set_mapper("UUIDSet", "git", UUIDSetGitMapper("UUIDSet"))

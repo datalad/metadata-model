@@ -1,82 +1,46 @@
 from typing import (
     Iterable,
     Optional,
-    Tuple,
-    Union
+    Tuple
 )
 
 from dataladmetadatamodel import JSONObject
-from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
     Metadata
 )
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
-from dataladmetadatamodel.treenode import TreeNode
+from dataladmetadatamodel.mtreenode import MTreeNode
+from dataladmetadatamodel.mtreeproxy import MTreeProxy
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-class FileTree(MappableObject, TreeNode):
+class FileTree(MTreeProxy):
     def __init__(self,
+                 mtree: Optional[MTreeNode] = None,
                  reference: Optional[Reference] = None):
 
-        MappableObject.__init__(self, reference)
-        TreeNode.__init__(self)
-
-    def __contains__(self, path: Union[str, MetadataPath]) -> bool:
-        # Allow strings as input as well
-        if isinstance(path, str):
-            path = MetadataPath(path)
-        node = self.get_node_at_path(path)
-        # The check for node.value is not None takes care of root paths
-        return node is not None and node.value is not None
-
-    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
-        for name, tree_node in super().get_paths_recursive():
-            if tree_node.value is not None:
-                yield tree_node.value
-
-    def purge_impl(self):
-        for name, tree_node in super().get_paths_recursive():
-            if tree_node.value is not None:
-                yield tree_node.value.purge(force)
-        TreeNode.__init__(self)
-
-    def add_directory(self, name):
-        self.touch()
-        self._add_node(name, TreeNode())
-
-    def add_file(self, path):
-        self.touch()
-        self.add_node_hierarchy(path, TreeNode())
+        super().__init__(Metadata, mtree, reference)
 
     def add_metadata(self,
                      path: MetadataPath,
                      metadata: Metadata):
-        self.touch()
-        self.add_node_hierarchy(path, TreeNode(value=metadata))
 
-    def get_metadata(self, path: MetadataPath) -> Optional[Metadata]:
-        value = self.get_node_at_path(path).value
-        if value is not None:
-            return value.read_in()
-        return None
+        self.mtree.add_child_at(metadata, path)
 
-    def set_metadata(self, path: MetadataPath, metadata: Metadata):
-        self.touch()
-        self.get_node_at_path(path).value.set(metadata)
+    def get_metadata(self,
+                     path: MetadataPath
+                     ) -> Optional[Metadata]:
 
-    def unget_metadata(self, path: MetadataPath, destination: str):
-        value = self.get_node_at_path(path).value
-        value.write_out(destination)
-        value.purge()
+        return self.mtree.get_object_at_path(path)
 
-    def get_paths_recursive(self,
-                            show_intermediate: Optional[bool] = False
-                            ) -> Iterable[Tuple[MetadataPath, Metadata]]:
-
-        for name, tree_node in super().get_paths_recursive(show_intermediate):
-            yield name, tree_node.value
+    def unget_metadata(self,
+                       path: MetadataPath,
+                       destination: Optional[str] = None):
+        metadata = self.get_metadata(path)
+        metadata.write_out(destination)
+        metadata.purge()
 
     def add_extractor_run(self,
                           path,
@@ -86,8 +50,6 @@ class FileTree(MappableObject, TreeNode):
                           author_email: str,
                           configuration: ExtractorConfiguration,
                           metadata_content: JSONObject):
-
-        self.touch()
 
         try:
             metadata = self.get_metadata(path)
@@ -104,24 +66,8 @@ class FileTree(MappableObject, TreeNode):
             metadata_content
         )
 
-    def deepcopy_impl(self,
-                      new_mapper_family: Optional[str] = None,
-                      new_destination: Optional[str] = None,
-                      **kwargs) -> "FileTree":
+    def get_paths_recursive(self,
+                            show_intermediate: Optional[bool] = False
+                            ) -> Iterable[Tuple[MetadataPath, MappableObject]]:
 
-        copied_file_tree = FileTree()
-
-        for path, metadata in self.get_paths_recursive(True):
-            if metadata is not None:
-                copied_metadata = metadata.deepcopy(new_mapper_family, new_destination)
-            else:
-                copied_metadata = None
-            copied_file_tree.add_node_hierarchy(
-                path,
-                TreeNode(value=copied_metadata),
-                allow_leaf_node_conversion=True)
-
-        copied_file_tree.write_out(new_destination)
-        copied_file_tree.purge()
-
-        return copied_file_tree
+        yield from self.mtree.get_paths_recursive(show_intermediate)

@@ -30,14 +30,14 @@ class VersionListGitMapper(Mapper):
         for pdm_assoc in json_object:
 
             reference = Reference.from_json_obj(pdm_assoc["dataset_tree"])
-            if reference.class_name == "DatasetTree":
-                mrr_or_tree = DatasetTree(reference)
+            if reference.class_name == "MTreeNode":
+                mrr_or_tree = DatasetTree(reference=reference)
             elif reference.class_name == "MetadataRootRecord":
                 mrr_or_tree = MetadataRootRecord(None, None, None, None, reference)
             else:
                 raise ValueError(
                     f"unexpected tree class in primary data-metadata "
-                    f"assoc: ({reference.class_name}")
+                    f"assoc: ({reference.class_name})")
 
             version_records[pdm_assoc["primary_data_version"]] = VersionRecord(
                 pdm_assoc["time_stamp"],

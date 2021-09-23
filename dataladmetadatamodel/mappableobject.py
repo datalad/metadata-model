@@ -25,7 +25,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.reference = reference
         self.mapper_private_data = dict()
         self.mapped = reference is None
-        assert isinstance(reference, (type(None), Reference)), f"object {self} initialized with invalid reference: {reference}"
+        assert isinstance(reference, (type(None), Reference)), \
+            f"object {self} initialized with invalid reference: {reference}"
 
     def get_modifiable_sub_objects(self) -> Iterable["MappableObject"]:
         """
@@ -42,14 +43,21 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             return []
         return self.get_modifiable_sub_objects_impl()
 
+    def ensure_mapped(self) -> bool:
+        if not self.mapped:
+            self.read_in()
+            return True
+        return False
+
     def read_in(self, backend_type="git") -> "MappableObject":
         from dataladmetadatamodel.mapper import get_mapper
 
         if self.mapped is False:
             assert self.reference is not None
-            get_mapper(type(self).__name__,
-                       backend_type).map_in(self,
-                                            self.reference)
+            get_mapper(
+                type(self).__name__,
+                backend_type
+            ).map_in(self, self.reference)
             self.mapped = True
             self.set_saved_on(self.reference.realm)
         return self
@@ -69,7 +77,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
 
         if self.reference:
             destination = destination or self.reference.realm
-        assert destination is not None, f"write_out: no destination available for {self}"
+        assert destination is not None, \
+            f"write_out: no destination available for {self}"
 
         if self.is_saved_on(destination):
             if force_write:

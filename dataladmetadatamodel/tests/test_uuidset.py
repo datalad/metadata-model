@@ -12,6 +12,7 @@ from dataladmetadatamodel.versionlist import VersionRecord
 
 from .utils import (
     assert_uuid_sets_equal,
+    create_dataset_tree,
     get_uuid
 )
 
@@ -39,14 +40,14 @@ class TestUUIDSet(unittest.TestCase):
                     "v0": VersionRecord(
                         "1.2",
                         MetadataPath("path0"),
-                        DatasetTree()
+                        create_dataset_tree()
                     )
                 }),
                 uuid_1: VersionList(initial_set={
                     "v0.0": VersionRecord(
                         "1.3",
                         MetadataPath("path0.0"),
-                        DatasetTree()
+                        create_dataset_tree()
                     )
                 })
             })
@@ -68,14 +69,14 @@ class TestUUIDSet(unittest.TestCase):
                     "v0": VersionRecord(
                         "1.2",
                         MetadataPath("path0"),
-                        DatasetTree()
+                        create_dataset_tree()
                     )
                 }),
                 uuid_1: VersionList(initial_set={
                     "v0.0": VersionRecord(
                         "1.3",
                         MetadataPath("path0.0"),
-                        DatasetTree()
+                        create_dataset_tree()
                     )
                 })
             })

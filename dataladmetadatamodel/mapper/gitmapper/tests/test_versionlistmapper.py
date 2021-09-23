@@ -45,6 +45,7 @@ class TestVersionListMapper(unittest.TestCase):
         with mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_save_json") as save_json, \
              mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatamapper.git_save_str") as save_str, \
              mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatarootrecordmapper.git_save_json") as save_json_2, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper.mtreenodemapper.git_save_tree_node") as save_tree_node, \
              mock.patch("dataladmetadatamodel.mapper.gitmapper.filetreemapper.git_save_tree") as save_tree, \
              mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_update_ref") as update_ref:
 
@@ -52,6 +53,7 @@ class TestVersionListMapper(unittest.TestCase):
             save_str.configure_mock(return_value=get_location(1))
             save_tree.configure_mock(return_value=get_location(2))
             save_json_2.configure_mock(return_value=get_location(3))
+            save_tree_node.configure_mock(return_value=get_location(4))
 
             version_list = VersionList(initial_set={
                 "v0": VersionRecord(
