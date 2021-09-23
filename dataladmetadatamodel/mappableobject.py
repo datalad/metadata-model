@@ -64,7 +64,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         return self.get_modifiable_sub_objects_impl()
 
     def read_in(self,
-                backend_type="git") -> Optional["MappableObject"]:
+                backend_type="git") -> "MappableObject":
 
         from dataladmetadatamodel.mapper import get_mapper
 
@@ -77,7 +77,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             if self.reference.is_none_reference():
                 assert self.reference.class_name == type(self).__name__
                 logger.warning(f"read_in({self}): None-reference in {self}")
-                return None
+                self.purge_impl()
+                return self
 
             # ensure that the object is save on the given realm
             if not self.is_saved_on(self.reference.realm):

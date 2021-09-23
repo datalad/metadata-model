@@ -26,7 +26,11 @@ class MetadataRootRecord(MappableObject):
         self.backend_type = backend_type
 
     def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
-        return [self.dataset_level_metadata, self.file_tree]
+        return [
+            child
+            for child in [self.dataset_level_metadata, self.file_tree]
+            if child is not None
+        ]
 
     def purge_impl(self):
         self.dataset_level_metadata.purge()
@@ -39,6 +43,8 @@ class MetadataRootRecord(MappableObject):
         self.file_tree = file_tree
 
     def get_file_tree(self):
+        if self.file_tree is None:
+            return None
         return self.file_tree.read_in(self.backend_type)
 
     def set_dataset_level_metadata(self, dataset_level_metadata: Metadata):
