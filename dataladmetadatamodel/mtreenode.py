@@ -27,12 +27,6 @@ class MTreeNode(MappableObject):
     def __str__(self):
         return f"<{type(self).__name__}: children: {self.child_nodes.keys()}>"
 
-    def ensure_mapped(self) -> bool:
-        if not self.mapped:
-            self.read_in()
-            return True
-        return False
-
     def get_modifiable_sub_objects_impl(self) -> Iterable["MappableObject"]:
         yield from self.child_nodes.values()
 
@@ -187,99 +181,6 @@ class MTreeNode(MappableObject):
 
         if purge_self:
             self.purge()
-
-    x = """
-    def add_node_hierarchy(self,
-                           path: MetadataPath,
-                           new_node: "TreeNode",
-                           allow_leaf_node_conversion: bool = False):
-
-        if self.is_root_path(path):
-            self.value = new_node.value
-            return
-
-        self._add_node_hierarchy(
-            path.parts,
-            new_node,
-            allow_leaf_node_conversion)
-
-    def _add_node_hierarchy(self,
-                            path_elements: Tuple[str],
-                            new_node: "TreeNode",
-                            allow_leaf_node_conversion: bool):
-
-        if len(path_elements) == 1:
-            self._add_child(path_elements[0], new_node)
-        else:
-            sub_node = self.child_nodes.get(path_elements[0], None)
-            if not sub_node:
-                sub_node = TreeNode()
-                self._add_child(path_elements[0], sub_node)
-            else:
-                if not allow_leaf_node_conversion and sub_node.is_leaf_node():
-                    raise ValueError(
-                        f"Cannot replace leaf node with name "
-                        f"{path_elements[0]} with a directory node")
-
-            sub_node._add_node_hierarchy(
-                path_elements[1:],
-                new_node,
-                allow_leaf_node_conversion)
-
-    def add_node_hierarchies(self,
-                             new_node_hierarchies: List[
-                                 Tuple[
-                                     MetadataPath,
-                                     "TreeNode"]]):
-
-        for path_node_tuple in new_node_hierarchies:
-            self.add_node_hierarchy(*path_node_tuple)
-
-    def get_sub_node(self, name: str):
-        return self.child_nodes[name]
-
-    def get_node_at_path(self,
-                         path: Optional[MetadataPath] = None
-                         ) -> Optional["TreeNode"]:
-
-        # Simple linear path-search
-        path = path or MetadataPath("")
-        current_node = self
-        for element in path.parts:
-            try:
-                current_node = current_node.get_sub_node(element)
-            except KeyError:
-                return None
-        return current_node
-
-    def get_all_nodes_in_path(self,
-                              path: Optional[MetadataPath] = None
-                              ) -> Optional[List[Tuple[str, "TreeNode"]]]:
-
-        path = path or MetadataPath("")
-        result = [("", self)]
-        current_node = self
-        for element in path.parts:
-            try:
-                current_node = current_node.get_sub_node(element)
-                result.append((element, current_node))
-            except KeyError:
-                return None
-        return result
-
-    def get_paths_recursive(self,
-                            show_intermediate: Optional[bool] = False
-                            ) -> Iterable[Tuple[MetadataPath, "TreeNode"]]:
-
-        if show_intermediate or self.is_leaf_node():
-            yield MetadataPath(""), self
-
-        for child_name, child_node in self.child_nodes.items():
-            for sub_path, tree_node in child_node.get_paths_recursive(
-                    show_intermediate):
-                yield MetadataPath(child_name) / sub_path, tree_node
-
-    """
 
     @staticmethod
     def is_root_path(path: MetadataPath) -> bool:

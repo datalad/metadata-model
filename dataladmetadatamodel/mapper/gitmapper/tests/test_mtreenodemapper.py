@@ -7,6 +7,7 @@ from unittest import mock
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mtreenode import MTreeNode
 from dataladmetadatamodel.text import Text
+from dataladmetadatamodel.mapper.reference import Reference
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_ls_tree,
     git_ls_tree_recursive
@@ -81,6 +82,16 @@ class TestMTreeNodeMapper(unittest.TestCase):
             ]
             save_tree_node.assert_has_calls(expected_root_calls, any_order=True)
 
+    def test_none_mapping_out(self):
+        tree = MTreeNode(Text)
+        reference = tree.write_out("/tmp/t1")
+        self.assertTrue(reference.is_none_reference())
+
+    def test_none_mapping_in(self):
+        reference = Reference.get_none_reference("MTreeNode")
+        tree = MTreeNode(Text, reference)
+        tree.read_in()
+        self.assertEqual(len(tree.child_nodes), 0)
 
     def test_mapping_end_to_end(self):
         file_names = ["a", "b", "c"]

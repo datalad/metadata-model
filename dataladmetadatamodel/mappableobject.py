@@ -43,6 +43,12 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             return []
         return self.get_modifiable_sub_objects_impl()
 
+    def ensure_mapped(self) -> bool:
+        if not self.mapped:
+            self.read_in()
+            return True
+        return False
+
     def read_in(self, backend_type="git") -> "MappableObject":
         from dataladmetadatamodel.mapper import get_mapper
 
@@ -71,7 +77,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
 
         if self.reference:
             destination = destination or self.reference.realm
-        assert destination is not None, f"write_out: no destination available for {self}"
+        assert destination is not None, \
+            f"write_out: no destination available for {self}"
 
         if self.is_saved_on(destination):
             if force_write:
