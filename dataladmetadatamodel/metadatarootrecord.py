@@ -34,8 +34,10 @@ class MetadataRootRecord(MappableObject):
 
     def purge_impl(self):
         self.dataset_level_metadata.purge()
-        self.file_tree.purge()
-        self.dataset_level_metadata = None
+        if self.file_tree is not None:
+            self.file_tree.purge()
+        if self.dataset_level_metadata is not None:
+            self.dataset_level_metadata = None
         self.file_tree = None
 
     def set_file_tree(self, file_tree: FileTree):
@@ -62,8 +64,16 @@ class MetadataRootRecord(MappableObject):
         copied_metadata_root_record = MetadataRootRecord(
             self.dataset_identifier,
             self.dataset_version,
-            self.dataset_level_metadata.deepcopy(new_mapper_family,new_destination),
-            self.file_tree.deepcopy(new_mapper_family, new_destination),
+            (
+                self.dataset_level_metadata.deepcopy(new_mapper_family,new_destination)
+                if self.dataset_level_metadata is not None
+                else None
+            ),
+            (
+                self.file_tree.deepcopy(new_mapper_family, new_destination)
+                if self.file_tree is not None
+                else None
+            ),
             None,
             self.backend_type)
 
