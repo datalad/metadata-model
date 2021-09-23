@@ -40,7 +40,7 @@ class TestDatasetTreeMapper(unittest.TestCase):
         reference = dataset_tree.write_out(destination)
         dataset_tree = None
 
-        new_dataset_tree = DatasetTree(reference)
+        new_dataset_tree = DatasetTree(reference=reference)
         new_dataset_tree.read_in()
         loaded_paths = [p[0] for p in new_dataset_tree.get_paths_recursive()]
 

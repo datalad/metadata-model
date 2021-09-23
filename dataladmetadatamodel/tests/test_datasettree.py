@@ -54,10 +54,12 @@ class TestDatasetTree(unittest.TestCase):
             self.assertEqual(entry[1], mrr)
 
     def test_root_node(self):
+
         dataset_tree = DatasetTree()
+
         mrr = MetadataRootRecord(uuid_0, "00112233", None, None)
         dataset_tree.add_dataset(MetadataPath(""), mrr)
-        self.assertEqual(dataset_tree.child_nodes[".datalad_metadata_root_record"], mrr)
+        self.assertEqual(dataset_tree.get_metadata_root_record(MetadataPath("")), mrr)
 
         returned_entries = tuple(dataset_tree.get_dataset_paths())
         self.assertEqual(len(returned_entries), 1)
@@ -112,12 +114,12 @@ class TestDeepCopy(unittest.TestCase):
 
 
 class TestSubTreeManipulation(unittest.TestCase):
-    def get_mrr(self) -> MetadataRootRecord:
-        return MetadataRootRecord(uuid_0, "00112233", None, None)
+    def get_mrr(self, n: int = 0) -> MetadataRootRecord:
+        return MetadataRootRecord(uuid_0, f"00112233-{n}", None, None)
 
     def test_subtree_adding(self):
-        mrr_1 = self.get_mrr()
-        mrr_2 = self.get_mrr()
+        mrr_1 = self.get_mrr(1)
+        mrr_2 = self.get_mrr(2)
 
         tree = DatasetTree()
         tree.add_dataset(MetadataPath("a/b/c"), mrr_1)
@@ -174,10 +176,10 @@ class TestSubTreeManipulation(unittest.TestCase):
         self.assertIsNotNone(tree.get_metadata_root_record(MetadataPath("a/b/c/d/e/f")))
         tree.delete_subtree(MetadataPath("a/b/c/d/e/f"))
         self.assertIsNone(tree.get_metadata_root_record(MetadataPath("a/b/c/d/e/f")))
-        self.assertIsNotNone(tree.get_object_at_path(MetadataPath("a/b/c/d/e")))
+        self.assertIsNotNone(tree.mtree.get_object_at_path(MetadataPath("a/b/c/d/e")))
 
         tree.delete_subtree(MetadataPath("a/b/c"))
-        self.assertIsNotNone(tree.get_object_at_path(MetadataPath("a/b")))
+        self.assertIsNotNone(tree.mtree.get_object_at_path(MetadataPath("a/b")))
         self.assertIsNone(tree.get_metadata_root_record(MetadataPath("a/b/c")))
         self.assertIsNone(tree.get_metadata_root_record(MetadataPath("a/b/c/d")))
         self.assertIsNone(tree.get_metadata_root_record(MetadataPath("a/b/c/d/e")))

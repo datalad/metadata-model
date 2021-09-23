@@ -1,45 +1,46 @@
 from typing import (
     Iterable,
     Optional,
-    Tuple,
-    Union
+    Tuple
 )
 
 from dataladmetadatamodel import JSONObject
-from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
     Metadata
 )
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mtreenode import MTreeNode
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-class FileTree(MTreeNode):
+class FileTree:
     def __init__(self,
+                 mtree: Optional[MTreeNode] = None,
                  reference: Optional[Reference] = None):
-        super().__init__(
-            leaf_class=Metadata,
-            reference=reference)
+
+        if mtree is None:
+            self.mtree = MTreeNode(leaf_class=Metadata,
+                                   reference=reference)
+        else:
+            assert mtree.leaf_class == Metadata
+            self.mtree = mtree
 
     def __contains__(self, path: MetadataPath) -> bool:
-        return self.contains_child(path)
-
-    def new_node(self):
-        return FileTree()
+        return self.mtree.contains_child(path)
 
     def add_metadata(self,
                      path: MetadataPath,
                      metadata: Metadata):
 
-        self.add_child_at(metadata, path)
+        self.mtree.add_child_at(metadata, path)
 
     def get_metadata(self,
                      path: MetadataPath
                      ) -> Optional[Metadata]:
 
-        return self.get_object_at_path(path)
+        return self.mtree.get_object_at_path(path)
 
     def unget_metadata(self,
                        path: MetadataPath,
@@ -71,6 +72,36 @@ class FileTree(MTreeNode):
             configuration,
             metadata_content
         )
+
+    def get_paths_recursive(self,
+                            show_intermediate: Optional[bool] = False
+                            ) -> Iterable[Tuple[MetadataPath, MappableObject]]:
+        yield from self.mtree.get_paths_recursive(show_intermediate)
+
+    def read_in(self, backend_type="git") -> MappableObject:
+        self.mtree.read_in(backend_type)
+        return self
+
+    def write_out(self,
+                  destination: Optional[str] = None,
+                  backend_type: str = "git",
+                  force_write: bool = False) -> Reference:
+
+        return self.mtree.write_out(destination,
+                                    backend_type,
+                                    force_write)
+
+    def purge(self):
+        return self.mtree.purge()
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_destination: Optional[str] = None,
+                 **kwargs) -> "FileTree":
+
+        return FileTree(self.mtree.deepcopy(new_mapper_family,
+                                            new_destination,
+                                            **kwargs))
 
 
 x = """

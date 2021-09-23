@@ -4,6 +4,7 @@ from typing import (
     Tuple
 )
 
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mtreenode import MTreeNode
@@ -13,32 +14,34 @@ from dataladmetadatamodel.mapper.reference import Reference
 datalad_root_record_name = ".datalad_metadata_root_record"
 
 
-class DatasetTree(MTreeNode):
+class DatasetTree:
     def __init__(self,
+                 mtree: Optional[MTreeNode] = None,
                  reference: Optional[Reference] = None):
-        super().__init__(
-            leaf_class=MetadataRootRecord,
-            reference=reference)
+
+        if mtree is None:
+            self.mtree = MTreeNode(leaf_class=MetadataRootRecord,
+                                   reference=reference)
+        else:
+            assert mtree.leaf_class == MetadataRootRecord
+            self.mtree = mtree
 
     def __contains__(self, path: MetadataPath) -> bool:
-        return self.contains_child(path)
-
-    def new_node(self):
-        return DatasetTree()
+        return self.mtree.contains_child(path)
 
     def add_dataset(self,
                     path: MetadataPath,
                     metadata_root_record: MetadataRootRecord):
 
-        self.add_child_at(
-            metadata_root_record,
-            path / datalad_root_record_name)
+        self.mtree.add_child_at(metadata_root_record,
+                                path / datalad_root_record_name)
 
     def get_metadata_root_record(self,
                                  path: MetadataPath
                                  ) -> Optional[MetadataRootRecord]:
 
-        mrr = self.get_object_at_path(path / datalad_root_record_name)
+        mrr = self.mtree.get_object_at_path(path
+                                            / datalad_root_record_name)
         if mrr is None:
             return None
         assert isinstance(mrr, MetadataRootRecord)
@@ -48,19 +51,44 @@ class DatasetTree(MTreeNode):
                           ) -> List[Tuple[MetadataPath, MetadataRootRecord]]:
         return [
             (MetadataPath("/".join(path.parts[:-1])), node)
-            for path, node in self.get_paths_recursive()
+            for path, node in self.mtree.get_paths_recursive()
             if path.parts[-1] == datalad_root_record_name
         ]
 
     def add_subtree(self,
-                    subtree: MTreeNode,
+                    subtree: "DatasetTree",
                     subtree_path: MetadataPath):
 
-        self.add_child_at(subtree, subtree_path)
+        self.mtree.add_child_at(subtree.mtree, subtree_path)
 
     def delete_subtree(self,
                        subtree_path: MetadataPath):
-        self.remove_child_at(subtree_path)
+        self.mtree.remove_child_at(subtree_path)
+
+    def read_in(self, backend_type="git") -> MappableObject:
+        self.mtree.read_in(backend_type)
+        return self
+
+    def write_out(self,
+                  destination: Optional[str] = None,
+                  backend_type: str = "git",
+                  force_write: bool = False) -> Reference:
+
+        return self.mtree.write_out(destination,
+                                    backend_type,
+                                    force_write)
+
+    def purge(self):
+        return self.mtree.purge()
+
+    def deepcopy(self,
+                 new_mapper_family: Optional[str] = None,
+                 new_destination: Optional[str] = None,
+                 **kwargs) -> "DatasetTree":
+
+        return DatasetTree(self.mtree.deepcopy(new_mapper_family,
+                                               new_destination,
+                                               **kwargs))
 
 
 x = """
