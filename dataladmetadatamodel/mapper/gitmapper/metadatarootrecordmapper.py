@@ -33,15 +33,24 @@ class MetadataRootRecordGitMapper(Mapper):
 
         metadata_reference = Reference.from_json_obj(
             json_object[Strings.DATASET_LEVEL_METADATA])
+        if metadata_reference.is_none_reference():
+            metadata = None
+        else:
+            metadata = Metadata(metadata_reference)
+
         file_tree_reference = Reference.from_json_obj(
             json_object[Strings.FILE_TREE])
+        if file_tree_reference.is_none_reference():
+            file_tree = None
+        else:
+            file_tree = FileTree(file_tree_reference)
 
         MetadataRootRecord.__init__(
             metadata_root_record,
             UUID(json_object[Strings.DATASET_IDENTIFIER]),
             json_object[Strings.DATASET_VERSION],
-            Metadata(metadata_reference),
-            FileTree(file_tree_reference),
+            metadata,
+            file_tree,
             reference=reference)
 
     def map_out_impl(self,
@@ -53,17 +62,27 @@ class MetadataRootRecordGitMapper(Mapper):
 
         assert isinstance(mrr, MetadataRootRecord)
 
+        if mrr.file_tree is None:
+            file_tree_reference = Reference.get_none_reference("FileTree")
+        else:
+            file_tree_reference = mrr.file_tree.write_out(
+                destination,
+                "git",
+                force_write)
+
+        if mrr.dataset_level_metadata is None:
+            dataset_level_metadata_reference = Reference.get_none_reference("Metadata")
+        else:
+            dataset_level_metadata_reference = mrr.dataset_level_metadata.write_out(
+                destination,
+                "git",
+                force_write)
+
         json_object = {
             Strings.DATASET_IDENTIFIER: str(mrr.dataset_identifier),
             Strings.DATASET_VERSION: str(mrr.dataset_version),
-            Strings.DATASET_LEVEL_METADATA: mrr.dataset_level_metadata.write_out(
-                destination,
-                "git",
-                force_write).to_json_obj(),
-            Strings.FILE_TREE: mrr.file_tree.write_out(
-                destination,
-                "git",
-                force_write).to_json_obj()}
+            Strings.DATASET_LEVEL_METADATA: dataset_level_metadata_reference.to_json_obj(),
+            Strings.FILE_TREE: file_tree_reference.to_json_obj()}
 
         return Reference(
             "git",
