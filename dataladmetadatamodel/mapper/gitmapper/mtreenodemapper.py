@@ -16,7 +16,10 @@ class MTreeNodeGitMapper(Mapper):
 
         from dataladmetadatamodel.mtreenode import MTreeNode
 
-        assert not reference.is_none_reference()
+        if reference.is_none_reference():
+            mtree_node.child_nodes = dict()
+            return
+
         assert isinstance(mtree_node, MTreeNode)
 
         lines = git_read_tree_node(reference.realm,
@@ -50,7 +53,9 @@ class MTreeNodeGitMapper(Mapper):
         from dataladmetadatamodel.mtreenode import MTreeNode
 
         assert isinstance(mtree_node, MTreeNode)
-        assert mtree_node.child_nodes
+
+        if not mtree_node.child_nodes:
+            return Reference.get_none_reference("MTreeNode")
 
         for child_node in mtree_node.child_nodes.values():
             child_node.write_out(destination)
