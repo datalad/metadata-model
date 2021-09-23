@@ -37,7 +37,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         # That also means that they are not modified
         super().__init__(
             reference.realm
-            if reference is not None
+            if reference is not None and not reference.is_none_reference()
             else None
         )
 
@@ -76,13 +76,15 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             # we can handle this here
             if self.reference.is_none_reference():
                 assert self.reference.class_name == type(self).__name__
-                logger.warning(f"None-reference passed to {self}.read_in()")
+                logger.warning(f"read_in({self}): None-reference in {self}")
                 return None
 
             # ensure that the object is save on the given realm
             if not self.is_saved_on(self.reference.realm):
-                logger.error(f"trying to overwrite a modified object")
-                raise RuntimeError("tried to read over a modified object")
+                logger.error(
+                    f"read_in({self}): trying to overwrite a modified object")
+                raise RuntimeError(
+                    "read_in({self}): tried to read over a modified object")
 
             # the object is not mapped, but saved on reference.realm,
             # use the mappable object-specific mapper to read
@@ -118,6 +120,12 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 f"reference: {self.reference}"
 
             if not self.is_saved_on(destination):
+                if self.reference.is_none_reference():
+                    logger.debug(
+                        f"write_out({self}): not possible, because object "
+                        f" has a None-reference: {self.reference}")
+                    return self.reference
+
                 raise RuntimeError(
                     f"write_out({self}): modified object got lost "
                     f"on {destination}")
@@ -127,7 +135,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 f" saved on {destination}")
             return self.reference
 
-        if self.reference:
+        if self.reference and not self.reference.is_none_reference():
             destination = destination or self.reference.realm
         assert destination is not None, \
             f"write_out({self}): no destination available for {self}"

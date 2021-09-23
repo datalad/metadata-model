@@ -26,6 +26,7 @@ class Mapper(metaclass=ABCMeta):
                mappable_object: "MappableObject",
                reference: Reference) -> None:
 
+        assert not reference.is_none_reference()
         assert type(mappable_object).__name__ == self.class_name
         assert reference.class_name == self.class_name, \
             f"Reference class name ({reference.class_name}) " \
