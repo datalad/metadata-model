@@ -41,15 +41,12 @@ class MTreeNode(MappableObject):
             child_node.purge()
         self.child_nodes = dict()
 
-    def new_node(self):
-        return MTreeNode(self.leaf_class)
-
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
                       new_destination: Optional[str] = None,
                       **kwargs) -> "MappableObject":
 
-        copied_mtree_node = self.new_node()
+        copied_mtree_node = MTreeNode(self.leaf_class)
         for child_name, child_node in self.child_nodes.items():
             copied_mtree_node.add_child(
                 child_name,
@@ -129,7 +126,7 @@ class MTreeNode(MappableObject):
 
             if existing_child is None:
                 # Create an intermediate node, if it doesn't exist
-                existing_child = self.new_node()
+                existing_child = MTreeNode(self.leaf_class)
                 self.add_child(path_element, existing_child)
 
             if not isinstance(existing_child, MTreeNode):
@@ -189,7 +186,6 @@ class MTreeNode(MappableObject):
                     yield MetadataPath(child_name) / sub_path, tree_node
 
         if purge_self:
-            #self.write_out()
             self.purge()
 
     x = """

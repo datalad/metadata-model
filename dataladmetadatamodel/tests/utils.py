@@ -22,6 +22,21 @@ uuid_pattern = "9900{:04x}00000000000000000000{:04x}"
 version_pattern = "ea{:04x}000000000000000000000000000000{:04x}"
 
 
+default_file_tree_paths = [
+    MetadataPath("a/b/c"),
+    MetadataPath("a/b/a"),
+    MetadataPath("b"),
+    MetadataPath("c/d/e"),
+    MetadataPath("a/x")]
+
+default_dataset_tree_paths = [
+    MetadataPath("d1"),
+    MetadataPath("d1/d1.1"),
+    MetadataPath("d2"),
+    MetadataPath("d2/d2.1/d2.1.1"),
+    MetadataPath("d3/d3.1")]
+
+
 def get_uuid(n: int) -> UUID:
     return UUID(uuid_pattern.format(n, n))
 
@@ -205,7 +220,9 @@ def assert_uuid_sets_equal(test_case: unittest.TestCase,
                                    True)
 
 
-def create_file_tree(paths: List[MetadataPath]) -> FileTree:
+def create_file_tree(paths: Optional[List[MetadataPath]] = None) -> FileTree:
+
+    paths = paths or default_file_tree_paths
 
     file_tree = FileTree()
     for path in paths:
@@ -226,11 +243,14 @@ def create_file_tree_with_metadata(paths: List[MetadataPath],
     return file_tree
 
 
-def create_dataset_tree(dataset_paths: List[MetadataPath],
-                        file_tree_paths: List[MetadataPath]) -> DatasetTree:
+def create_dataset_tree(dataset_tree_paths: Optional[List[MetadataPath]] = None,
+                        file_tree_paths: Optional[List[MetadataPath]] = None) -> DatasetTree:
+
+    dataset_tree_paths = dataset_tree_paths or default_dataset_tree_paths
+    file_tree_paths = file_tree_paths or default_file_tree_paths
 
     dataset_tree = DatasetTree()
-    for index, path in enumerate(dataset_paths):
+    for index, path in enumerate(dataset_tree_paths):
 
         metadata = Metadata()
         file_tree = create_file_tree(file_tree_paths)

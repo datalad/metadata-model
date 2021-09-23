@@ -17,7 +17,6 @@ from .utils import (
 
 
 file_test_paths = [
-    MetadataPath(""),
     MetadataPath("a/b/c"),
     MetadataPath("a/b/a"),
     MetadataPath("b"),

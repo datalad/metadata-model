@@ -41,7 +41,7 @@ class MetadataRootRecordGitMapper(Mapper):
             UUID(json_object[Strings.DATASET_IDENTIFIER]),
             json_object[Strings.DATASET_VERSION],
             Metadata(metadata_reference),
-            FileTree(file_tree_reference),
+            FileTree(reference=file_tree_reference),
             reference=reference)
 
     def map_out_impl(self,
