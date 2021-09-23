@@ -30,14 +30,19 @@ class Mapper(metaclass=ABCMeta):
         #  DatasetTree are sub-classes of MTreeNode which just add some
         #  methods.
         mo_class_name = type(mappable_object).__name__
-        if mo_class_name in ("FileTree", "DatasetTree"):
-            assert self.class_name == "MTreeNode", \
-            f"Mappable object class name ({mo_class_name}) " \
-            f"does not match this mapper's class_name ({self.class_name})"
+        if False:
+            if mo_class_name in ("FileTree", "DatasetTree"):
+                assert self.class_name == "MTreeNode", \
+                f"Mappable object class name ({mo_class_name}) " \
+                f"does not match this mapper's class_name ({self.class_name})"
+            else:
+                assert mo_class_name == self.class_name, \
+                f"Mappable object class name ({mo_class_name}) " \
+                f"does not match this mapper's class_name ({self.class_name})"
         else:
             assert mo_class_name == self.class_name, \
-            f"Mappable object class name ({mo_class_name}) " \
-            f"does not match this mapper's class_name ({self.class_name})"
+                f"Mappable object class name ({mo_class_name}) " \
+                f"does not match this mapper's class_name ({self.class_name})"
 
         assert reference.class_name == self.class_name, \
             f"Reference class name ({reference.class_name}) " \
