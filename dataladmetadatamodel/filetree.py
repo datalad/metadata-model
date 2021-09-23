@@ -94,6 +94,9 @@ class FileTree:
     def purge(self):
         return self.mtree.purge()
 
+    def is_saved_on(self, destination: str):
+        return self.mtree.is_saved_on(destination)
+
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
                  new_destination: Optional[str] = None,

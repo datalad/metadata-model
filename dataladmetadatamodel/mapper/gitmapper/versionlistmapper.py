@@ -37,7 +37,7 @@ class VersionListGitMapper(Mapper):
             else:
                 raise ValueError(
                     f"unexpected tree class in primary data-metadata "
-                    f"assoc: ({reference.class_name}")
+                    f"assoc: ({reference.class_name})")
 
             version_records[pdm_assoc["primary_data_version"]] = VersionRecord(
                 pdm_assoc["time_stamp"],

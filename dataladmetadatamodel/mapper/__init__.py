@@ -45,8 +45,6 @@ def set_mapper(class_name: str, backend_type: str, mapper: "Mapper"):
 
 
 def initialize_object_store():
-    from .gitmapper.datasettreemapper import DatasetTreeGitMapper
-    from .gitmapper.filetreemapper import FileTreeGitMapper
     from .gitmapper.metadatamapper import MetadataGitMapper
     from .gitmapper.metadatarootrecordmapper import MetadataRootRecordGitMapper
     from .gitmapper.mtreenodemapper import MTreeNodeGitMapper

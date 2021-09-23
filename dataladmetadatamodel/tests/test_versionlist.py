@@ -82,25 +82,23 @@ class TestVersionList(unittest.TestCase):
             })
 
             version_list.write_out(original_dir)
-            flush_object_references(Path(original_dir))
 
             path_prefix = "x/y/z"
             copied_version_list = version_list.deepcopy(
                 new_destination=copy_dir,
                 path_prefix=MetadataPath(path_prefix))
-            flush_object_references(Path(copy_dir))
 
             # Check that the mapping state of the original
             # has not changed.
-            self.assertFalse(dataset_trees[0].mapped)
-            self.assertTrue(dataset_trees[1].mapped)
+            self.assertFalse(dataset_trees[0].mtree.mapped)
+            self.assertTrue(dataset_trees[1].mtree.mapped)
 
             # Read the copied version list
             copied_version_list.read_in()
 
             # Check that the copied elements are unmapped
             for _, (_, _, copied_dataset_tree) in copied_version_list.get_versioned_elements():
-                self.assertFalse(copied_dataset_tree.mapped)
+                self.assertFalse(copied_dataset_tree.mtree.mapped)
 
             # Compare the version lists, taking modified dataset tree paths into account
             for primary_version, (_, path, dataset_tree) in version_list.get_versioned_elements():
