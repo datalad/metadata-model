@@ -16,6 +16,9 @@ class UUIDSet(MappableObject):
                  initial_set: Optional[Dict[UUID, VersionList]] = None,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(initial_set, (type(None), dict))
+        assert isinstance(reference, (type(None), Reference))
+
         super().__init__(reference)
         self.uuid_set = initial_set or dict()
 

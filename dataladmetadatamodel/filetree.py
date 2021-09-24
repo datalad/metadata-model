@@ -20,6 +20,8 @@ class FileTree(MappableObject, TreeNode):
     def __init__(self,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(reference, (type(None), Reference))
+
         MappableObject.__init__(self, reference)
         TreeNode.__init__(self)
 

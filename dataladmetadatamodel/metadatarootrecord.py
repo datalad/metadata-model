@@ -11,12 +11,18 @@ from dataladmetadatamodel.mapper.reference import Reference
 
 class MetadataRootRecord(MappableObject):
     def __init__(self,
-                 dataset_identifier: UUID,
-                 dataset_version: str,
-                 dataset_level_metadata: "Metadata",
-                 file_tree: "FileTree",
+                 dataset_identifier: Optional[UUID],
+                 dataset_version: Optional[str],
+                 dataset_level_metadata: Optional[Metadata],
+                 file_tree: Optional[FileTree],
                  reference: Optional[Reference] = None,
                  backend_type: str = "git"):
+
+        assert isinstance(dataset_identifier, (type(None), UUID))
+        assert isinstance(dataset_version, (type(None), str))
+        assert isinstance(dataset_level_metadata, (type(None), Metadata))
+        assert isinstance(file_tree, (type(None), FileTree))
+        assert isinstance(reference, (type(None), Reference))
 
         super().__init__(reference)
         self.dataset_identifier = dataset_identifier

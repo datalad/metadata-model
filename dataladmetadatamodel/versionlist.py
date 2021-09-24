@@ -39,6 +39,9 @@ class VersionList(MappableObject):
                  initial_set: Optional[Dict[str, VersionRecord]] = None,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(initial_set, (type(None), dict))
+        assert isinstance(reference, (type(None), Reference))
+
         super().__init__(reference)
         self.version_set: Dict[str, VersionRecord] = initial_set or dict()
 

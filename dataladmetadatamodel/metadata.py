@@ -226,6 +226,8 @@ class Metadata(MappableObject):
     def __init__(self,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(reference, (type(None), Reference))
+
         super().__init__(reference)
         self.instance_sets: Dict[str, MetadataInstanceSet] = dict()
 

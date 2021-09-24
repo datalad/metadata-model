@@ -32,6 +32,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         Generally unmapped objects are expected to be
         unmodified.
         """
+        assert isinstance(reference, (type(None), Reference))
+
         # We assume that objects that carry a reference
         # have been saved on the realm in the reference.
         # That also means that they are not modified

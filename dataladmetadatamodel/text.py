@@ -18,6 +18,9 @@ class Text(MappableObject):
                  content: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(content, (type(None), str))
+        assert isinstance(reference, (type(None), Reference))
+
         super().__init__(reference)
         self.content = content
 
