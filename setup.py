@@ -1,7 +1,14 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
+import os
+import sys
 import setuptools
+import versioneer
+
+print(os.getcwd())
+sys.path.insert(0, os.getcwd())
+print(sys.path)
 
 
 with open("README.md", "r") as fh:
@@ -10,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="datalad-metadata-model",
-    version="0.0.1",
+    version=versioneer.get_version(),
     author="The Datalad Team",
     author_email="christian.moench@web.de",
     description="Datalad Metadata Model",
