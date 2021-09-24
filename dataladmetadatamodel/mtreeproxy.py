@@ -39,7 +39,7 @@ class MTreeProxy:
             self.mtree = mtree
 
     def __contains__(self, path: MetadataPath) -> bool:
-        return self.mtree.get_object_at_path(path)
+        return self.mtree.get_object_at_path(path) is not None
 
     def ensure_mapped(self) -> bool:
         return self.mtree.ensure_mapped()
