@@ -4,11 +4,11 @@
 import os
 import sys
 import setuptools
-import versioneer
 
 print(os.getcwd())
 sys.path.insert(0, os.getcwd())
 print(sys.path)
+import versioneer
 
 
 with open("README.md", "r") as fh:
