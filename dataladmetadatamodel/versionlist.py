@@ -19,6 +19,10 @@ class VersionRecord:
                  path: Optional[MetadataPath],
                  element: Union[DatasetTree, MetadataRootRecord]):
 
+        assert isinstance(time_stamp, str)
+        assert isinstance(path, (type(None), MetadataPath))
+        assert isinstance(element, (DatasetTree, MetadataRootRecord))
+
         self.time_stamp = time_stamp
         self.path = path or MetadataPath("")
         self.element = element

@@ -11,6 +11,7 @@ from dataladmetadatamodel.metadata import (
     MetadataInstance
 )
 from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.mapper.reference import Reference
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 from dataladmetadatamodel.tests.utils import (
     assert_file_trees_equal,
@@ -86,18 +87,6 @@ class TestFileTree(unittest.TestCase):
                 extractor_configuration,
                 metadata_content))
 
-    def test_root_node(self):
-        file_tree = FileTree()
-        metadata_node = Metadata()
-        file_tree.add_metadata(MetadataPath(""), metadata_node)
-
-        self.assertIs(file_tree.value, metadata_node)
-        returned_entries = tuple(file_tree.get_paths_recursive())
-
-        self.assertEqual(len(returned_entries), 1)
-        self.assertEqual(returned_entries[0][0], MetadataPath(""))
-        self.assertIs(returned_entries[0][1], metadata_node)
-
 
 class TestMapping(unittest.TestCase):
 
@@ -112,13 +101,13 @@ class TestMapping(unittest.TestCase):
                 [Metadata() for _ in default_paths])
             reference = file_tree.write_out(metadata_store)
 
-            file_tree = FileTree(reference).read_in()
+            file_tree = FileTree(reference=reference).read_in()
             additional_paths = [MetadataPath(f"x/y.{n}") for n in range(10)]
             for additional_path in additional_paths:
                 file_tree.add_metadata(additional_path, Metadata())
             reference = file_tree.write_out()
 
-            file_tree = FileTree(reference).read_in()
+            file_tree = FileTree(reference=reference).read_in()
             read_paths = [pair[0] for pair in file_tree.get_paths_recursive()]
             for path in default_paths + additional_paths:
                 self.assertIn(path, read_paths)
@@ -130,6 +119,8 @@ class TestMapping(unittest.TestCase):
             subprocess.run(["git", "init", metadata_store])
 
             file_tree = FileTree()
+
+            start_time = time.time()
             for first_part in range(10):
                 for second_part in range(10):
                     for third_part in range(10):
@@ -137,15 +128,28 @@ class TestMapping(unittest.TestCase):
                                                      f"{second_part:03}/"
                                                      f"{third_part:03}")
                         file_tree.add_metadata(metadata_path, Metadata())
+            initialisation_duration = time.time() - start_time
+            print(f"Initialised: {initialisation_duration:4f}")
 
+            start_time = time.time()
             reference = file_tree.write_out(metadata_store)
+            write_out_duration = time.time() - start_time
+            print(f"Written out: {write_out_duration:4f}")
 
-            file_tree = FileTree(reference).read_in()
-            additional_paths = [MetadataPath(f"x/y.{n}") for n in range(10)]
+            start_time = time.time()
+            file_tree = FileTree(reference=reference).read_in()
+            read_in_duration = time.time() - start_time
+            print(f"Read in: {read_in_duration:4f}")
 
             start_time = time.time()
             file_tree.add_metadata(MetadataPath("5/5/xxx"), Metadata())
-            duration = time.time() - start_time
+            add_duration = time.time() - start_time
+            print(f"Added single entry: {add_duration:4f}")
+
+            start_time = time.time()
+            file_tree.write_out()
+            write_out_2nd_duration = time.time() - start_time
+            print(f"Written out single entry: {write_out_2nd_duration:4f}")
 
     def test_shallow_file_tree_mapping(self):
         # assert that file trees content is not mapped by default
@@ -154,19 +158,20 @@ class TestMapping(unittest.TestCase):
             subprocess.run(["git", "init", metadata_store])
 
             paths = [
-                MetadataPath(""),
-                MetadataPath("a")]
+                MetadataPath("a"),
+                MetadataPath("b")]
 
             file_tree = FileTree()
             for path in paths:
-                file_tree.add_metadata(path, Metadata())
-                file_tree.unget_metadata(path, metadata_store)
+                metadata = Metadata()
+                file_tree.add_metadata(path, metadata)
+                file_tree.unget_metadata(metadata, metadata_store)
 
             reference = file_tree.write_out(metadata_store)
             flush_object_references(Path(metadata_store))
 
-            new_file_tree = FileTree(reference).read_in()
-            self.assertFalse(new_file_tree.child_nodes["a"].value.mapped)
+            new_file_tree = FileTree(reference=reference).read_in()
+            self.assertFalse(new_file_tree.mtree.child_nodes["a"].mapped)
 
 
 class TestDeepCopy(unittest.TestCase):
@@ -180,7 +185,7 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", copy_dir])
 
             file_tree = FileTree()
-            for path in ["", "/a/b/c/d", "/a/b/d", "/a/x"]:
+            for path in ["/a/b/c/d", "/a/b/d", "/a/x"]:
                 file_tree.add_metadata(
                     MetadataPath(path),
                     Metadata())
@@ -197,18 +202,19 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", copy_dir])
 
             paths = [
-                MetadataPath(""),
                 MetadataPath("a/b/c/d"),
                 MetadataPath("a/b/d"),
                 MetadataPath("a/x")]
 
             file_tree = FileTree()
             for path in paths:
-                file_tree.add_metadata(path, Metadata())
-                file_tree.unget_metadata(path, original_dir)
+                metadata = Metadata()
+                file_tree.add_metadata(path, metadata)
+                file_tree.unget_metadata(metadata, original_dir)
             file_tree.write_out(original_dir)
 
             file_tree_copy = file_tree.deepcopy(new_destination=copy_dir)
+            file_tree_copy.read_in()
 
             assert_file_trees_equal(self, file_tree, file_tree_copy, True)
 

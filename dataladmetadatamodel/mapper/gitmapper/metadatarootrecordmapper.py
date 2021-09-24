@@ -36,14 +36,14 @@ class MetadataRootRecordGitMapper(Mapper):
         if metadata_reference.is_none_reference():
             metadata = None
         else:
-            metadata = Metadata(metadata_reference)
+            metadata = Metadata(reference=metadata_reference)
 
         file_tree_reference = Reference.from_json_obj(
             json_object[Strings.FILE_TREE])
         if file_tree_reference.is_none_reference():
             file_tree = None
         else:
-            file_tree = FileTree(file_tree_reference)
+            file_tree = FileTree(reference=file_tree_reference)
 
         MetadataRootRecord.__init__(
             metadata_root_record,

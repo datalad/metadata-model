@@ -31,6 +31,10 @@ class MetadataRootRecord(MappableObject):
         self.file_tree = file_tree
         self.backend_type = backend_type
 
+    @staticmethod
+    def get_empty_instance(reference: Optional[Reference] = None):
+        return MetadataRootRecord(None, None, None, None, reference)
+
     def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return [
             child
@@ -51,6 +55,7 @@ class MetadataRootRecord(MappableObject):
         self.file_tree = file_tree
 
     def get_file_tree(self):
+        self.ensure_mapped()
         if self.file_tree is None:
             return None
         return self.file_tree.read_in(self.backend_type)
@@ -60,6 +65,7 @@ class MetadataRootRecord(MappableObject):
         self.dataset_level_metadata = dataset_level_metadata
 
     def get_dataset_level_metadata(self):
+        self.ensure_mapped()
         return self.dataset_level_metadata.read_in(self.backend_type)
 
     def deepcopy_impl(self,

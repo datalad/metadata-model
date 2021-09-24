@@ -234,6 +234,10 @@ class Metadata(MappableObject):
     def __eq__(self, other):
         return self.instance_sets == other.instance_sets
 
+    @staticmethod
+    def get_empty_instance(reference: Optional[Reference] = None):
+        return Metadata(reference)
+
     def purge_impl(self):
         self.instance_sets = dict()
 

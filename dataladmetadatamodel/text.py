@@ -24,6 +24,10 @@ class Text(MappableObject):
         super().__init__(reference)
         self.content = content
 
+    @staticmethod
+    def get_empty_instance(reference: Optional[Reference] = None):
+        return Text(None, reference)
+
     def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return []
 

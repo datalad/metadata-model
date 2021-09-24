@@ -17,7 +17,9 @@ class TextGitMapper(Mapper):
 
         assert isinstance(text, Text)
         assert isinstance(reference, Reference)
+
         assert reference.mapper_family == "git"
+        assert reference.class_name == "Text"
 
         text.content = git_load_str(reference.realm, reference.location)
         # TODO: what about the references?
@@ -30,5 +32,6 @@ class TextGitMapper(Mapper):
         from ...text import Text
 
         assert isinstance(text, Text)
+
         text_location = git_save_str(destination, text.content)
         return Reference("git", destination, "Text", text_location)
