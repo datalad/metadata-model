@@ -25,7 +25,7 @@ class DatasetTree(MTreeProxy):
         super().__init__(MetadataRootRecord, mtree, reference)
 
     def __contains__(self, path: MetadataPath) -> bool:
-        return self.mtree.contains_child(path / datalad_root_record_name)
+        return self.mtree.get_object_at_path(path / datalad_root_record_name) is not None
 
     def add_dataset(self,
                     path: MetadataPath,
@@ -45,6 +45,7 @@ class DatasetTree(MTreeProxy):
             return None
 
         assert isinstance(mrr, MetadataRootRecord)
+        mrr.ensure_mapped()
         return mrr
 
     def get_dataset_paths(self
