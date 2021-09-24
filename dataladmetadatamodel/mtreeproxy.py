@@ -28,6 +28,9 @@ class MTreeProxy:
                  mtree: Optional[MTreeNode] = None,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(mtree, (type(None), MTreeNode))
+        assert isinstance(reference, (type(None), Reference))
+
         if mtree is None:
             self.mtree = MTreeNode(leaf_class=leaf_class,
                                    reference=reference)

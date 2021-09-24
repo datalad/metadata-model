@@ -19,6 +19,9 @@ class DatasetTree(MTreeProxy):
                  mtree: Optional[MTreeNode] = None,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(mtree, (type(None), MTreeNode))
+        assert isinstance(reference, (type(None), Reference))
+
         super().__init__(MetadataRootRecord, mtree, reference)
 
     def __contains__(self, path: MetadataPath) -> bool:

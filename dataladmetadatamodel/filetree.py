@@ -21,6 +21,9 @@ class FileTree(MTreeProxy):
                  mtree: Optional[MTreeNode] = None,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(mtree, (type(None), MTreeNode))
+        assert isinstance(reference, (type(None), Reference))
+
         super().__init__(Metadata, mtree, reference)
 
     def add_metadata(self,
