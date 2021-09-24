@@ -36,12 +36,19 @@ class FileTree(MTreeProxy):
                      path: MetadataPath
                      ) -> Optional[Metadata]:
 
-        return self.mtree.get_object_at_path(path)
+        metadata = self.mtree.get_object_at_path(path)
+
+        if metadata is None:
+            return None
+
+        assert isinstance(metadata, Metadata)
+        metadata.ensure_mapped()
+        return metadata
 
     def unget_metadata(self,
-                       path: MetadataPath,
+                       metadata: Metadata,
                        destination: Optional[str] = None):
-        metadata = self.get_metadata(path)
+        assert isinstance(metadata, Metadata)
         metadata.write_out(destination)
         metadata.purge()
 

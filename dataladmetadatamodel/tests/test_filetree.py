@@ -11,6 +11,7 @@ from dataladmetadatamodel.metadata import (
     MetadataInstance
 )
 from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.mapper.reference import Reference
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 from dataladmetadatamodel.tests.utils import (
     assert_file_trees_equal,
@@ -162,8 +163,9 @@ class TestMapping(unittest.TestCase):
 
             file_tree = FileTree()
             for path in paths:
-                file_tree.add_metadata(path, Metadata())
-                file_tree.unget_metadata(path, metadata_store)
+                metadata = Metadata()
+                file_tree.add_metadata(path, metadata)
+                file_tree.unget_metadata(metadata, metadata_store)
 
             reference = file_tree.write_out(metadata_store)
             flush_object_references(Path(metadata_store))
@@ -206,8 +208,9 @@ class TestDeepCopy(unittest.TestCase):
 
             file_tree = FileTree()
             for path in paths:
-                file_tree.add_metadata(path, Metadata())
-                file_tree.unget_metadata(path, original_dir)
+                metadata = Metadata()
+                file_tree.add_metadata(path, metadata)
+                file_tree.unget_metadata(metadata, original_dir)
             file_tree.write_out(original_dir)
 
             file_tree_copy = file_tree.deepcopy(new_destination=copy_dir)
