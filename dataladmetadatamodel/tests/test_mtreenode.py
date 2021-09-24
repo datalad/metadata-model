@@ -9,6 +9,7 @@ from dataladmetadatamodel.text import Text
 
 
 default_paths = [
+    "x",
     "a/0",
     "a/1",
     "a/b/0",
@@ -35,6 +36,33 @@ class TestMTreeNode(unittest.TestCase):
             self.assertIn(str(path), default_paths)
             self.assertIsInstance(child, Text)
             self.assertEqual(child.content, f"content of: {str(path)}")
+
+    def test_get_paths_recursive(self):
+        mtree_node = MTreeNode(Text)
+
+        for path in default_paths:
+            mtree_node.add_child_at(Text(f"content of: {path}"),
+                                    MetadataPath(path))
+        results = list(mtree_node.get_paths_recursive())
+        returned_paths = set(map(lambda e: str(e[0]), results))
+        self.assertSetEqual(set(default_paths), returned_paths)
+
+    def test_get_paths_recursive_intermediate(self):
+        mtree_node = MTreeNode(Text)
+
+        for path in default_paths:
+            mtree_node.add_child_at(Text(f"content of: {path}"),
+                                    MetadataPath(path))
+        results = list(mtree_node.get_paths_recursive(True))
+
+        intermediate = set([
+            "/".join(path.split("/")[:i])
+            for path in default_paths
+            for i in range(len(path))
+        ] + default_paths)
+
+        returned_paths = set(map(lambda e: str(e[0]), results))
+        self.assertSetEqual(intermediate, returned_paths)
 
 
 class TestMTreeNodeMapping(unittest.TestCase):
