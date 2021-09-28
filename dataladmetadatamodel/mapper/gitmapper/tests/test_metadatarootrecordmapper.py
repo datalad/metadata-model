@@ -43,12 +43,10 @@ class TestMetadataMapper(unittest.TestCase):
 
         with mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatarootrecordmapper.git_save_json") as save, \
              mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatamapper.git_save_str") as str_save, \
-             mock.patch("dataladmetadatamodel.mapper.gitmapper.mtreenodemapper.git_save_tree_node") as save_tree_node, \
-             mock.patch("dataladmetadatamodel.mapper.gitmapper.filetreemapper.git_save_tree") as tree_save:
+             mock.patch("dataladmetadatamodel.mapper.gitmapper.mtreenodemapper.git_save_tree_node") as save_tree_node:
 
             save.configure_mock(return_value=location_0)
             str_save.configure_mock(return_value=location_1)
-            tree_save.configure_mock(return_value=location_2)
             save_tree_node.configure_mock(return_value=location_3)
 
             reference = mrr.write_out("/tmp/t1", "git")
