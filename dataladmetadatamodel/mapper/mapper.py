@@ -35,7 +35,7 @@ class Mapper(metaclass=ABCMeta):
             reference.class_name = "MTreeNode"
 
         # TODO: this is not too nice, but required since FileTree and
-        #  DatasetTree are sub-classes of MTreeNode which just add some
+        #  DatasetTree are proxies for MTreeNode which just add some
         #  methods.
         mo_class_name = type(mappable_object).__name__
         if mo_class_name in ("FileTree", "DatasetTree"):
