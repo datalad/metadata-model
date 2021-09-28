@@ -77,12 +77,16 @@ class MetadataRootRecord(MappableObject):
             self.dataset_identifier,
             self.dataset_version,
             (
-                self.dataset_level_metadata.deepcopy(new_mapper_family,new_destination)
+                self.dataset_level_metadata.deepcopy(
+                    new_mapper_family,
+                    new_destination)
                 if self.dataset_level_metadata is not None
                 else None
             ),
             (
-                self.file_tree.deepcopy(new_mapper_family, new_destination)
+                self.file_tree.deepcopy(
+                    new_mapper_family,
+                    new_destination)
                 if self.file_tree is not None
                 else None
             ),

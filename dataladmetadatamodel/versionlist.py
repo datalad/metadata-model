@@ -29,13 +29,15 @@ class VersionRecord:
 
     def deepcopy(self,
                  new_mapper_family: Optional[str] = None,
-                 new_realm: Optional[str] = None
+                 new_destination: Optional[str] = None
                  ) -> "VersionRecord":
 
         return VersionRecord(
             self.time_stamp,
             self.path,
-            self.element.deepcopy(new_mapper_family, new_realm))
+            self.element.deepcopy(
+                new_mapper_family,
+                new_destination))
 
 
 class VersionList(MappableObject):
@@ -174,8 +176,10 @@ class TreeVersionList(VersionList):
 
     def unget_dataset_tree(self,
                            primary_data_version: str,
-                           new_destination: Optional[str] = None):
+                           new_destination: str):
 
+        assert isinstance(primary_data_version, str)
+        assert isinstance(new_destination, str)
         super().unget_versioned_element(primary_data_version,
                                         new_destination)
 
@@ -194,7 +198,9 @@ class TreeVersionList(VersionList):
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                version_record.element.deepcopy(new_mapper_family, new_destination))
+                version_record.element.deepcopy(
+                    new_mapper_family,
+                    new_destination))
 
         copied_version_list.write_out(new_destination)
         copied_version_list.purge()
