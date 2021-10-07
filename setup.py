@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 import setuptools
+import sys
+from os.path import dirname
 
-print(os.getcwd())
-sys.path.insert(0, os.getcwd())
-print(sys.path)
+# This is needed for versioneer to be importable when building with PEP 517.
+# See <https://github.com/warner/python-versioneer/issues/193> and links
+# therein for more information.
+sys.path.append(dirname(__file__))
 import versioneer
 
 
@@ -18,6 +19,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="datalad-metadata-model",
     version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author="The Datalad Team",
     author_email="christian.moench@web.de",
     description="Datalad Metadata Model",

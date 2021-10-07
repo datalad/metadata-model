@@ -25,3 +25,7 @@ def check_serialized_version(json_object: JSONObject):
             f"Unsupported metadata version ({stored_version}) in "
             f"stored {stored_class} object, expected version: "
             f"{version_string}")
+
+
+from . import _version
+__version__ = _version.get_versions()['version']
