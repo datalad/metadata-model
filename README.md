@@ -1,3 +1,6 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/tjkich0nqkjuotxb?svg=true)](https://ci.appveyor.com/project/mih/metadata-model)
+[![codecov](https://codecov.io/gh/datalad/metadata-model/branch/main/graph/badge.svg?token=YBU774L1A7)](https://codecov.io/gh/datalad/metadata-model)
+
 # Datalad Metadata Model
 
 This repository contains the metadata model that datalad and datalad-metalad 
