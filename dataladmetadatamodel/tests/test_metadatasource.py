@@ -1,3 +1,4 @@
+import os
 import subprocess
 import tempfile
 import unittest
@@ -128,6 +129,7 @@ class TestDeepCopy(unittest.TestCase):
         copied_metadata = immediate_metadata.deepcopy()
         self.assertEqual(immediate_metadata, copied_metadata)
 
+    @unittest.skipIf(os.name == "nt", "unix root not handled on windows yet")
     def test_copy_local_git_source(self):
         file_content = "Test file content"
         with \

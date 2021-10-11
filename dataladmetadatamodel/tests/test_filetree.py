@@ -19,7 +19,7 @@ from dataladmetadatamodel.tests.utils import (
 
 
 default_paths = [
-    MetadataPath("a/b/c"),
+    MetadataPath("/a/b/c"),
     MetadataPath("a/b/a"),
     MetadataPath("b"),
     MetadataPath("c/d/e"),
@@ -184,7 +184,7 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", copy_dir])
 
             file_tree = FileTree()
-            for path in ["/a/b/c/d", "/a/b/d", "/a/x"]:
+            for path in ["a/b/c/d", "a/b/d", "a/x"]:
                 file_tree.add_metadata(
                     MetadataPath(path),
                     Metadata())
