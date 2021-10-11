@@ -1,4 +1,3 @@
-import os
 import unittest
 from unittest.mock import patch
 from pathlib import (
@@ -26,13 +25,11 @@ class TestMetadataPath(unittest.TestCase):
                 "a") / MetadataPath("b"),
             MetadataPath("a/b"))
 
-    @unittest.skipIf(os.name == "nt", "unix root not handled on windows yet")
     def test_multiple_dashes(self):
         self.assertEqual(
             MetadataPath("/") / MetadataPath("a//") / MetadataPath("b"),
             MetadataPath("a/b"))
 
-    @unittest.skipIf(os.name == "nt", "unix root not handled on windows yet")
     def test_intermediate_root(self):
         self.assertEqual(
             MetadataPath("/") / MetadataPath("a//") / MetadataPath("/b"),
@@ -40,17 +37,16 @@ class TestMetadataPath(unittest.TestCase):
 
     def test_windows_paths(self):
         # Enforce windows path interpretation
-        with patch("dataladmetadatamodel.metadatapath.PurePath", new=PureWindowsPath):
+        with patch("dataladmetadatamodel.metadatapath.PurePosixPath", new=PureWindowsPath):
             metadata_path = MetadataPath("a\\b\\c")
         self.assertEqual(metadata_path, MetadataPath("a/b/c"))
 
-        with patch("dataladmetadatamodel.metadatapath.PurePath", new=PureWindowsPath):
+        with patch("dataladmetadatamodel.metadatapath.PurePosixPath", new=PureWindowsPath):
             metadata_path = MetadataPath("a/b/c")
         self.assertEqual(metadata_path, MetadataPath("a/b/c"))
 
     def test_posix_paths(self):
-        # Enforce windows path interpretation
-        with patch("dataladmetadatamodel.metadatapath.PurePath", new=PurePosixPath):
+        with patch("dataladmetadatamodel.metadatapath.PurePosixPath", new=PurePosixPath):
             metadata_path = MetadataPath("a/b/c")
         self.assertEqual(metadata_path, MetadataPath("a/b/c"))
 

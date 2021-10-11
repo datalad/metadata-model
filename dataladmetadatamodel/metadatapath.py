@@ -1,11 +1,11 @@
-from pathlib import PurePath, PurePosixPath
+from pathlib import PurePosixPath
 
 from dataladmetadatamodel.log import logger
 
 
 class MetadataPath(PurePosixPath):
     def __new__(cls, *args):
-        original_path = PurePath(*args)
+        original_path = PurePosixPath(*args)
         if not original_path.is_absolute():
             created_path = super().__new__(
                 cls,

@@ -1,4 +1,3 @@
-import os
 import subprocess
 import tempfile
 import time
@@ -20,7 +19,7 @@ from dataladmetadatamodel.tests.utils import (
 
 
 default_paths = [
-    MetadataPath("a/b/c"),
+    MetadataPath("/a/b/c"),
     MetadataPath("a/b/a"),
     MetadataPath("b"),
     MetadataPath("c/d/e"),
