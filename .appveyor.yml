@@ -60,18 +60,18 @@ environment:
 
     # Ubuntu core tests
     - ID: Ubu20
-      DTS: datalad_metalad
+      DTS: dataladmetadatamodel
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       INSTALL_SYSPKGS: python3-virtualenv
     # Windows core tests
     - ID: WinP38
-      DTS: datalad_metalad
+      DTS: dataladmetadatamodel
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       # Python version specification is non-standard on windows
       PY: 39-x64
     # MacOS core tests
     - ID: MacP38
-      DTS: datalad_metalad
+      DTS: dataladmetadatamodel
       APPVEYOR_BUILD_WORKER_IMAGE: macOS
       PY: 3.8
       DATALAD_LOCATIONS_SOCKETS: /Users/appveyor/DLTMP/sockets
@@ -102,6 +102,7 @@ init:
   # needs APPVEYOR_SSH_KEY defined in project settings (or environment)
   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
   # Identity setup
+  - git config --global init.defaultBranch master
   - git config --global user.email "test@appveyor.land"
   - git config --global user.name "Appveyor Almighty"
   # Scratch space
