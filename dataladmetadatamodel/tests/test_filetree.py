@@ -1,3 +1,4 @@
+import os
 import subprocess
 import tempfile
 import time
@@ -184,7 +185,7 @@ class TestDeepCopy(unittest.TestCase):
             subprocess.run(["git", "init", copy_dir])
 
             file_tree = FileTree()
-            for path in ["/a/b/c/d", "/a/b/d", "/a/x"]:
+            for path in ["a/b/c/d", "a/b/d", "a/x"]:
                 file_tree.add_metadata(
                     MetadataPath(path),
                     Metadata())

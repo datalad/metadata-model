@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import patch
 from pathlib import (
@@ -25,11 +26,13 @@ class TestMetadataPath(unittest.TestCase):
                 "a") / MetadataPath("b"),
             MetadataPath("a/b"))
 
+    @unittest.skipIf(os.name == "nt", "unix root not handled on windows yet")
     def test_multiple_dashes(self):
         self.assertEqual(
             MetadataPath("/") / MetadataPath("a//") / MetadataPath("b"),
             MetadataPath("a/b"))
 
+    @unittest.skipIf(os.name == "nt", "unix root not handled on windows yet")
     def test_intermediate_root(self):
         self.assertEqual(
             MetadataPath("/") / MetadataPath("a//") / MetadataPath("/b"),
