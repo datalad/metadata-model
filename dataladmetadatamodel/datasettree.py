@@ -17,12 +17,14 @@ datalad_root_record_name = ".datalad_metadata_root_record"
 class DatasetTree(MTreeProxy):
     def __init__(self,
                  mtree: Optional[MTreeNode] = None,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
         assert isinstance(mtree, (type(None), MTreeNode))
+        assert isinstance(realm, (type(None), str))
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(MetadataRootRecord, mtree, reference)
+        super().__init__(MetadataRootRecord, mtree, realm, reference)
 
     def __contains__(self, path: MetadataPath) -> bool:
         return self.mtree.get_object_at_path(path / datalad_root_record_name) is not None

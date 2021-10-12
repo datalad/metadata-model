@@ -43,12 +43,14 @@ class VersionRecord:
 class VersionList(MappableObject):
     def __init__(self,
                  initial_set: Optional[Dict[str, VersionRecord]] = None,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
         assert isinstance(initial_set, (type(None), dict))
+        assert isinstance(realm, (type(None), str))
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(reference)
+        super().__init__(realm, reference)
         self.version_set: Dict[str, VersionRecord] = initial_set or dict()
 
     def purge_impl(self):

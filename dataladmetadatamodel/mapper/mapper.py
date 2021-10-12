@@ -25,6 +25,7 @@ class Mapper(metaclass=ABCMeta):
 
     def map_in(self,
                mappable_object: "MappableObject",
+               realm: str,
                reference: Reference) -> None:
 
         # Check for old-style file tree and dataset tree references
@@ -51,29 +52,30 @@ class Mapper(metaclass=ABCMeta):
             f"Reference class name ({reference.class_name}) " \
             f"does not match self.class_name ({self.class_name})"
 
-        self.map_in_impl(mappable_object, reference)
+        self.map_in_impl(mappable_object, realm, reference)
 
     def map_out(self,
                 mappable_object: "MappableObject",
-                destination: Optional[str] = None,
+                realm: Optional[str] = None,
                 force_write: bool = False) -> Reference:
 
-        if destination is None:
+        if realm is None:
             if self.destination is None:
                 raise Exception(
                     "'destination' not set and no default destination provided")
-            destination = self.destination
-        return self.map_out_impl(mappable_object, destination, force_write)
+            realm = self.destination
+        return self.map_out_impl(mappable_object, realm, force_write)
 
     @abstractmethod
     def map_in_impl(self,
                     mappable_object: "MappableObject",
+                    realm: str,
                     reference: Reference) -> None:
         raise NotImplementedError
 
     @abstractmethod
     def map_out_impl(self,
                      mappable_object: "MappableObject",
-                     destination: str,
+                     realm: str,
                      force_write: bool) -> Reference:
         raise NotImplementedError

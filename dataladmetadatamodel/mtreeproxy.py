@@ -1,4 +1,5 @@
 from typing import (
+    cast,
     Any,
     Iterable,
     Optional,
@@ -31,6 +32,7 @@ class MTreeProxy:
     def __init__(self,
                  leaf_class: Any,
                  mtree: Optional[MTreeNode] = None,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
         assert isinstance(mtree, (type(None), MTreeNode))
@@ -38,6 +40,7 @@ class MTreeProxy:
 
         if mtree is None:
             self.mtree = MTreeNode(leaf_class=leaf_class,
+                                   realm=realm,
                                    reference=reference)
         else:
             assert mtree.leaf_class == leaf_class
@@ -51,7 +54,7 @@ class MTreeProxy:
 
     def read_in(self, backend_type="git") -> MappableObject:
         self.mtree.read_in(backend_type)
-        return self
+        return cast(MappableObject, self)
 
     def write_out(self,
                   destination: Optional[str] = None,

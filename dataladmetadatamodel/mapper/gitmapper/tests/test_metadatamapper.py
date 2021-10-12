@@ -17,8 +17,6 @@ expected_reference_object = {
         "type": "Reference",
         "version": version_string
     },
-    "mapper_family": "git",
-    "realm": "/tmp/t1",
     "class_name": "Metadata",
     "location": get_location(1)
 }
@@ -75,7 +73,7 @@ expected_metadata_object = {
 class TestMetadataMapper(unittest.TestCase):
 
     def test_basic_unmapping(self):
-        metadata = Metadata(None)
+        metadata = Metadata()
         metadata.add_extractor_run(
             1.2,
             "test-extractor",
@@ -92,10 +90,11 @@ class TestMetadataMapper(unittest.TestCase):
 
             save_str.return_value = get_location(1)
 
-            reference = metadata.write_out("/tmp/t1", "git")
+            realm = "/tmp/t1"
+            reference = metadata.write_out(realm, "git")
             flush_object_references(Path("/tmp/t1"))
 
-            self.assertEqual(len(save_str.call_args_list), 2)
+            self.assertEqual(len(save.call_args_list), 2)
             self.assertEqual(
                 json.loads(save_str.call_args_list[0][0][1]),
                 expected_metadata_object)

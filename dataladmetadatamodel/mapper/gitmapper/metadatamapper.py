@@ -14,6 +14,7 @@ class MetadataGitMapper(Mapper):
 
     def map_in_impl(self,
                     metadata: "Metadata",
+                    realm: str,
                     meta_reference: Reference) -> None:
 
         from dataladmetadatamodel.metadata import Metadata
@@ -22,14 +23,14 @@ class MetadataGitMapper(Mapper):
         assert isinstance(metadata, Metadata)
 
         reference = Reference.from_json_str(
-            git_load_str(meta_reference.realm, meta_reference.location))
+            git_load_str(realm, meta_reference.location))
 
         metadata.init_from_json(
-            git_load_str(reference.realm, reference.location))
+            git_load_str(realm, reference.location))
 
     def map_out_impl(self,
                      metadata: "Metadata",
-                     destination: str,
+                     realm: str,
                      force_write: bool) -> Reference:
 
         from dataladmetadatamodel.metadata import Metadata
@@ -41,15 +42,13 @@ class MetadataGitMapper(Mapper):
         # persisted Reference-objects, i.e. in
         # JSON-strings that are stored in the
         # repository.
-        metadata_blob_location = git_save_str(destination, metadata.to_json())
+        metadata_blob_location = git_save_str(realm, metadata.to_json())
         add_blob_reference(GitReference.BLOBS, metadata_blob_location)
 
         # save reference
         metadata_reference_blob_location = git_save_str(
-            destination,
+            realm,
             Reference(
-                "git",
-                destination,
                 "Metadata",
                 metadata_blob_location).to_json_str())
 
@@ -58,7 +57,5 @@ class MetadataGitMapper(Mapper):
         # persisted Reference object. But this is only known
         # internally in this mapper.
         return Reference(
-            "git",
-            destination,
             "Metadata",
             metadata_reference_blob_location)

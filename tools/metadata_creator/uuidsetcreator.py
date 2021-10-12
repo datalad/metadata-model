@@ -11,13 +11,12 @@ from tools.metadata_creator.mrrcreator import create_metadata_root_record
 from tools.metadata_creator.utils import get_dataset_id, get_dataset_version, read_datasets
 
 
-def create_uuid_set(mapper_family: str,
-                    realm: str,
+def create_uuid_set(realm: str,
                     path: str,
                     parameter_set_count: int
                     ) -> Optional[UUIDSet]:
 
-    uuid_set = UUIDSet(mapper_family, realm)
+    uuid_set = UUIDSet(realm=realm)
     for path, dir_entry in read_datasets(path):
 
         dataset_id = get_dataset_id(dir_entry.path)

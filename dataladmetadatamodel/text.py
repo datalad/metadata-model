@@ -16,17 +16,19 @@ class Text(MappableObject):
 
     def __init__(self,
                  content: Optional[str] = None,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
         assert isinstance(content, (type(None), str))
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(reference)
+        super().__init__(realm, reference)
         self.content = content
 
     @staticmethod
-    def get_empty_instance(reference: Optional[Reference] = None):
-        return Text(None, reference)
+    def get_empty_instance(realm: Optional[str] = None,
+                           reference: Optional[Reference] = None):
+        return Text(None, realm, reference)
 
     def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return []
@@ -38,4 +40,7 @@ class Text(MappableObject):
                       new_mapper_family: Optional[str] = None,
                       new_destination: Optional[str] = None,
                       **kwargs) -> "Text":
-        return Text(content=self.content, reference=self.reference)
+
+        copied_text = Text()
+        copied_text.write_out(new_destination)
+        return copied_text

@@ -292,8 +292,6 @@ class MMDummy:
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
         return Reference(
-            "git",
-            "test"
             "MMDummy",
             get_location(0x51))
 

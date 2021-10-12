@@ -14,12 +14,14 @@ from dataladmetadatamodel.mapper.reference import Reference
 class UUIDSet(MappableObject):
     def __init__(self,
                  initial_set: Optional[Dict[UUID, VersionList]] = None,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
         assert isinstance(initial_set, (type(None), dict))
+        assert isinstance(realm, (type(None), str))
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(reference)
+        super().__init__(realm, reference)
         self.uuid_set = initial_set or dict()
 
     def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:

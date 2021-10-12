@@ -11,8 +11,11 @@ from dataladmetadatamodel.mapper.reference import Reference
 
 
 class SUTMappableObject(MappableObject):
-    def __init__(self, reference=None):
-        super().__init__(reference)
+    def __init__(self,
+                 realm=None,
+                 reference=None):
+
+        super().__init__(realm, reference)
         self.something = "Something " * 100
 
     def deepcopy_impl(self,
@@ -33,8 +36,6 @@ class TestMappableObject(unittest.TestCase):
     def setUp(self) -> None:
         self.test_mapper = MagicMock(
             map_out=MagicMock(return_value=Reference(
-                "git",
-                "/test",
                 "SUTMappableObject",
                 "location:00001111"
             ))

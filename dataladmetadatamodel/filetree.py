@@ -19,12 +19,13 @@ from dataladmetadatamodel.mapper.reference import Reference
 class FileTree(MTreeProxy):
     def __init__(self,
                  mtree: Optional[MTreeNode] = None,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
         assert isinstance(mtree, (type(None), MTreeNode))
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(Metadata, mtree, reference)
+        super().__init__(Metadata, mtree, realm, reference)
 
     def add_metadata(self,
                      path: MetadataPath,

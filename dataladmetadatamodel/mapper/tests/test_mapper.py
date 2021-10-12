@@ -20,18 +20,17 @@ class DummyMapper(Mapper):
 
     def map_in_impl(self,
                     mappable_object: MappableObject,
+                    realm: str,
                     reference: Reference) -> None:
         self.map_in_call_count += 1
         return
 
     def map_out_impl(self,
                      mappable_object: MappableObject,
-                     destination: str,
+                     realm: str,
                      force_write: bool
                      ) -> Reference:
-        return Reference("git",
-                         self.destination,
-                         self.class_name,
+        return Reference(self.class_name,
                          self.location)
 
 
@@ -42,9 +41,8 @@ class TestMapper(unittest.TestCase):
         mapper = DummyMapper("MTreeNode", "/tmp/1", "loc-1")
         tree = tree_class()
         mapper.map_in(tree,
-                      Reference("git",
-                                "/tmp/1",
-                                tree_class.__name__,
+                      "/tmp/1",
+                      Reference(tree_class.__name__,
                                 "location0"))
         self.assertEqual(mapper.map_in_call_count, 1)
 
