@@ -60,7 +60,7 @@ class MetadataRootRecord(MappableObject):
         self.ensure_mapped()
         if self.file_tree is None:
             return None
-        return self.file_tree.read_in(self.backend_type)
+        return self.file_tree.read_in()
 
     def set_dataset_level_metadata(self, dataset_level_metadata: Metadata):
         self.touch()
@@ -68,7 +68,7 @@ class MetadataRootRecord(MappableObject):
 
     def get_dataset_level_metadata(self):
         self.ensure_mapped()
-        return self.dataset_level_metadata.read_in(self.backend_type)
+        return self.dataset_level_metadata.read_in()
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,

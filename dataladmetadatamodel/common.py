@@ -56,11 +56,12 @@ def get_top_level_metadata_objects(
         get_tree_version_list_location)
 
     tree_version_list = TreeVersionList(
+        realm=str(realm),
         reference=_get_tree_version_list_reference(
             get_tree_version_list_location(mapper_family)))
 
     uuid_set = UUIDSet(
-        realm=realm,
+        realm=str(realm),
         reference=_get_uuid_set_reference(
             mapper_family,
             str(realm),
