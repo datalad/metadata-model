@@ -1,7 +1,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/tjkich0nqkjuotxb?svg=true)](https://ci.appveyor.com/project/mih/metadata-model)
 [![codecov](https://codecov.io/gh/datalad/metadata-model/branch/main/graph/badge.svg?token=YBU774L1A7)](https://codecov.io/gh/datalad/metadata-model)
 [![PyPI version](https://badge.fury.io/py/datalad-metadata-model.svg)](https://badge.fury.io/py/datalad-metadata-model)
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/datalad/metadata-model?include_prereleases)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/datalad/metadata-model?include_prereleases&label=github%20release&style=flat-square)
 
 # Datalad Metadata Model
 
