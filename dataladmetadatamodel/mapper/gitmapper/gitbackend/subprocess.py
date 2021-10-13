@@ -144,10 +144,16 @@ def git_update_ref(repo_dir: str, ref_name: str, location: str) -> None:
     checked_execute(cmd_line)
 
 
+def git_fetch_object(repo_dir: str,
+                     remote_repo: str,
+                     remote_reference: str):
+    return git_fetch_reference(repo_dir, remote_repo, remote_reference)
+
+
 def git_fetch_reference(repo_dir: str,
                         remote_repo: str,
                         remote_reference: str,
-                        local_reference: str):
+                        local_reference: Optional[str] = None):
     cmd_line = git_command_line(
         repo_dir,
         "fetch",
@@ -155,7 +161,11 @@ def git_fetch_reference(repo_dir: str,
             remote_repo,
             "--no-tags",
             "--no-recurse-submodules",
-            f"{remote_reference}:{local_reference}"
+            remote_reference + (
+                f":{local_reference}"
+                if local_reference is not None
+                else ""
+            )
         ]
     )
     checked_execute(cmd_line)

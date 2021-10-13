@@ -1,9 +1,10 @@
 from typing import (
+    cast,
     Dict,
     Iterable,
     Optional,
     Tuple,
-    Union
+    Union,
 )
 
 from dataladmetadatamodel.datasettree import DatasetTree
@@ -200,9 +201,10 @@ class TreeVersionList(VersionList):
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                version_record.element.deepcopy(
-                    new_mapper_family,
-                    new_destination))
+                cast(MetadataRootRecord,
+                     version_record.element.deepcopy(
+                        new_mapper_family,
+                        new_destination)))
 
         copied_version_list.write_out(new_destination)
         copied_version_list.purge()

@@ -6,6 +6,7 @@ from ..localcache import (
     get_cache_realm,
 )
 
+
 known_remote_repo = "https://github.com/datalad/datalad.git"
 known_object_id = "b97c71ce4005cd9db0d5f2dda25bdbac303dabe7"
 

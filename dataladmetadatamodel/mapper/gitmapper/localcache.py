@@ -3,7 +3,7 @@ from pathlib import Path
 import appdirs
 
 from .gitbackend.subprocess import (
-    git_fetch_reference,
+    git_fetch_object,
     git_init,
     git_object_exists,
 )
@@ -30,10 +30,9 @@ def cache_object(remote_repo: str, object_id: str):
 
     cache_repo = str(cache_repository_name)
     if not git_object_exists(cache_repo, object_id):
-        git_fetch_reference(
+        git_fetch_object(
             cache_repo,
             remote_repo,
-            object_id,
             object_id)
 
 
