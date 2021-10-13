@@ -10,7 +10,10 @@ from typing import (
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.mapper.reference import Reference
-from dataladmetadatamodel.mapper.gitmapper.localcache import cache_object
+from dataladmetadatamodel.mapper.gitmapper.localcache import (
+    cache_object,
+    get_cache_realm,
+)
 
 
 class MappableObject(ModifiableObject, metaclass=ABCMeta):
@@ -111,7 +114,9 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 type(self).__name__,
                 backend_type).map_in(
                     self,
-                    self.realm,
+                    self.realm
+                    if self.cached is False
+                    else str(get_cache_realm()),
                     self.reference)
 
             # Mark the object as mapped.

@@ -35,3 +35,7 @@ def cache_object(remote_repo: str, object_id: str):
             remote_repo,
             object_id,
             object_id)
+
+
+def get_cache_realm() -> Path:
+    return cache_repository_name
