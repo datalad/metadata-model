@@ -5,7 +5,6 @@ from abc import (
 from typing import (
     Iterable,
     Optional,
-    Set
 )
 
 
