@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import (
     Dict,
     List,
-    Tuple
+    Tuple,
 )
 
 
@@ -15,36 +15,43 @@ class GitReference(enum.Enum):
     FILE_TREE = "refs/datalad/object-references/file-tree"
 
 
-CACHED_OBJECT_REFERENCES: Dict[str, List[Tuple[str, str, str, str]]] = dict()
+cached_object_references: Dict[str, List[Tuple[str, str, str, str]]] = dict()
 
 
 def add_object_reference(git_reference: GitReference,
                          flag: str,
                          object_type: str,
                          object_hash: str):
-    global CACHED_OBJECT_REFERENCES
 
-    if git_reference.value not in CACHED_OBJECT_REFERENCES:
-        CACHED_OBJECT_REFERENCES[git_reference.value] = []
+    if git_reference.value not in cached_object_references:
+        cached_object_references[git_reference.value] = []
 
-    cache_entry = (flag, object_type, object_hash, "object_reference:" + object_hash)
+    cache_entry = (
+        flag,
+        object_type,
+        object_hash,
+        "object_reference:" + object_hash
+    )
 
-    if cache_entry not in CACHED_OBJECT_REFERENCES[git_reference.value]:
-        CACHED_OBJECT_REFERENCES[git_reference.value].append(cache_entry)
+    if cache_entry not in cached_object_references[git_reference.value]:
+        cached_object_references[git_reference.value].append(cache_entry)
 
 
 def flush_object_references(realm: Path):
-    global CACHED_OBJECT_REFERENCES
+    global cached_object_references
 
-    from dataladmetadatamodel.mapper.gitmapper.utils import lock_backend, unlock_backend
+    from dataladmetadatamodel.mapper.gitmapper.utils import (
+        lock_backend,
+        unlock_backend,
+    )
     from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
         git_ls_tree,
         git_update_ref,
-        git_save_tree
+        git_save_tree,
     )
 
     lock_backend(realm)
-    for git_reference, cached_tree_entries in CACHED_OBJECT_REFERENCES.items():
+    for git_reference, cached_tree_entries in cached_object_references.items():
         try:
             existing_tree_entries = [
                 tuple(line.split())
@@ -59,7 +66,7 @@ def flush_object_references(realm: Path):
         git_update_ref(str(realm), git_reference, tree_hash)
     unlock_backend(realm)
 
-    CACHED_OBJECT_REFERENCES = dict()
+    cached_object_references = dict()
 
 
 def add_tree_reference(git_reference: GitReference, object_hash: str):
