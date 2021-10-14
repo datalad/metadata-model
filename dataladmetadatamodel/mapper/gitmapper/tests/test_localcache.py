@@ -19,7 +19,7 @@ class TestLocalCache(unittest.TestCase):
             [
                 "git",
                 "-P",
-                f"--git-dir={get_cache_realm() / '.git'}",
+                f"--git-dir={get_cache_realm(known_remote_repo) / '.git'}",
                 "show",
                 known_object_id
             ],

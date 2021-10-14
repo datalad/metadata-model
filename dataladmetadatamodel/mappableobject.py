@@ -116,7 +116,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                     self,
                     self.realm
                     if self.cached is False
-                    else str(get_cache_realm()),
+                    else str(get_cache_realm(self.realm)),
                     self.reference)
 
             # Mark the object as mapped.

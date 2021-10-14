@@ -1,3 +1,8 @@
+"""
+Different remote repositories have to be cached in different
+local repositories to avoid conflicts in reference name space
+"""
+import hashlib
 from pathlib import Path
 
 import appdirs
@@ -10,26 +15,30 @@ from .gitbackend.subprocess import (
 )
 
 
-cache_repository_name = (
+cache_repository_base = (
     Path(appdirs.user_cache_dir("datalad-metalad"))
     / "local-git-cache"
 )
 
-is_initialized = False
+
+def get_name_hash(name: str) -> str:
+    return hashlib.sha256(name.encode()).hexdigest()
 
 
-def ensure_cache_is_initialized():
-    global is_initialized
+def get_repo_cache_path(remote_repo: str) -> Path:
+    return cache_repository_base / get_name_hash(remote_repo)
 
-    if is_initialized is False:
-        git_init(str(cache_repository_name))
-        is_initialized = True
+
+def ensure_cache_exists(remote_repo: str):
+    cache_path = get_repo_cache_path(remote_repo)
+    if not cache_path.exists():
+        git_init(str(cache_path))
 
 
 def cache_object(remote_repo: str, object_id: str):
 
-    ensure_cache_is_initialized()
-    cache_repo = str(cache_repository_name)
+    ensure_cache_exists(remote_repo)
+    cache_repo = str(get_repo_cache_path(remote_repo))
 
     if object_id.startswith("refs"):
         git_fetch_reference(
@@ -44,5 +53,5 @@ def cache_object(remote_repo: str, object_id: str):
             object_id)
 
 
-def get_cache_realm() -> Path:
-    return cache_repository_name
+def get_cache_realm(remote_repo: str) -> Path:
+    return get_repo_cache_path(remote_repo)
