@@ -5,6 +5,10 @@ from dataladmetadatamodel.log import logger
 
 class MetadataPath(PurePosixPath):
     def __new__(cls, *args):
+        args = [
+            arg.replace("\\", "/")
+            for arg in args
+        ]
         original_path = PurePosixPath(*args)
         if not original_path.is_absolute():
             created_path = super().__new__(
