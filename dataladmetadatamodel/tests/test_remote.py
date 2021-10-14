@@ -11,3 +11,8 @@ class TestRemote(unittest.TestCase):
         )
         self.assertEqual(len(tree_version_list.version_set), 1)
         self.assertEqual(len(uuid_set.uuid_set), 1)
+
+        for version, element_info in tree_version_list.get_versioned_elements():
+            time_stamp, dataset_path, dataset_tree = element_info
+            dataset_tree.read_in()
+            print(dataset_tree)
