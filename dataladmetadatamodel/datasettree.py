@@ -1,4 +1,5 @@
 from typing import (
+    cast,
     List,
     Optional,
     Tuple,
@@ -53,7 +54,10 @@ class DatasetTree(MTreeProxy):
     def get_dataset_paths(self
                           ) -> List[Tuple[MetadataPath, MetadataRootRecord]]:
         return [
-            (MetadataPath("/".join(path.parts[:-1])), node)
+            (
+                MetadataPath("/".join(path.parts[:-1])),
+                cast(MetadataRootRecord, node)
+            )
             for path, node in self.mtree.get_paths_recursive()
             if path.parts[-1] == datalad_root_record_name
         ]
