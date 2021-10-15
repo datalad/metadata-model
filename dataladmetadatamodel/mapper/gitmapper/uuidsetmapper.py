@@ -14,25 +14,28 @@ class UUIDSetGitMapper(Mapper):
 
     def map_in_impl(self,
                     uuid_set: "UUIDSet",
+                    realm: str,
                     reference: Reference) -> None:
 
         from dataladmetadatamodel.uuidset import UUIDSet
         from dataladmetadatamodel.versionlist import VersionList
 
         assert isinstance(uuid_set, UUIDSet)
+        assert isinstance(realm, str)
         assert isinstance(reference, Reference)
 
         uuid_set.uuid_set = dict()
-        for line in git_ls_tree(reference.realm, reference.location):
+        for line in git_ls_tree(realm, reference.location):
             line_elements = line.split()
             version_list = VersionList(
-                reference=Reference("git", reference.realm, "VersionList", line_elements[2]))
+                realm=realm,
+                reference=Reference("VersionList", line_elements[2]))
 
             uuid_set.uuid_set[UUID(line_elements[3])] = version_list
 
     def map_out_impl(self,
                      uuid_set: "UUIDSet",
-                     destination: str,
+                     realm: str,
                      force_write: bool) -> Reference:
 
         from dataladmetadatamodel.uuidset import UUIDSet
@@ -42,11 +45,11 @@ class UUIDSetGitMapper(Mapper):
             (
                 "100644",
                 "blob",
-                version_list.write_out(destination).location,
+                version_list.write_out(realm).location,
                 str(uuid)
             )
             for uuid, version_list in uuid_set.uuid_set.items()
         ]
-        location = git_save_tree(destination, set(tree_entries))
-        git_update_ref(destination, GitReference.UUID_SET.value, location)
-        return Reference("git", destination, "UUIDSet", location)
+        location = git_save_tree(realm, set(tree_entries))
+        git_update_ref(realm, GitReference.UUID_SET.value, location)
+        return Reference("UUIDSet", location)

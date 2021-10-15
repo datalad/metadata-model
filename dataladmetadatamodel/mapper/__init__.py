@@ -1,25 +1,17 @@
-from _collections import defaultdict
+from collections import defaultdict
 from typing import (
     DefaultDict,
     Dict
 )
 
 from .gitmapper import GIT_MAPPER_LOCATIONS
-from .memorymapper import (
-    MEMORY_MAPPER_FAMILY,
-    MEMORY_MAPPER_LOCATIONS
-)
 
 
 git_mapper_family_name = "git"
-memory_mapper_family_name = "memory"
-
 
 locations = {
-    memory_mapper_family_name: MEMORY_MAPPER_LOCATIONS,
     git_mapper_family_name: GIT_MAPPER_LOCATIONS
 }
-
 
 registered_mapper: DefaultDict[str, Dict[str, "Mapper"]] = defaultdict(dict)
 

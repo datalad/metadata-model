@@ -93,7 +93,9 @@ class TestMTreeNodeMapping(unittest.TestCase):
             write_out_duration = time.time() - start_time
             print(f"Written out: {write_out_duration:4f}")
 
-            mtree = MTreeNode(leaf_class=Text, reference=reference)
+            mtree = MTreeNode(leaf_class=Text,
+                              realm=metadata_store,
+                              reference=reference)
             start_time = time.time()
             mtree.read_in()
             read_in_duration = time.time() - start_time

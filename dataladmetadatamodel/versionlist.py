@@ -1,9 +1,10 @@
 from typing import (
+    cast,
     Dict,
     Iterable,
     Optional,
     Tuple,
-    Union
+    Union,
 )
 
 from dataladmetadatamodel.datasettree import DatasetTree
@@ -43,12 +44,14 @@ class VersionRecord:
 class VersionList(MappableObject):
     def __init__(self,
                  initial_set: Optional[Dict[str, VersionRecord]] = None,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
         assert isinstance(initial_set, (type(None), dict))
+        assert isinstance(realm, (type(None), str))
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(reference)
+        super().__init__(realm, reference)
         self.version_set: Dict[str, VersionRecord] = initial_set or dict()
 
     def purge_impl(self):
@@ -198,9 +201,10 @@ class TreeVersionList(VersionList):
                 primary_data_version,
                 version_record.time_stamp,
                 path_prefix / version_record.path,
-                version_record.element.deepcopy(
-                    new_mapper_family,
-                    new_destination))
+                cast(MetadataRootRecord,
+                     version_record.element.deepcopy(
+                        new_mapper_family,
+                        new_destination)))
 
         copied_version_list.write_out(new_destination)
         copied_version_list.purge()

@@ -3,6 +3,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from typing import cast
 from unittest.mock import patch
 
 from dataladmetadatamodel.filetree import FileTree
@@ -135,13 +136,16 @@ class TestMapping(unittest.TestCase):
                 [Metadata() for _ in default_paths])
             reference = file_tree.write_out(metadata_store)
 
-            file_tree = FileTree(reference=reference).read_in()
+            file_tree = cast(FileTree, FileTree(
+                realm=metadata_store,
+                reference=reference).read_in())
+
             additional_paths = [MetadataPath(f"x/y.{n}") for n in range(10)]
             for additional_path in additional_paths:
                 file_tree.add_metadata(additional_path, Metadata())
             reference = file_tree.write_out()
 
-            file_tree = FileTree(reference=reference).read_in()
+            file_tree = FileTree(realm=metadata_store, reference=reference).read_in()
             read_paths = [pair[0] for pair in file_tree.get_paths_recursive()]
             for path in default_paths + additional_paths:
                 self.assertIn(path, read_paths)
@@ -171,7 +175,7 @@ class TestMapping(unittest.TestCase):
             print(f"Written out: {write_out_duration:4f}")
 
             start_time = time.time()
-            file_tree = FileTree(reference=reference).read_in()
+            file_tree = FileTree(realm=metadata_store, reference=reference).read_in()
             read_in_duration = time.time() - start_time
             print(f"Read in: {read_in_duration:4f}")
 
@@ -204,7 +208,7 @@ class TestMapping(unittest.TestCase):
             reference = file_tree.write_out(metadata_store)
             flush_object_references(Path(metadata_store))
 
-            new_file_tree = FileTree(reference=reference).read_in()
+            new_file_tree = FileTree(realm=metadata_store, reference=reference).read_in()
             self.assertFalse(new_file_tree.mtree.child_nodes["a"].mapped)
 
 

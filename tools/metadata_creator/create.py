@@ -150,14 +150,13 @@ def _create_metadata_root_record(mapper_family: str,
     return metadata_root_record
 
 
-def _create_dataset_tree(mapper_family, realm) -> DatasetTree:
+def _create_dataset_tree(realm) -> DatasetTree:
     dataset_paths = _create_tree_paths([(3, 1), (2, 1), (3, 3)], [])
-    dataset_tree = DatasetTree(mapper_family, realm)
+    dataset_tree = DatasetTree(realm)
     for index, path in enumerate([""] + dataset_paths):
         dataset_tree.add_dataset(
             path,
             _create_metadata_root_record(
-                mapper_family,
                 realm,
                 path,
                 UUID(f"0000000000000000000000000000{index:04x}"),

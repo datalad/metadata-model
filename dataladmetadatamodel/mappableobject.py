@@ -18,6 +18,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
     storage backend.
     """
     def __init__(self,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
         """
         Create a mappable object with a reference or None.
@@ -32,22 +33,26 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         Generally unmapped objects are expected to be
         unmodified.
         """
-        assert isinstance(reference, (type(None), Reference))
+        assert isinstance(reference, (type(None), Reference)), \
+            f"MappableObject {self} initialized with invalid reference: {reference}"
 
-        # We assume that objects that carry a reference
-        # have been saved on the realm in the reference.
-        # That also means that they are not modified
+        # If the reference is given, we need a realm in
+        # which the reference is valid.
+        assert reference is None or realm is not None, \
+            f"reference provided but no realm in {type(self).__name__} " \
+            f"construction."
+
+        # We assume that objects that carry a reference have been
+        # saved in the location given by the reference.
         super().__init__(
-            reference.realm
+            realm
             if reference is not None and not reference.is_none_reference()
             else None
         )
 
+        self.realm = realm
         self.reference = reference
-        self.mapper_private_data = dict()
         self.mapped = reference is None
-        assert isinstance(reference, (type(None), Reference)), \
-            f"object {self} initialized with invalid reference: {reference}"
 
     def get_modifiable_sub_objects(self) -> Iterable["MappableObject"]:
         """
@@ -66,36 +71,39 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         return self.get_modifiable_sub_objects_impl()
 
     def read_in(self,
-                backend_type="git") -> "MappableObject":
+                backend_type: str = "git"
+                ) -> "MappableObject":
 
         from dataladmetadatamodel.mapper import get_mapper
 
         if self.mapped is False:
 
+            assert self.realm is not None
             assert self.reference is not None
 
-            # if the reference is a None-reference,
-            # we can handle this here
+            # If the reference is a None-reference,
+            # we can handle this here.
             if self.reference.is_none_reference():
                 assert self.reference.class_name == type(self).__name__
                 logger.warning(f"read_in({self}): None-reference in {self}")
                 self.purge_impl()
                 return self
 
-            # ensure that the object is save on the given realm
-            if not self.is_saved_on(self.reference.realm):
+            # Ensure that the object is saved on the given realm
+            if not self.is_saved_on(self.realm):
                 logger.error(
                     f"read_in({self}): trying to overwrite a modified object")
                 raise RuntimeError(
                     "read_in({self}): tried to read over a modified object")
 
-            # the object is not mapped, but saved on reference.realm,
+            # The object is not mapped, but saved on self.realm,
             # use the mappable object-specific mapper to read
             # the object in.
             get_mapper(
                 type(self).__name__,
                 backend_type).map_in(
                     self,
+                    self.realm,
                     self.reference)
 
             # Mark the object as mapped.
@@ -109,63 +117,69 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         return self
 
     def write_out(self,
-                  destination: Optional[str] = None,
+                  destination_realm: Optional[str] = None,
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
 
         from dataladmetadatamodel.mapper import get_mapper
 
-        # if the object is not mapped and not modified,
+        # If the object is not mapped and not modified,
         # we do not have to do anything.
         if not self.mapped:
+
+            assert isinstance(self.realm, str), \
+                f"write_out: object {self} has no valid " \
+                f"realm: {self.realm}"
             assert isinstance(self.reference, Reference), \
                 f"write_out: object {self} has no valid " \
                 f"reference: {self.reference}"
 
-            if not self.is_saved_on(destination):
-                if self.reference.is_none_reference():
-                    logger.debug(
-                        f"write_out({self}): not possible, because object "
-                        f" has a None-reference: {self.reference}")
-                    return self.reference
-
+            if not self.is_saved_on(destination_realm):
                 raise RuntimeError(
                     f"write_out({self}): modified object got lost "
-                    f"on {destination}")
+                    f"on {destination_realm}")
 
             logger.debug(
                 f"write_out({self}): not needed, object already"
-                f" saved on {destination}")
+                f" saved on {destination_realm}")
             return self.reference
 
-        if self.reference and not self.reference.is_none_reference():
-            destination = destination or self.reference.realm
-        assert destination is not None, \
+        if self.realm:
+            destination_realm = destination_realm or self.realm
+
+        assert destination_realm is not None, \
             f"write_out({self}): no destination available for {self}"
 
-        if self.is_saved_on(destination):
+        if Reference.is_remote(destination_realm):
+            raise RuntimeError(
+                f"write_out({self}): trying to write to a remote realm: "
+                f"{destination_realm}")
+
+        self.realm = destination_realm
+
+        if self.is_saved_on(destination_realm):
             if not force_write:
                 logger.debug(
                     f"write_out({self}): skipping map_out because {self} "
-                    f"is already stored on {destination}")
+                    f"is already stored on {destination_realm}")
                 return self.reference
 
             logger.debug(
                 f"write_out({self}): forcing map_out, although {self} "
-                f"is already stored on {destination}")
+                f"is already stored on {destination_realm}")
 
         logger.debug(
             f"write_out({self}): calling map_out to save {self} "
-            f"to {destination}")
+            f"to {destination_realm}")
 
         self.reference = get_mapper(
             type(self).__name__,
             backend_type).map_out(
                 self,
-                destination,
+                destination_realm,
                 force_write)
 
-        self.set_saved_on(destination)
+        self.set_saved_on(destination_realm)
 
         assert isinstance(self.reference, Reference), \
             f"write_out({self}): object {self} has no valid " \

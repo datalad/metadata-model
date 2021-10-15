@@ -15,11 +15,12 @@ from dataladmetadatamodel.mapper.reference import Reference
 class MTreeNode(MappableObject):
     def __init__(self,
                  leaf_class: Any,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(reference)
+        super().__init__(realm, reference)
         self.leaf_class = leaf_class
         self.leaf_class_name = leaf_class.__name__
         self.child_nodes = dict()

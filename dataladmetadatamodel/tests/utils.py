@@ -1,18 +1,21 @@
 import time
 import unittest
 from typing import (
+    cast,
     Any,
     List,
-    Optional
+    Optional,
+    Union,
 )
 from uuid import UUID
 
 from dataladmetadatamodel.datasettree import DatasetTree
 from dataladmetadatamodel.filetree import FileTree
+from dataladmetadatamodel.mappableobject import MappableObject
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
-from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.mtreeproxy import MTreeProxy
 from dataladmetadatamodel.uuidset import UUIDSet
 from dataladmetadatamodel.versionlist import VersionList
 from dataladmetadatamodel.mapper.reference import Reference
@@ -90,8 +93,8 @@ def assert_mrr_equal(test_case: unittest.TestCase,
 
 
 def assert_mappable_objects_equal(test_case: unittest.TestCase,
-                                  a_object: MappableObject,
-                                  b_object: MappableObject,
+                                  a_object: Union[MappableObject, MTreeProxy],
+                                  b_object: Union[MappableObject, MTreeProxy],
                                   a_purge_unsafe: bool,
                                   equality_asserter):
 
@@ -202,9 +205,17 @@ def assert_version_lists_equal(test_case: unittest.TestCase,
         test_case.assertIsInstance(a_entry[2], (DatasetTree, MetadataRootRecord))
         test_case.assertIsInstance(b_entry[2], (DatasetTree, MetadataRootRecord))
         if isinstance(a_entry[2], DatasetTree):
-            assert_dataset_trees_equal(test_case, a_entry[2], b_entry[2], unsafe)
+            assert_dataset_trees_equal(
+                test_case,
+                cast(DatasetTree, a_entry[2]),
+                cast(DatasetTree, b_entry[2]),
+                unsafe)
         else:
-            assert_mrr_equal(test_case, a_entry[2], b_entry[2], unsafe)
+            assert_mrr_equal(
+                test_case,
+                cast(MetadataRootRecord, a_entry[2]),
+                cast(MetadataRootRecord, b_entry[2]),
+                unsafe)
 
 
 def assert_uuid_sets_equal(test_case: unittest.TestCase,
@@ -292,8 +303,6 @@ class MMDummy:
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
         return Reference(
-            "git",
-            "test"
             "MMDummy",
             get_location(0x51))
 

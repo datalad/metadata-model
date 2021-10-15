@@ -64,8 +64,6 @@ class TestMetadataMapper(unittest.TestCase):
                             'type': 'Reference',
                             'version': version_string
                         },
-                        'mapper_family': 'git',
-                        'realm': '/tmp/t1',
                         'class_name': 'Metadata',
                         'location': location_1
                     },
@@ -74,8 +72,6 @@ class TestMetadataMapper(unittest.TestCase):
                             'type': 'Reference',
                             'version': version_string
                         },
-                        'mapper_family': 'git',
-                        'realm': '/tmp/t1',
                         'class_name': 'MTreeNode',
                         'location': location_3}
                 }

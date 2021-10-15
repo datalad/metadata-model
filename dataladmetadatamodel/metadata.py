@@ -224,19 +224,22 @@ class Metadata(MappableObject):
     the extractor result, aka the real metadata.
     """
     def __init__(self,
+                 realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
+        assert isinstance(realm, (type(None), str))
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(reference)
+        super().__init__(realm, reference)
         self.instance_sets: Dict[str, MetadataInstanceSet] = dict()
 
     def __eq__(self, other):
         return self.instance_sets == other.instance_sets
 
     @staticmethod
-    def get_empty_instance(reference: Optional[Reference] = None):
-        return Metadata(reference)
+    def get_empty_instance(realm: Optional[str] = None,
+                           reference: Optional[Reference] = None):
+        return Metadata(realm, reference)
 
     def purge_impl(self):
         self.instance_sets = dict()

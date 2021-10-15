@@ -23,16 +23,10 @@ from dataladmetadatamodel.versionlist import (
 from dataladmetadatamodel.mapper.reference import Reference
 
 
-def _get_tree_version_list_reference(
-        mapper_family: str,
-        realm: str,
-        location: str) -> Reference:
+def _get_tree_version_list_reference(location: str
+                                     ) -> Reference:
 
-    return Reference(
-        mapper_family,
-        realm,
-        "TreeVersionList",
-        location)
+    return Reference("TreeVersionList", location)
 
 
 def _get_uuid_set_reference(
@@ -41,8 +35,6 @@ def _get_uuid_set_reference(
         location: str) -> Reference:
 
     return Reference(
-        mapper_family,
-        realm,
         "UUIDSet",
         location)
 
@@ -63,16 +55,18 @@ def get_top_level_metadata_objects(
         get_uuid_set_location,
         get_tree_version_list_location)
 
+    realm = str(realm)
+
     tree_version_list = TreeVersionList(
+        realm=realm,
         reference=_get_tree_version_list_reference(
-            mapper_family,
-            str(realm),
             get_tree_version_list_location(mapper_family)))
 
     uuid_set = UUIDSet(
+        realm=realm,
         reference=_get_uuid_set_reference(
             mapper_family,
-            str(realm),
+            realm,
             get_uuid_set_location(mapper_family)))
 
     try:

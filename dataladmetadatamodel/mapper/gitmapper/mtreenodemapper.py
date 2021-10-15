@@ -11,6 +11,7 @@ class MTreeNodeGitMapper(Mapper):
 
     def map_in_impl(self,
                     mtree_node: "MTreeNode",
+                    realm: str,
                     reference: Reference) -> None:
 
         from dataladmetadatamodel.mtreenode import MTreeNode
@@ -21,23 +22,21 @@ class MTreeNodeGitMapper(Mapper):
 
         assert isinstance(mtree_node, MTreeNode)
 
-        lines = git_read_tree_node(reference.realm,
+        lines = git_read_tree_node(realm,
                                    reference.location)
 
         for entry in [line.split() for line in lines]:
             if entry[1] == "tree":
                 child = MTreeNode(
                     leaf_class=mtree_node.leaf_class,
-                    reference=Reference("git",
-                                        reference.realm,
-                                        "MTreeNode",
+                    realm=realm,
+                    reference=Reference("MTreeNode",
                                         entry[2]))
 
             elif entry[1] == "blob":
                 child = mtree_node.leaf_class.get_empty_instance(
-                    reference=Reference("git",
-                                        reference.realm,
-                                        mtree_node.leaf_class_name,
+                    realm=realm,
+                    reference=Reference(mtree_node.leaf_class_name,
                                         entry[2]))
 
             else:
@@ -46,7 +45,7 @@ class MTreeNodeGitMapper(Mapper):
 
     def map_out_impl(self,
                      mtree_node: "MTreeNode",
-                     destination: str,
+                     realm: str,
                      force_write: bool) -> Reference:
 
         from dataladmetadatamodel.mtreenode import MTreeNode
@@ -57,7 +56,7 @@ class MTreeNodeGitMapper(Mapper):
             return Reference.get_none_reference("MTreeNode")
 
         for child_node in mtree_node.child_nodes.values():
-            child_node.write_out(destination)
+            child_node.write_out(realm)
 
         dir_entries = [
             (
@@ -68,5 +67,5 @@ class MTreeNodeGitMapper(Mapper):
             )
             for child_name, child_node in mtree_node.child_nodes.items()
         ]
-        mtree_node_location = git_save_tree_node(destination, dir_entries)
-        return Reference("git", destination, "MTreeNode", mtree_node_location)
+        mtree_node_location = git_save_tree_node(realm, dir_entries)
+        return Reference("MTreeNode", mtree_node_location)

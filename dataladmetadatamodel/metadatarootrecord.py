@@ -15,25 +15,27 @@ class MetadataRootRecord(MappableObject):
                  dataset_version: Optional[str],
                  dataset_level_metadata: Optional[Metadata],
                  file_tree: Optional[FileTree],
-                 reference: Optional[Reference] = None,
-                 backend_type: str = "git"):
+                 realm: Optional[str] = None,
+                 reference: Optional[Reference] = None
+                 ):
 
         assert isinstance(dataset_identifier, (type(None), UUID))
         assert isinstance(dataset_version, (type(None), str))
         assert isinstance(dataset_level_metadata, (type(None), Metadata))
         assert isinstance(file_tree, (type(None), FileTree))
+        assert isinstance(realm, (type(None), str))
         assert isinstance(reference, (type(None), Reference))
 
-        super().__init__(reference)
+        super().__init__(realm, reference)
         self.dataset_identifier = dataset_identifier
         self.dataset_version = dataset_version
         self.dataset_level_metadata = dataset_level_metadata
         self.file_tree = file_tree
-        self.backend_type = backend_type
 
     @staticmethod
-    def get_empty_instance(reference: Optional[Reference] = None):
-        return MetadataRootRecord(None, None, None, None, reference)
+    def get_empty_instance(realm: Optional[str] = None,
+                           reference: Optional[Reference] = None):
+        return MetadataRootRecord(None, None, None, None, realm, reference)
 
     def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return [
@@ -58,7 +60,7 @@ class MetadataRootRecord(MappableObject):
         self.ensure_mapped()
         if self.file_tree is None:
             return None
-        return self.file_tree.read_in(self.backend_type)
+        return self.file_tree.read_in()
 
     def set_dataset_level_metadata(self, dataset_level_metadata: Metadata):
         self.touch()
@@ -66,7 +68,7 @@ class MetadataRootRecord(MappableObject):
 
     def get_dataset_level_metadata(self):
         self.ensure_mapped()
-        return self.dataset_level_metadata.read_in(self.backend_type)
+        return self.dataset_level_metadata.read_in()
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
@@ -91,7 +93,8 @@ class MetadataRootRecord(MappableObject):
                 else None
             ),
             None,
-            self.backend_type)
+            None
+        )
 
         copied_metadata_root_record.write_out(new_destination)
         copied_metadata_root_record.purge()

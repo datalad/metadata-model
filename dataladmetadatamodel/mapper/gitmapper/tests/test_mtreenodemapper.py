@@ -85,7 +85,7 @@ class TestMTreeNodeMapper(unittest.TestCase):
 
     def test_none_mapping_in(self):
         reference = Reference.get_none_reference("MTreeNode")
-        tree = MTreeNode(Text, reference)
+        tree = MTreeNode(Text, "/tmp/t1", reference)
         tree.read_in()
         self.assertEqual(len(tree.child_nodes), 0)
 
@@ -100,10 +100,11 @@ class TestMTreeNodeMapper(unittest.TestCase):
             root_node = create_tree(file_names, sub_dir_names)
             reference = root_node.write_out(realm)
 
-            new_root_node = MTreeNode(leaf_class=Text, reference=reference)
+            new_root_node = MTreeNode(
+                leaf_class=Text,
+                realm=realm,
+                reference=reference)
             new_root_node.read_in()
-
-            print(new_root_node.get_object_at_path(MetadataPath("sub0/a")))
 
             tree_elements = list(new_root_node.get_paths_recursive())
             self.assertEqual(len(tree_elements),

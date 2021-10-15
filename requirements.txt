@@ -1,3 +1,4 @@
+appdirs
 nose
 click
 dataclasses
