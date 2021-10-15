@@ -20,7 +20,7 @@ expected_reference_object = {
     "mapper_family": "git",
     "realm": "/tmp/t1",
     "class_name": "Metadata",
-    "location": get_location(0)
+    "location": get_location(1)
 }
 
 
