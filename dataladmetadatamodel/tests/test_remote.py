@@ -15,4 +15,5 @@ class TestRemote(unittest.TestCase):
         for version, element_info in tree_version_list.get_versioned_elements():
             time_stamp, dataset_path, dataset_tree = element_info
             dataset_tree.read_in()
-            print(dataset_tree)
+            elements = dataset_tree.get_dataset_paths()
+            self.assertEqual(27, len(elements))
