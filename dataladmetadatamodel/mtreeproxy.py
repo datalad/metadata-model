@@ -64,7 +64,10 @@ class MTreeProxy:
         reference = self.mtree.write_out(destination,
                                          backend_type,
                                          force_write)
-        add_tree_reference(GitReference.TREES, reference.location)
+
+        if not reference.is_none_reference():
+            add_tree_reference(GitReference.TREES,
+                               reference.location)
         return reference
 
     def purge(self):

@@ -1,10 +1,13 @@
 import enum
+import logging
 from pathlib import Path
 from typing import (
     Dict,
     List,
     Tuple,
 )
+
+from dataladmetadatamodel.mapper.reference import none_location
 
 
 class GitReference(enum.Enum):
@@ -14,6 +17,8 @@ class GitReference(enum.Enum):
     BLOBS = "refs/datalad/object-references/blobs"
 
 
+logger = logging.getLogger("datalad.metalad.gitmapper.objectreference")
+
 cached_object_references: Dict[str, List[Tuple[str, str, str, str]]] = dict()
 
 
@@ -21,6 +26,10 @@ def add_object_reference(git_reference: GitReference,
                          flag: str,
                          object_type: str,
                          object_hash: str):
+
+    if object_hash == none_location:
+        logger.warning("attempt to add a None-reference")
+        return
 
     if git_reference.value not in cached_object_references:
         cached_object_references[git_reference.value] = []

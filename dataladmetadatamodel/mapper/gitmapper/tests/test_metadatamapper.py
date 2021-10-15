@@ -94,7 +94,7 @@ class TestMetadataMapper(unittest.TestCase):
             reference = metadata.write_out(realm, "git")
             flush_object_references(Path("/tmp/t1"))
 
-            self.assertEqual(len(save.call_args_list), 2)
+            self.assertEqual(len(save_str.call_args_list), 2)
             self.assertEqual(
                 json.loads(save_str.call_args_list[0][0][1]),
                 expected_metadata_object)
