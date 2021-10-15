@@ -97,7 +97,6 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             # Check for remote realm, if it is remote, cache the
             # object and mark it as cached.
             if Reference.is_remote(self.realm):
-                cache_object(self.realm, self.reference.location)
                 self.cached = True
 
             # Ensure that the object is saved on the given realm
@@ -114,9 +113,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 type(self).__name__,
                 backend_type).map_in(
                     self,
-                    self.realm
-                    if self.cached is False
-                    else str(get_cache_realm(self.realm)),
+                    self.realm,
                     self.reference)
 
             # Mark the object as mapped.

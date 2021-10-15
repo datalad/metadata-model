@@ -12,6 +12,7 @@ from typing import (
 )
 
 from dataladmetadatamodel.log import logger
+from dataladmetadatamodel.mapper.reference import Reference
 
 
 def execute(arguments: Union[str, List[str]],
@@ -65,12 +66,26 @@ def git_text_result(cmd_line):
     return "\n".join(result)
 
 
+def adapt_for_remote(repo_dir: str, object_reference: str) -> str:
+    from dataladmetadatamodel.mapper.gitmapper.localcache import (
+        cache_object,
+        get_cache_realm,
+    )
+
+    if Reference.is_remote(repo_dir):
+        cache_object(repo_dir, object_reference)
+        return str(get_cache_realm(repo_dir))
+    return repo_dir
+
+
 def git_load_str(repo_dir: str, object_reference: str) -> str:
+    repo_dir = adapt_for_remote(repo_dir, object_reference)
     cmd_line = git_command_line(repo_dir, "show", [object_reference])
     return git_text_result(cmd_line)
 
 
 def git_load_json(repo_dir: str, object_reference: str) -> Union[Dict, List]:
+    repo_dir = adapt_for_remote(repo_dir, object_reference)
     return json.loads(git_load_str(repo_dir, object_reference))
 
 
@@ -79,24 +94,27 @@ def git_init(repo_dir: str) -> None:
     checked_execute(cmd_line)
 
 
-def git_object_exists(repo_dir: str,
-                      object_reference) -> bool:
+def git_object_exists_locally(repo_dir: str,
+                              object_reference) -> bool:
     cmd_line = git_command_line(repo_dir, "cat-file", ["-e", object_reference])
     return execute(cmd_line).returncode == 0
 
 
 def git_read_tree_node(repo_dir: str,
                        object_reference) -> List[str]:
+    repo_dir = adapt_for_remote(repo_dir, object_reference)
     cmd_line = git_command_line(repo_dir, "cat-file", ["-p", object_reference])
     return checked_execute(cmd_line)[0]
 
 
 def git_ls_tree(repo_dir, object_reference) -> List[str]:
+    repo_dir = adapt_for_remote(repo_dir, object_reference)
     cmd_line = git_command_line(repo_dir, "ls-tree", [object_reference])
     return checked_execute(cmd_line)[0]
 
 
 def git_ls_tree_recursive(repo_dir, object_reference, show_intermediate=False) -> List[str]:
+    repo_dir = adapt_for_remote(repo_dir, object_reference)
     if show_intermediate is True:
         cmd_line = git_command_line(repo_dir, "ls-tree", ["-r", "-t", object_reference])
     else:
@@ -159,6 +177,7 @@ def git_fetch_reference(repo_dir: str,
         "fetch",
         [
             remote_repo,
+            "-f",
             "--no-tags",
             "--no-recurse-submodules",
             remote_reference + (

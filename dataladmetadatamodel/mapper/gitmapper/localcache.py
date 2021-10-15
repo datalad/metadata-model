@@ -11,7 +11,7 @@ from .gitbackend.subprocess import (
     git_fetch_object,
     git_fetch_reference,
     git_init,
-    git_object_exists,
+    git_object_exists_locally,
 )
 
 
@@ -46,7 +46,7 @@ def cache_object(remote_repo: str, object_id: str):
             remote_repo,
             object_id,
             object_id)
-    elif not git_object_exists(cache_repo, object_id):
+    elif not git_object_exists_locally(cache_repo, object_id):
         git_fetch_object(
             cache_repo,
             remote_repo,
