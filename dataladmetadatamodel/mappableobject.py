@@ -10,10 +10,6 @@ from typing import (
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.mapper.reference import Reference
-from dataladmetadatamodel.mapper.gitmapper.localcache import (
-    cache_object,
-    get_cache_realm,
-)
 
 
 class MappableObject(ModifiableObject, metaclass=ABCMeta):
@@ -57,7 +53,6 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.realm = realm
         self.reference = reference
         self.mapped = reference is None
-        self.cached = False
 
     def get_modifiable_sub_objects(self) -> Iterable["MappableObject"]:
         """
@@ -93,11 +88,6 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                 logger.warning(f"read_in({self}): None-reference in {self}")
                 self.purge_impl()
                 return self
-
-            # Check for remote realm, if it is remote, cache the
-            # object and mark it as cached.
-            if Reference.is_remote(self.realm):
-                self.cached = True
 
             # Ensure that the object is saved on the given realm
             if not self.is_saved_on(self.realm):
@@ -162,14 +152,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
 
         if Reference.is_remote(destination_realm):
             raise RuntimeError(
-                f"write_out({self}): tryping to write to a remote realm: "
+                f"write_out({self}): trying to write to a remote realm: "
                 f"{destination_realm}")
-
-        if self.cached:
-            logger.debug(
-                f"write_out({self}) cached object converted to"
-                f"local object in realm {destination_realm}")
-            self.cached = False
 
         self.realm = destination_realm
 
