@@ -106,8 +106,6 @@ class TestMTreeNodeMapper(unittest.TestCase):
                 reference=reference)
             new_root_node.read_in()
 
-            print(new_root_node.get_object_at_path(MetadataPath("sub0/a")))
-
             tree_elements = list(new_root_node.get_paths_recursive())
             self.assertEqual(len(tree_elements),
                              len(file_names) * len(sub_dir_names))

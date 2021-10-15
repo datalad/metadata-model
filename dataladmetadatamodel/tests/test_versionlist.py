@@ -49,7 +49,6 @@ class TestVersionList(unittest.TestCase):
         VersionList()
 
     def test_copy_end_to_end(self):
-        print("test_copy_end_to_end")
         with \
                 tempfile.TemporaryDirectory() as original_dir, \
                 tempfile.TemporaryDirectory() as copy_dir:
