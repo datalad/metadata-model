@@ -3,10 +3,6 @@ from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_read_tree_node,
     git_save_tree_node,
 )
-from dataladmetadatamodel.mapper.gitmapper.objectreference import (
-    add_tree_reference,
-    GitReference,
-)
 from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
 
