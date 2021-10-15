@@ -10,9 +10,8 @@ from typing import (
 class GitReference(enum.Enum):
     TREE_VERSION_LIST = "refs/datalad/dataset-tree-version-list"
     UUID_SET = "refs/datalad/dataset-uuid-set"
-    DATASET_TREE = "refs/datalad/object-references/dataset-tree"
-    METADATA = "refs/datalad/object-references/metadata"
-    FILE_TREE = "refs/datalad/object-references/file-tree"
+    TREES = "refs/datalad/object-references/trees"
+    BLOBS = "refs/datalad/object-references/blobs"
 
 
 cached_object_references: Dict[str, List[Tuple[str, str, str, str]]] = dict()

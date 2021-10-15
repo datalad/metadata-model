@@ -1,12 +1,15 @@
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 from dataladmetadatamodel.datasettree import DatasetTree
+from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
-
 from dataladmetadatamodel.tests.utils import (
+    get_location,
     get_uuid,
     assert_dataset_trees_equal,
     create_dataset_tree
@@ -40,10 +43,10 @@ class TestDatasetTree(unittest.TestCase):
             MetadataPath("b"),
             MetadataPath("c/d/e")]
 
-        dataset_tree = DatasetTree()
         mrr = MetadataRootRecord(uuid_0, "00112233", None, None)
-        for path in paths:
-            dataset_tree.add_dataset(path, mrr)
+        dataset_tree = create_dataset_tree(
+            dataset_tree_paths=paths,
+            initial_mrr=mrr)
 
         returned_entries = tuple(dataset_tree.get_dataset_paths())
 
@@ -66,6 +69,35 @@ class TestDatasetTree(unittest.TestCase):
 
         self.assertEqual(returned_entries[0][0], MetadataPath(""))
         self.assertEqual(returned_entries[0][1], mrr)
+
+
+class TestReferenceCreation(unittest.TestCase):
+    def test_object_reference_creation(self):
+
+        dataset_tree = create_dataset_tree(dataset_test_paths)
+        with \
+                patch("dataladmetadatamodel.mapper.gitmapper."
+                      "metadatamapper.git_save_str") as save_str, \
+                patch("dataladmetadatamodel.mapper.gitmapper."
+                      "mtreenodemapper.git_save_tree_node") as save_tree_node, \
+                patch("dataladmetadatamodel.mapper.gitmapper."
+                      "metadatarootrecordmapper.git_save_json") as save_json, \
+                patch("dataladmetadatamodel.mtreeproxy."
+                      "add_tree_reference") as add_tree_ref:
+
+            save_str.return_value = get_location(1)
+            save_tree_node.return_value = get_location(2)
+            save_json.return_value = get_location(3)
+
+            dataset_tree.write_out("/tmp/t1")
+
+            # We expect one call for the dataset-tree itself
+            # and one call for each file-tree, one of which
+            # is anchored at each dataset path
+            self.assertEqual(
+                add_tree_ref.call_count,
+                1 + len(dataset_test_paths)
+            )
 
 
 class TestDeepCopy(unittest.TestCase):
@@ -114,6 +146,7 @@ class TestDeepCopy(unittest.TestCase):
 
 
 class TestSubTreeManipulation(unittest.TestCase):
+
     def get_mrr(self, n: int = 0) -> MetadataRootRecord:
         return MetadataRootRecord(uuid_0, f"00112233-{n}", None, None)
 

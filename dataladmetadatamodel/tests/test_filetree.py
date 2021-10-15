@@ -3,18 +3,20 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from dataladmetadatamodel.filetree import FileTree
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
     Metadata,
-    MetadataInstance
+    MetadataInstance,
 )
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 from dataladmetadatamodel.tests.utils import (
     assert_file_trees_equal,
-    create_file_tree_with_metadata
+    create_file_tree_with_metadata,
+    get_location,
 )
 
 
@@ -23,7 +25,7 @@ default_paths = [
     MetadataPath("a/b/a"),
     MetadataPath("b"),
     MetadataPath("c/d/e"),
-    MetadataPath("a/x")
+    MetadataPath("a/x"),
 ]
 
 
@@ -85,6 +87,39 @@ class TestFileTree(unittest.TestCase):
                 author_email,
                 extractor_configuration,
                 metadata_content))
+
+
+class TestReferenceCreation(unittest.TestCase):
+    def test_object_reference_creation(self):
+
+        file_tree = create_file_tree_with_metadata(
+            default_paths,
+            [
+                Metadata()
+                for _ in default_paths
+            ]
+        )
+
+        with \
+                patch("dataladmetadatamodel.mapper.gitmapper."
+                      "metadatamapper.git_save_str") as save_str, \
+                patch("dataladmetadatamodel.mapper.gitmapper."
+                      "mtreenodemapper.git_save_tree_node") as save_tree_node, \
+                patch("dataladmetadatamodel.mapper.gitmapper."
+                      "metadatarootrecordmapper.git_save_json") as save_json, \
+                patch("dataladmetadatamodel.mtreeproxy."
+                      "add_tree_reference") as add_tree_ref:
+
+            save_str.return_value = get_location(1)
+            save_tree_node.return_value = get_location(2)
+            save_json.return_value = get_location(3)
+
+            file_tree.write_out("/tmp/t1")
+
+            # We expect one call for the dataset-tree itself
+            # and one call for each file-tree, one of which
+            # is anchored at each dataset path
+            add_tree_ref.assert_called_once()
 
 
 class TestMapping(unittest.TestCase):

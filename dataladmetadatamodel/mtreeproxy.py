@@ -6,6 +6,10 @@ from typing import (
 )
 
 from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.mapper.gitmapper.objectreference import (
+    add_tree_reference,
+    GitReference,
+)
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mtreenode import MTreeNode
 from dataladmetadatamodel.mapper.reference import Reference
@@ -22,6 +26,7 @@ class MTreeProxy:
     behave like a mappable object.
     This class proxies the common MappableObject-interface calls
     to the underlying MTreeNode object.
+    # TODO: this could probably be a mixin.
     """
     def __init__(self,
                  leaf_class: Any,
@@ -53,9 +58,11 @@ class MTreeProxy:
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
 
-        return self.mtree.write_out(destination,
-                                    backend_type,
-                                    force_write)
+        reference = self.mtree.write_out(destination,
+                                         backend_type,
+                                         force_write)
+        add_tree_reference(GitReference.TREES, reference.location)
+        return reference
 
     def purge(self):
         return self.mtree.purge()
