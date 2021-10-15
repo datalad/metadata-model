@@ -1,35 +1,33 @@
-import time
 import unittest
 from unittest import mock
-from uuid import UUID
 
-from .... import version_string
-from ....tests.utils import create_file_tree
+from dataladmetadatamodel.tests.utils import (
+    create_file_tree,
+    get_location,
+    get_uuid,
+)
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.versionlist import (
     VersionList,
-    VersionRecord
+    VersionRecord,
 )
 
 
 test_realm_name = "ewkd0iasd"
-
-uuid_0 = UUID("00000000000000000000000000000000")
-
-
-def get_location(n: int) -> str:
-    return f"a{n:04}0000000000000000000000000000000{n:04}"
 
 
 class TestVersionListMapper(unittest.TestCase):
 
     def test_basic_unmapping(self):
 
-        with mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_save_json") as save_json, \
-             mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatamapper.git_save_str") as save_str, \
-             mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_update_ref") as update_ref:
+        with mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "versionlistmapper.git_save_json") as save_json, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "metadatamapper.git_save_str") as save_str, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "versionlistmapper.git_update_ref"):
 
             save_json.configure_mock(return_value=get_location(0))
             save_str.configure_mock(return_value=get_location(1))
@@ -38,7 +36,6 @@ class TestVersionListMapper(unittest.TestCase):
             version_list.write_out("/tmp/t1")
             representation = save_json.call_args[0][1]
             self.assertEqual(representation, [])
-
 
     def test_complex_unmapping(self):
 
@@ -58,10 +55,13 @@ class TestVersionListMapper(unittest.TestCase):
                     str("1.1"),
                     MetadataPath("subset0"),
                     MetadataRootRecord(
-                        uuid_0,
+                        get_uuid(0),
                         "version1",
                         Metadata(),
-                        create_file_tree([MetadataPath("a/b"), MetadataPath("d/e")])
+                        create_file_tree(
+                            [MetadataPath("a/b"),
+                             MetadataPath("d/e")]
+                        )
                     )
                 )
             })

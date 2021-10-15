@@ -1,15 +1,15 @@
 import json
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from .... import version_string
+from ....tests.utils import get_location
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
     Metadata
 )
-
-
-location_0 = "a000000000000000000000000000000000000000"
+from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 
 
 expected_reference_object = {
@@ -20,7 +20,7 @@ expected_reference_object = {
     "mapper_family": "git",
     "realm": "/tmp/t1",
     "class_name": "Metadata",
-    "location": location_0
+    "location": get_location(0)
 }
 
 
@@ -84,20 +84,27 @@ class TestMetadataMapper(unittest.TestCase):
             ExtractorConfiguration("v3.4", {"p1": "1"}),
             {"key1": "this is metadata"})
 
-        with mock.patch(
-                "dataladmetadatamodel.mapper.gitmapper"
-                ".metadatamapper.git_save_str") as save:
+        with \
+                mock.patch("dataladmetadatamodel.mapper.gitmapper"
+                           ".metadatamapper.git_save_str") as save_str, \
+                mock.patch("dataladmetadatamodel.mapper.gitmapper"
+                           ".metadatamapper.add_blob_reference") as add_ref:
 
-            save.configure_mock(return_value=location_0)
+            save_str.return_value = get_location(1)
 
             reference = metadata.write_out("/tmp/t1", "git")
-            self.assertEqual(len(save.call_args_list), 2)
+            flush_object_references(Path("/tmp/t1"))
+
+            self.assertEqual(len(save_str.call_args_list), 2)
             self.assertEqual(
-                json.loads(save.call_args_list[0][0][1]),
+                json.loads(save_str.call_args_list[0][0][1]),
                 expected_metadata_object)
             self.assertEqual(
-                json.loads(save.call_args_list[1][0][1]),
+                json.loads(save_str.call_args_list[1][0][1]),
                 expected_reference_object)
+
+            # ensure that the object reference stores are updated
+            add_ref.assert_called_once()
 
 
 if __name__ == '__main__':

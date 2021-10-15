@@ -14,21 +14,6 @@ from typing import (
 from dataladmetadatamodel.log import logger
 
 
-def execute_with_output(arguments: Union[str, List[str]],
-                        file_descriptor: Any,
-                        stdin_content: Optional[Union[str, bytes]] = None
-                        ) -> Any:
-
-    logger.debug(f"gitbackend: execute_with_output({arguments}, ..., {stdin_content})")
-    return subprocess.run(
-        shlex.split(arguments) if isinstance(arguments, str) else arguments,
-        input=(
-            stdin_content.encode()
-            if isinstance(stdin_content, str)
-            else stdin_content),
-        stdout=file_descriptor)
-
-
 def execute(arguments: Union[str, List[str]],
             stdin_content: Optional[Union[str, bytes]] = None) -> Any:
 

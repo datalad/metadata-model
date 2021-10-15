@@ -1,7 +1,7 @@
 from typing import (
     List,
     Optional,
-    Tuple
+    Tuple,
 )
 
 from dataladmetadatamodel.metadatapath import MetadataPath

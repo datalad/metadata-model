@@ -244,7 +244,9 @@ def create_file_tree_with_metadata(paths: List[MetadataPath],
 
 
 def create_dataset_tree(dataset_tree_paths: Optional[List[MetadataPath]] = None,
-                        file_tree_paths: Optional[List[MetadataPath]] = None) -> DatasetTree:
+                        file_tree_paths: Optional[List[MetadataPath]] = None,
+                        initial_mrr: Optional[MetadataRootRecord] = None
+                        ) -> DatasetTree:
 
     dataset_tree_paths = dataset_tree_paths or default_dataset_tree_paths
     file_tree_paths = file_tree_paths or default_file_tree_paths
@@ -255,11 +257,15 @@ def create_dataset_tree(dataset_tree_paths: Optional[List[MetadataPath]] = None,
         metadata = Metadata()
         file_tree = create_file_tree(file_tree_paths)
 
-        mrr = MetadataRootRecord(
-            get_uuid(index),
-            get_version(index),
-            metadata,
-            file_tree)
+        if initial_mrr is None:
+            mrr = MetadataRootRecord(
+                get_uuid(index),
+                get_version(index),
+                metadata,
+                file_tree)
+        else:
+            mrr = initial_mrr
+
         dataset_tree.add_dataset(path, mrr)
 
     return dataset_tree

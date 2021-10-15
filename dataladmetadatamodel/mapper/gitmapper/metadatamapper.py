@@ -1,10 +1,10 @@
 from dataladmetadatamodel.mapper.gitmapper.objectreference import (
     GitReference,
-    add_blob_reference
+    add_blob_reference,
 )
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_load_str,
-    git_save_str
+    git_save_str,
 )
 from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
@@ -42,7 +42,7 @@ class MetadataGitMapper(Mapper):
         # JSON-strings that are stored in the
         # repository.
         metadata_blob_location = git_save_str(destination, metadata.to_json())
-        add_blob_reference(GitReference.METADATA, metadata_blob_location)
+        add_blob_reference(GitReference.BLOBS, metadata_blob_location)
 
         # save reference
         metadata_reference_blob_location = git_save_str(

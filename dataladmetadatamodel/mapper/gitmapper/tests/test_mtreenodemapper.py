@@ -8,10 +8,6 @@ from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mtreenode import MTreeNode
 from dataladmetadatamodel.text import Text
 from dataladmetadatamodel.mapper.reference import Reference
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
-    git_ls_tree,
-    git_ls_tree_recursive
-)
 
 
 tree_location = "a000000000000000000000000000000000000000"
