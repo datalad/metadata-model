@@ -8,6 +8,7 @@ class MetadataPath(PurePosixPath):
         args = [
             arg.replace("\\", "/")
             for arg in args
+            if isinstance(arg, str)
         ]
         original_path = PurePosixPath(*args)
         if not original_path.is_absolute():
