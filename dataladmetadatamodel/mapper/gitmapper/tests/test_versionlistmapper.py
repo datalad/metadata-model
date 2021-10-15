@@ -82,7 +82,7 @@ class TestVersionListMapper(unittest.TestCase):
                         'mapper_family': 'git',
                         'realm': '/tmp/t1',
                         'class_name': 'MetadataRootRecord',
-                        'location': 'a000300000000000000000000000000000000003'
+                        'location': get_location(3)
                     }
                 }]
             )
