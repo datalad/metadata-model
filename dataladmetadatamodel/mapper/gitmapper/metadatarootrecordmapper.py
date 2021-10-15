@@ -2,7 +2,7 @@ from uuid import UUID
 
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_load_json,
-    git_save_json
+    git_save_json,
 )
 from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference

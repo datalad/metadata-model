@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import (
     Optional,
     Tuple,
-    Union
+    Union,
 )
 from uuid import UUID
 
@@ -18,7 +18,7 @@ from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.uuidset import UUIDSet
 from dataladmetadatamodel.versionlist import (
     TreeVersionList,
-    VersionList
+    VersionList,
 )
 from dataladmetadatamodel.mapper.reference import Reference
 
