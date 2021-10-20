@@ -7,6 +7,7 @@ from typing import (
 )
 
 from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.mapper.gitmapper.metadatamapper import MetadataGitMapper
 from dataladmetadatamodel.mapper.gitmapper.objectreference import (
     add_tree_reference,
     GitReference,
@@ -61,9 +62,21 @@ class MTreeProxy:
                   backend_type: str = "git",
                   force_write: bool = False) -> Reference:
 
+        # Since a file tree might contain a large number
+        # of metadata entries and since each entry requires
+        # two blobs to be written, we use a write-cache.
+
+        # TODO: ugly:
+        from .filetree import FileTree
+        if isinstance(self, FileTree):
+            MetadataGitMapper.cache_realm(destination)
+
         reference = self.mtree.write_out(destination,
                                          backend_type,
                                          force_write)
+
+        if isinstance(self, FileTree):
+            MetadataGitMapper.flush_realm(destination)
 
         if not reference.is_none_reference():
             add_tree_reference(GitReference.TREES,
