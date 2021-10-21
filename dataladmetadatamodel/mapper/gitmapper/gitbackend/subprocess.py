@@ -127,6 +127,16 @@ def git_save_str(repo_dir, content: str) -> str:
     return checked_execute(cmd_line, stdin_content=content)[0][0]
 
 
+def git_save_file_list(repo_dir, file_list: List[str]) -> List[str]:
+    cmd_line = git_command_line(
+        repo_dir,
+        "hash-object",
+        ["-w", "--no-filters", "--stdin-paths"])
+    return checked_execute(
+        cmd_line,
+        stdin_content="\n".join(file_list))[0]
+
+
 def git_save_json(repo_dir, json_object: Union[Dict, List]) -> str:
     return git_save_str(repo_dir, json.dumps(json_object))
 

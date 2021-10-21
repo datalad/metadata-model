@@ -1,14 +1,15 @@
 import unittest
 from unittest import mock
 
+from dataladmetadatamodel.mapper.gitmapper.gitblobcache import hash_blob
+from dataladmetadatamodel.metadata import Metadata
+from dataladmetadatamodel.metadatapath import MetadataPath
+from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.tests.utils import (
     create_file_tree,
     get_location,
     get_uuid,
 )
-from dataladmetadatamodel.metadata import Metadata
-from dataladmetadatamodel.metadatapath import MetadataPath
-from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.versionlist import (
     VersionList,
     VersionRecord,
@@ -39,16 +40,27 @@ class TestVersionListMapper(unittest.TestCase):
 
     def test_complex_unmapping(self):
 
-        with mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_save_json") as save_json, \
-             mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatamapper.git_save_str") as save_str, \
-             mock.patch("dataladmetadatamodel.mapper.gitmapper.metadatarootrecordmapper.git_save_json") as save_json_2, \
-             mock.patch("dataladmetadatamodel.mapper.gitmapper.mtreenodemapper.git_save_tree_node") as save_tree_node, \
-             mock.patch("dataladmetadatamodel.mapper.gitmapper.versionlistmapper.git_update_ref") as update_ref:
+        with mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "versionlistmapper.git_save_json") as save_json, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "metadatamapper.git_save_str") as save_str, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "metadatarootrecordmapper.git_save_json") as save_json_2, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "mtreenodemapper.git_save_tree_node") as save_tree_node, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "gitblobcache.git_save_file_list") as file_list_save, \
+             mock.patch("dataladmetadatamodel.mapper.gitmapper."
+                        "versionlistmapper.git_update_ref"):
 
-            save_json.configure_mock(return_value=get_location(0))
-            save_str.configure_mock(return_value=get_location(1))
-            save_json_2.configure_mock(return_value=get_location(3))
-            save_tree_node.configure_mock(return_value=get_location(4))
+            save_json.return_value = get_location(0)
+            save_str.return_value = get_location(1)
+            save_json_2.return_value = get_location(3)
+            save_tree_node.return_value = get_location(4)
+            file_list_save.side_effect = lambda r, l: [
+                hash_blob(open(e, "rb").read())
+                for e in l
+            ]
 
             version_list = VersionList(initial_set={
                 "v0": VersionRecord(

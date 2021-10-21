@@ -1,11 +1,10 @@
 import subprocess
 import tempfile
 import unittest
-from pathlib import Path
 from unittest.mock import patch
 
 from dataladmetadatamodel.datasettree import DatasetTree
-from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
+from dataladmetadatamodel.mapper.gitmapper.gitblobcache import hash_blob
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.tests.utils import (
@@ -82,12 +81,18 @@ class TestReferenceCreation(unittest.TestCase):
                       "mtreenodemapper.git_save_tree_node") as save_tree_node, \
                 patch("dataladmetadatamodel.mapper.gitmapper."
                       "metadatarootrecordmapper.git_save_json") as save_json, \
+                patch("dataladmetadatamodel.mapper.gitmapper."
+                      "gitblobcache.git_save_file_list") as file_list_save, \
                 patch("dataladmetadatamodel.mtreeproxy."
                       "add_tree_reference") as add_tree_ref:
 
             save_str.return_value = get_location(1)
             save_tree_node.return_value = get_location(2)
             save_json.return_value = get_location(3)
+            file_list_save.side_effect = lambda r, l: [
+                hash_blob(open(e, "rb").read())
+                for e in l
+            ]
 
             dataset_tree.write_out("/tmp/t1")
 
