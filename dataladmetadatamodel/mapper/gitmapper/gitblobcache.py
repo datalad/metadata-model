@@ -25,14 +25,16 @@ class GitBlobCache:
                  realm: str,
                  maxsize: int = 2000):
 
-        assert isinstance(realm, str)
-
         self.realm = realm
         self.maxsize = maxsize
         self.cached_objects: List[Union[str, bytes]] = list()
         self.flushed_objects: Dict[Union[str, bytes], str] = dict()
         self.temporary_directory = TemporaryDirectory()
         self.temp_dir_path = Path(self.temporary_directory.name)
+
+        # Assert after member initialisation, so in case of an
+        # exception the destructor does still work
+        assert isinstance(realm, str)
 
     def __del__(self):
         if len(self.cached_objects) > 0:
