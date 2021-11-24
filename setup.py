@@ -40,6 +40,9 @@ setuptools.setup(
         ]
     },
     install_requires=[
-        "dataclasses"
+        "appdirs",
+        "click",
+        "dataclasses",
+        "fasteners"
     ]
 )
