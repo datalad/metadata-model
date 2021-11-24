@@ -79,7 +79,7 @@ class Reference:
         return cls(referred_class_name, none_location)
 
     @staticmethod
-    def is_remote(realm):
+    def is_remote(realm: str):
         return any(
             map(
                 lambda pattern: realm.startswith(pattern),
@@ -91,5 +91,5 @@ class Reference:
                    "ssh:"]))
 
     @staticmethod
-    def is_local(realm):
+    def is_local(realm: str):
         return not Reference.is_remote(realm)

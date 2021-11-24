@@ -201,6 +201,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                       backend_type="git") -> bool:
         if not self.mapped:
             self.read_in(backend_type)
+            self.mapped = True
             return True
         return False
 
