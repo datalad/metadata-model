@@ -3,6 +3,7 @@ Simple lock interface.
 """
 import os
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -29,6 +30,16 @@ def _get_lock_state(lock_dict: dict, realm: Path) -> LockState:
             0,
             InterProcessLock(str(realm / GIT_MAPPER_LOCK_FILE_NAME)))
     return lock_dict[realm]
+
+
+@contextmanager
+def locked_backend(realm: Path):
+    """ lock and unlock the backend given by realm """
+    lock_backend(realm)
+    try:
+        yield None
+    finally:
+        unlock_backend(realm)
 
 
 def lock_backend(realm: Path):
