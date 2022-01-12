@@ -64,10 +64,10 @@ class MetadataRootRecordGitMapper(Mapper):
 
         assert isinstance(mrr, MetadataRootRecord)
 
-        if mrr.file_tree is None:
+        if mrr._file_tree is None:
             file_tree_reference = Reference.get_none_reference("FileTree")
         else:
-            file_tree_reference = mrr.file_tree.write_out(
+            file_tree_reference = mrr._file_tree.write_out(
                 realm,
                 "git",
                 force_write)

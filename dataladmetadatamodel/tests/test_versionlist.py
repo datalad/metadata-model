@@ -96,11 +96,11 @@ class TestVersionList(unittest.TestCase):
             copied_version_list.read_in()
 
             # Check that the copied elements are unmapped
-            for _, (_, _, copied_dataset_tree) in copied_version_list.get_versioned_elements():
+            for _, (_, _, copied_dataset_tree) in copied_version_list.versioned_elements:
                 self.assertFalse(copied_dataset_tree.mtree.mapped)
 
             # Compare the version lists, taking modified dataset tree paths into account
-            for primary_version, (_, path, dataset_tree) in version_list.get_versioned_elements():
+            for primary_version, (_, path, dataset_tree) in version_list.versioned_elements:
                 expected_path = path_prefix / path
                 _, copy_path, copied_dataset_tree = copied_version_list.get_versioned_element(primary_version)
                 self.assertEqual(expected_path, copy_path)

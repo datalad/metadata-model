@@ -59,7 +59,7 @@ class VersionList(MappableObject):
             version_record.element.purge()
         self.version_set = dict()
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+    def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         yield from map(
             lambda version_record: version_record.element,
             self.version_set.values())
@@ -85,8 +85,9 @@ class VersionList(MappableObject):
             version_record.path,
             version_record.element)
 
-    def get_versioned_elements(self
-                               ) -> Iterable[Tuple[str, Tuple[str, MetadataPath, MappableObject]]]:
+    @property
+    def versioned_elements(self
+                           ) -> Iterable[Tuple[str, Tuple[str, MetadataPath, MappableObject]]]:
         """
         Get an iterable of all versions and their records
         """

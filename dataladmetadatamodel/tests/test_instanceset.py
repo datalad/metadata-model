@@ -55,8 +55,8 @@ class TestInstanceSetBase(unittest.TestCase):
         )
 
         self.assertDictEqual(
-            self.metadata_instance_set.instances,
-            instance_set.instances
+            self.metadata_instance_set._instances,
+            instance_set._instances
         )
 
 
@@ -77,7 +77,7 @@ class TestUniqueness(TestInstanceSetBase):
 
     def test_configuration_unity(self):
         # Ensure known state
-        configuration_list = self.metadata_instance_set.get_configurations()
+        configuration_list = self.metadata_instance_set.configurations
         self.assertEqual(1, len(configuration_list))
         self.assertEqual(configuration_list[0], self.get_configuration("default"))
 
@@ -87,7 +87,7 @@ class TestUniqueness(TestInstanceSetBase):
                 configuration_list[0]))
 
         # Ensure nothing has changes
-        new_configuration_list = self.metadata_instance_set.get_configurations()
+        new_configuration_list = self.metadata_instance_set.configurations
         self.assertEqual(configuration_list, new_configuration_list)
         self.assertEqual(
             self.metadata_instance_set.get_instance_for_configuration(
@@ -97,12 +97,12 @@ class TestUniqueness(TestInstanceSetBase):
         )
 
     def test_configuration_multiplicity(self):
-        configuration_list = self.metadata_instance_set.get_configurations()
+        configuration_list = self.metadata_instance_set.configurations
         self.assertEqual(1, len(configuration_list))
         self.assertEqual(configuration_list[0], self.get_configuration("default"))
 
         self.metadata_instance_set.add_metadata_instance(self.get_instance("new"))
-        configuration_list = self.metadata_instance_set.get_configurations()
+        configuration_list = self.metadata_instance_set.configurations
         self.assertEqual(2, len(configuration_list))
         self.assertIn(self.get_configuration("default"), configuration_list)
         self.assertIn(self.get_configuration("new"), configuration_list)

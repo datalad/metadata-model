@@ -82,7 +82,7 @@ class TestFileTree(unittest.TestCase):
             [extractor_configuration])
 
         self.assertEqual(
-            stored_metadata.instances[0],
+            stored_metadata._instances[0],
             MetadataInstance(
                 1.2,
                 author_name,

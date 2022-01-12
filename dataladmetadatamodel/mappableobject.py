@@ -17,7 +17,8 @@ from dataladmetadatamodel.mapper.reference import Reference
 def ensure_mapped(mappable_object):
     needs_purge = False
     try:
-        needs_purge = mappable_object.ensure_mapped()
+        if mappable_object is not None:
+            needs_purge = mappable_object.ensure_mapped()
         yield mappable_object
     finally:
         if needs_purge:
@@ -66,7 +67,8 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         self.reference = reference
         self.mapped = reference is None
 
-    def get_modifiable_sub_objects(self) -> Iterable["MappableObject"]:
+    @property
+    def modifiable_sub_objects(self) -> Iterable["MappableObject"]:
         """
         Mappable objects might be mapped (in memory) or not mapped
         (stored on secondary storage and purged in order to consume
@@ -80,7 +82,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
             return []
 
         # delegate to our subclasses
-        return self.get_modifiable_sub_objects_impl()
+        return self.modifiable_sub_objects_impl()
 
     def read_in(self,
                 backend_type: str = "git"
@@ -229,7 +231,7 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
         return result
 
     @abstractmethod
-    def get_modifiable_sub_objects_impl(self) -> Iterable["MappableObject"]:
+    def modifiable_sub_objects_impl(self) -> Iterable["MappableObject"]:
         raise NotImplementedError
 
     @abstractmethod

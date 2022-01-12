@@ -47,8 +47,8 @@ class ModifiableObject(metaclass=ABCMeta):
         return all(
             map(
                 lambda element: element.is_saved_on(destination),
-                self.get_modifiable_sub_objects()))
+                self.modifiable_sub_objects))
 
     @abstractmethod
-    def get_modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
+    def modifiable_sub_objects(self) -> Iterable["ModifiableObject"]:
         raise NotImplementedError

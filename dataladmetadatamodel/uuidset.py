@@ -24,7 +24,7 @@ class UUIDSet(MappableObject):
         super().__init__(realm, reference)
         self.uuid_set = initial_set or dict()
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+    def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return self.uuid_set.values()
 
     def purge_impl(self):
@@ -46,7 +46,7 @@ class UUIDSet(MappableObject):
         self.touch()
         self.uuid_set[uuid] = version_list
 
-    def get_version_list(self, uuid) -> VersionList:
+    def get_version_list(self, uuid: UUID) -> VersionList:
         """
         Get the version list for uuid. If it is not mapped yet,
         it will be mapped.

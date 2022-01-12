@@ -30,37 +30,39 @@ class MetadataRootRecord(MappableObject):
         self.dataset_identifier = dataset_identifier
         self.dataset_version = dataset_version
         self.dataset_level_metadata = dataset_level_metadata
-        self.file_tree = file_tree
+        self._file_tree = file_tree
 
     @staticmethod
     def get_empty_instance(realm: Optional[str] = None,
                            reference: Optional[Reference] = None):
         return MetadataRootRecord(None, None, None, None, realm, reference)
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+    def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return [
             child
-            for child in [self.dataset_level_metadata, self.file_tree]
+            for child in [self.dataset_level_metadata, self._file_tree]
             if child is not None
         ]
 
     def purge_impl(self):
         self.dataset_level_metadata.purge()
-        if self.file_tree is not None:
-            self.file_tree.purge()
+        if self._file_tree is not None:
+            self._file_tree.purge()
         if self.dataset_level_metadata is not None:
             self.dataset_level_metadata = None
-        self.file_tree = None
+        self._file_tree = None
 
     def set_file_tree(self, file_tree: FileTree):
         self.touch()
-        self.file_tree = file_tree
+        self._file_tree = file_tree
 
     def get_file_tree(self):
         self.ensure_mapped()
-        if self.file_tree is None:
+        if self._file_tree is None:
             return None
-        return self.file_tree.read_in()
+        return self._file_tree.read_in()
+
+    file_tree = property(fget=get_file_tree, fset=set_file_tree)
 
     def set_dataset_level_metadata(self, dataset_level_metadata: Metadata):
         self.touch()
@@ -86,10 +88,10 @@ class MetadataRootRecord(MappableObject):
                 else None
             ),
             (
-                self.file_tree.deepcopy(
+                self._file_tree.deepcopy(
                     new_mapper_family,
                     new_destination)
-                if self.file_tree is not None
+                if self._file_tree is not None
                 else None
             ),
             None,
