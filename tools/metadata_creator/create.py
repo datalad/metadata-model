@@ -1,4 +1,3 @@
-import itertools
 import logging
 import sys
 from time import time
@@ -190,8 +189,7 @@ def main(argv):
 
     # Extract the UUID Set from the dataset tree:
     uuid_version_lists = {}
-    datasets = dataset_tree.get_dataset_paths()
-    for path, metadata_root_record in datasets:
+    for path, metadata_root_record in dataset_tree.dataset_paths:
         uuid_version_lists[metadata_root_record.dataset_identifier] = Connector.from_object(
             VersionList(initial_set={
                 get_primary_data_version(version_counter): VersionRecord(

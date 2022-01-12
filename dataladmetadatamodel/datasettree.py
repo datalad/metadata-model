@@ -51,8 +51,9 @@ class DatasetTree(MTreeProxy):
         mrr.ensure_mapped()
         return mrr
 
-    def get_dataset_paths(self
-                          ) -> List[Tuple[MetadataPath, MetadataRootRecord]]:
+    @property
+    def dataset_paths(self
+                      ) -> List[Tuple[MetadataPath, MetadataRootRecord]]:
         return [
             (
                 MetadataPath("/".join(path.parts[:-1])),

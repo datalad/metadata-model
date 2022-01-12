@@ -142,8 +142,8 @@ def assert_dataset_trees_equal(test_case: unittest.TestCase,
                                a_purge_unsafe: bool
                                ):
 
-    a_entries = list(a.get_dataset_paths())
-    b_entries = list(b.get_dataset_paths())
+    a_entries = list(a.dataset_paths)
+    b_entries = list(b.dataset_paths)
 
     # Compare paths
     test_case.assertListEqual(

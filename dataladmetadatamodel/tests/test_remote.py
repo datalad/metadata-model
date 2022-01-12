@@ -21,7 +21,7 @@ class TestRemote(unittest.TestCase):
             time_stamp, dataset_path, dataset_tree = element_info
             dataset_tree = cast(DatasetTree, dataset_tree)
             dataset_tree.read_in()
-            dataset_paths = dataset_tree.get_dataset_paths()
+            dataset_paths = dataset_tree.dataset_paths
             self.assertEqual(27, len(dataset_paths))
 
             mrr = dataset_tree.get_metadata_root_record(MetadataPath("study-104"))

@@ -47,7 +47,7 @@ class TestDatasetTree(unittest.TestCase):
             dataset_tree_paths=paths,
             initial_mrr=mrr)
 
-        returned_entries = tuple(dataset_tree.get_dataset_paths())
+        returned_entries = tuple(dataset_tree.dataset_paths)
 
         returned_paths = [entry[0] for entry in returned_entries]
         self.assertEqual(sorted(paths), sorted(returned_paths))
@@ -63,7 +63,7 @@ class TestDatasetTree(unittest.TestCase):
         dataset_tree.add_dataset(MetadataPath(""), mrr)
         self.assertEqual(dataset_tree.get_metadata_root_record(MetadataPath("")), mrr)
 
-        returned_entries = tuple(dataset_tree.get_dataset_paths())
+        returned_entries = tuple(dataset_tree.dataset_paths)
         self.assertEqual(len(returned_entries), 1)
 
         self.assertEqual(returned_entries[0][0], MetadataPath(""))
