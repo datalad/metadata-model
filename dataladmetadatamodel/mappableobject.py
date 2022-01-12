@@ -17,7 +17,8 @@ from dataladmetadatamodel.mapper.reference import Reference
 def ensure_mapped(mappable_object):
     needs_purge = False
     try:
-        needs_purge = mappable_object.ensure_mapped()
+        if mappable_object is not None:
+            needs_purge = mappable_object.ensure_mapped()
         yield mappable_object
     finally:
         if needs_purge:
