@@ -85,8 +85,9 @@ class VersionList(MappableObject):
             version_record.path,
             version_record.element)
 
-    def get_versioned_elements(self
-                               ) -> Iterable[Tuple[str, Tuple[str, MetadataPath, MappableObject]]]:
+    @property
+    def versioned_elements(self
+                           ) -> Iterable[Tuple[str, Tuple[str, MetadataPath, MappableObject]]]:
         """
         Get an iterable of all versions and their records
         """

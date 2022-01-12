@@ -86,8 +86,8 @@ def assert_mrr_equal(test_case: unittest.TestCase,
 
     assert_mappable_objects_equal(
         test_case,
-        a_mrr.file_tree,
-        b_mrr.file_tree,
+        a_mrr._file_tree,
+        b_mrr._file_tree,
         a_purge_unsafe,
         assert_file_trees_equal)
 
@@ -179,8 +179,8 @@ def assert_mrrs_equal(test_case: unittest.TestCase,
     # Compare file trees
     assert_mappable_objects_equal(
         test_case,
-        a.file_tree,
-        b.file_tree,
+        a._file_tree,
+        b._file_tree,
         unsafe,
         assert_file_trees_equal
     )

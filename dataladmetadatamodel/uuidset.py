@@ -46,7 +46,7 @@ class UUIDSet(MappableObject):
         self.touch()
         self.uuid_set[uuid] = version_list
 
-    def get_version_list(self, uuid) -> VersionList:
+    def get_version_list(self, uuid: UUID) -> VersionList:
         """
         Get the version list for uuid. If it is not mapped yet,
         it will be mapped.

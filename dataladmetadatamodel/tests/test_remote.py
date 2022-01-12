@@ -17,7 +17,7 @@ class TestRemote(unittest.TestCase):
         self.assertEqual(len(tree_version_list.version_set), 1)
         self.assertEqual(len(uuid_set.uuid_set), 1)
 
-        for version, element_info in tree_version_list.get_versioned_elements():
+        for version, element_info in tree_version_list.versioned_elements:
             time_stamp, dataset_path, dataset_tree = element_info
             dataset_tree = cast(DatasetTree, dataset_tree)
             dataset_tree.read_in()
@@ -25,7 +25,7 @@ class TestRemote(unittest.TestCase):
             self.assertEqual(27, len(dataset_paths))
 
             mrr = dataset_tree.get_metadata_root_record(MetadataPath("study-104"))
-            file_tree = mrr.get_file_tree()
+            file_tree = mrr.file_tree
             file_paths = list(file_tree.get_paths_recursive())
             self.assertEqual(7, len(file_paths))
 

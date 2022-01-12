@@ -19,17 +19,17 @@ class MetadataGitMapper(Mapper):
     metadata_caches: Dict[str, GitBlobCache] = dict()
 
     @classmethod
-    def get_cache(cls, realm):
+    def get_cache(cls, realm: str):
         return cls.metadata_caches.get(realm, None)
 
     @classmethod
-    def cache_realm(cls, realm):
+    def cache_realm(cls, realm: str):
         if cls.get_cache(realm) is not None:
             raise RuntimeError(f"already caching realm: {realm}")
         cls.metadata_caches[realm] = GitBlobCache(realm)
 
     @classmethod
-    def flush_realm(cls, realm):
+    def flush_realm(cls, realm: str):
         cache = cls.get_cache(realm)
         if cache is None:
             raise RuntimeError(f"realm is not cached: {realm}")

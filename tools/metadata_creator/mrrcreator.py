@@ -59,7 +59,7 @@ def create_metadata_root_record(mapper_family,
 
     mrr.save()
     mrr.dataset_level_metadata.purge()
-    mrr.file_tree.purge()
+    mrr._file_tree.purge()
     return mrr
 
 
