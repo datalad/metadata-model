@@ -4,10 +4,13 @@ from typing import (
     List,
     Optional,
     Tuple,
-    Union
+    Union,
 )
 
-from dataladmetadatamodel.mappableobject import MappableObject
+from dataladmetadatamodel.mappableobject import (
+    MappableObject,
+    ensure_mapped,
+)
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -174,17 +177,14 @@ class MTreeNode(MappableObject):
         if show_intermediate:
             yield MetadataPath(""), self
 
-        purge_self = self.ensure_mapped()
-        for child_name, child_node in self.child_nodes.items():
-            if not isinstance(child_node, MTreeNode):
-                yield MetadataPath(child_name), child_node
-            else:
-                for sub_path, tree_node in child_node.get_paths_recursive(
-                        show_intermediate):
-                    yield MetadataPath(child_name) / sub_path, tree_node
-
-        if purge_self:
-            self.purge()
+        with ensure_mapped(self):
+            for child_name, child_node in self.child_nodes.items():
+                if not isinstance(child_node, MTreeNode):
+                    yield MetadataPath(child_name), child_node
+                else:
+                    for sub_path, tree_node in child_node.get_paths_recursive(
+                            show_intermediate):
+                        yield MetadataPath(child_name) / sub_path, tree_node
 
     @staticmethod
     def is_root_path(path: MetadataPath) -> bool:

@@ -1,15 +1,27 @@
 from abc import (
     ABCMeta,
-    abstractmethod
+    abstractmethod,
 )
+from contextlib import contextmanager
 from typing import (
     Iterable,
-    Optional
+    Optional,
 )
 
 from dataladmetadatamodel.log import logger
 from dataladmetadatamodel.modifiableobject import ModifiableObject
 from dataladmetadatamodel.mapper.reference import Reference
+
+
+@contextmanager
+def ensure_mapped(mappable_object):
+    needs_purge = False
+    try:
+        needs_purge = mappable_object.ensure_mapped()
+        yield mappable_object
+    finally:
+        if needs_purge:
+            mappable_object.purge()
 
 
 class MappableObject(ModifiableObject, metaclass=ABCMeta):
@@ -210,15 +222,10 @@ class MappableObject(ModifiableObject, metaclass=ABCMeta):
                  new_destination: Optional[str] = None,
                  **kwargs) -> "MappableObject":
 
-        needs_purge = self.ensure_mapped()
-
-        result = self.deepcopy_impl(new_mapper_family,
-                                    new_destination,
-                                    **kwargs)
-
-        if needs_purge is True:
-            self.purge()
-
+        with ensure_mapped(self):
+            result = self.deepcopy_impl(new_mapper_family,
+                                        new_destination,
+                                        **kwargs)
         return result
 
     @abstractmethod
