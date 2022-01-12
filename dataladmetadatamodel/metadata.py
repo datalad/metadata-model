@@ -145,30 +145,32 @@ class MetadataInstanceSet:
                  initial_metadata_instances: Optional[Iterable[MetadataInstance]] = None):
 
         self.parameter_set = list()
-        self.instances = dict()
+        self._instances = dict()
         for metadata_instance in initial_metadata_instances or []:
             self.add_metadata_instance(metadata_instance)
 
     def __iter__(self):
-        yield from self.instances.values()
+        yield from self._instances.values()
 
     def add_metadata_instance(self, metadata_instance: MetadataInstance):
         if metadata_instance.configuration not in self.parameter_set:
             self.parameter_set.append(metadata_instance.configuration)
         instance_key = self.parameter_set.index(metadata_instance.configuration)
-        self.instances[instance_key] = metadata_instance
+        self._instances[instance_key] = metadata_instance
 
-    def get_instances(self) -> Generator[MetadataInstance, None, None]:
-        yield from self.instances.values()
+    @property
+    def instances(self) -> Generator[MetadataInstance, None, None]:
+        yield from self._instances.values()
 
-    def get_configurations(self) -> List[ExtractorConfiguration]:
+    @property
+    def configurations(self) -> List[ExtractorConfiguration]:
         return self.parameter_set[:]
 
     def get_instance_for_configuration_index(self, index: int):
-        return self.instances[index]
+        return self._instances[index]
 
     def get_instance_for_configuration(self, configuration: ExtractorConfiguration):
-        return self.instances[self.parameter_set.index(configuration)]
+        return self._instances[self.parameter_set.index(configuration)]
 
     def to_json_obj(self) -> JSONObject:
         return {
@@ -182,7 +184,7 @@ class MetadataInstanceSet:
             ],
             "instance_set": {
                 instance_key: instance.to_json_obj()
-                for instance_key, instance in self.instances.items()
+                for instance_key, instance in self._instances.items()
             }
         }
 
@@ -199,7 +201,7 @@ class MetadataInstanceSet:
             ExtractorConfiguration.from_json_obj(json_obj)
             for json_obj in obj["parameter_set"]
         ]
-        metadata_instance_set.instances = {
+        metadata_instance_set._instances = {
             int(configuration_id): MetadataInstance.from_json_obj(json_obj)
             for configuration_id, json_obj in obj["instance_set"].items()
         }
@@ -211,7 +213,7 @@ class MetadataInstanceSet:
 
     def __eq__(self, other: "MetadataInstanceSet"):
         return sorted(self.parameter_set) == sorted(other.parameter_set) \
-               and self.instances == other.instances
+               and self._instances == other._instances
 
 
 class Metadata(MappableObject):
@@ -247,9 +249,11 @@ class Metadata(MappableObject):
     def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return []
 
+    @property
     def extractors(self) -> Generator[str, None, None]:
         yield from self.instance_sets.keys()
 
+    @property
     def extractor_runs(self) -> Generator[Tuple[str, MetadataInstanceSet], None, None]:
         yield from self.instance_sets.items()
 
