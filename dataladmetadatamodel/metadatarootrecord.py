@@ -37,7 +37,7 @@ class MetadataRootRecord(MappableObject):
                            reference: Optional[Reference] = None):
         return MetadataRootRecord(None, None, None, None, realm, reference)
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+    def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return [
             child
             for child in [self.dataset_level_metadata, self.file_tree]

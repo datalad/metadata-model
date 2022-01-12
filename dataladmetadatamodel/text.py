@@ -30,7 +30,7 @@ class Text(MappableObject):
                            reference: Optional[Reference] = None):
         return Text(None, realm, reference)
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+    def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return []
 
     def purge_impl(self):

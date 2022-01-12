@@ -59,7 +59,7 @@ class VersionList(MappableObject):
             version_record.element.purge()
         self.version_set = dict()
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+    def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         yield from map(
             lambda version_record: version_record.element,
             self.version_set.values())

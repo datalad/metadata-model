@@ -24,7 +24,7 @@ class UUIDSet(MappableObject):
         super().__init__(realm, reference)
         self.uuid_set = initial_set or dict()
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
+    def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         return self.uuid_set.values()
 
     def purge_impl(self):

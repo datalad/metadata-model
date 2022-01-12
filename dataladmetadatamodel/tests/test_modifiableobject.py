@@ -18,7 +18,8 @@ class SUTModifiableObject(ModifiableObject):
             self.set_saved_on(saved_on)
         self.something = "Something " * 100
 
-    def get_modifiable_sub_objects(self) -> Iterable:
+    @property
+    def modifiable_sub_objects(self) -> Iterable:
         return []
 
 
@@ -40,7 +41,8 @@ class TestModifiableObject(unittest.TestCase):
                 super().__init__()
                 self.sub_objects = _sub_objects
 
-            def get_modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
+            @property
+            def modifiable_sub_objects(self) -> Iterable[ModifiableObject]:
                 return self.sub_objects
 
         sub_objects = [SUTModifiableObject(destination) for _ in range(3)]

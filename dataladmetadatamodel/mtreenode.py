@@ -34,7 +34,7 @@ class MTreeNode(MappableObject):
     def __str__(self):
         return f"<{type(self).__name__}: children: {self.child_nodes.keys()}>"
 
-    def get_modifiable_sub_objects_impl(self) -> Iterable["MappableObject"]:
+    def modifiable_sub_objects_impl(self) -> Iterable["MappableObject"]:
         yield from self.child_nodes.values()
 
     def purge_impl(self):
