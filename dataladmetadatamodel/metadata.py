@@ -159,8 +159,8 @@ class MetadataInstanceSet:
         self._instances[instance_key] = metadata_instance
 
     @property
-    def instances(self) -> Generator[MetadataInstance, None, None]:
-        yield from self._instances.values()
+    def instances(self) -> Dict:
+        return self._instances
 
     @property
     def configurations(self) -> List[ExtractorConfiguration]:
