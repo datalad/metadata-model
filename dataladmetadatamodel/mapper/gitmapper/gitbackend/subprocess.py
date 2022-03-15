@@ -61,7 +61,7 @@ def git_command_line(repo_dir: str,
            ] + arguments
 
 
-def git_text_result(cmd_line):
+def git_text_result(cmd_line: Union[str, List[str]]):
     result = checked_execute(cmd_line)[0]
     return "\n".join(result)
 
@@ -95,25 +95,27 @@ def git_init(repo_dir: str) -> None:
 
 
 def git_object_exists_locally(repo_dir: str,
-                              object_reference) -> bool:
+                              object_reference: str) -> bool:
     cmd_line = git_command_line(repo_dir, "cat-file", ["-e", object_reference])
     return execute(cmd_line).returncode == 0
 
 
 def git_read_tree_node(repo_dir: str,
-                       object_reference) -> List[str]:
+                       object_reference: str) -> List[str]:
     repo_dir = adapt_for_remote(repo_dir, object_reference)
     cmd_line = git_command_line(repo_dir, "cat-file", ["-p", object_reference])
     return checked_execute(cmd_line)[0]
 
 
-def git_ls_tree(repo_dir, object_reference) -> List[str]:
+def git_ls_tree(repo_dir: str, object_reference: str) -> List[str]:
     repo_dir = adapt_for_remote(repo_dir, object_reference)
     cmd_line = git_command_line(repo_dir, "ls-tree", [object_reference])
     return checked_execute(cmd_line)[0]
 
 
-def git_ls_tree_recursive(repo_dir, object_reference, show_intermediate=False) -> List[str]:
+def git_ls_tree_recursive(repo_dir: str,
+                          object_reference: str,
+                          show_intermediate: bool = False) -> List[str]:
     repo_dir = adapt_for_remote(repo_dir, object_reference)
     if show_intermediate is True:
         cmd_line = git_command_line(repo_dir, "ls-tree", ["-r", "-t", object_reference])
@@ -122,12 +124,12 @@ def git_ls_tree_recursive(repo_dir, object_reference, show_intermediate=False) -
     return checked_execute(cmd_line)[0]
 
 
-def git_save_str(repo_dir, content: str) -> str:
+def git_save_str(repo_dir: str, content: str) -> str:
     cmd_line = git_command_line(repo_dir, "hash-object", ["-w", "--stdin"])
     return checked_execute(cmd_line, stdin_content=content)[0][0]
 
 
-def git_save_file_list(repo_dir, file_list: List[str]) -> List[str]:
+def git_save_file_list(repo_dir: str, file_list: List[str]) -> List[str]:
     cmd_line = git_command_line(
         repo_dir,
         "hash-object",
@@ -137,11 +139,11 @@ def git_save_file_list(repo_dir, file_list: List[str]) -> List[str]:
         stdin_content="\n".join(file_list))[0]
 
 
-def git_save_json(repo_dir, json_object: Union[Dict, List]) -> str:
+def git_save_json(repo_dir: str, json_object: Union[Dict, List]) -> str:
     return git_save_str(repo_dir, json.dumps(json_object))
 
 
-def git_save_tree_node(repo_dir,
+def git_save_tree_node(repo_dir: str,
                        entry_set: Iterable[Tuple[str, str, str, str]]
                        ) -> str:
 
@@ -153,7 +155,7 @@ def git_save_tree_node(repo_dir,
     return checked_execute(cmd_line, stdin_content=tree_spec)[0][0]
 
 
-def git_save_tree(repo_dir,
+def git_save_tree(repo_dir: str,
                   entry_set: Iterable[Tuple[str, str, str, str]]
                   ) -> str:
     tree_spec = "\n".join([
