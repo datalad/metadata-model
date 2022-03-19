@@ -10,7 +10,7 @@ from ...mapper.reference import none_location
 from .treeupdater import EntryType
 
 
-object_reference_name = "refs/datalad/object-references"
+object_reference_name = "refs/datalad/object-references-2.0"
 
 logger = logging.getLogger("datalad.metalad.gitmapper.objectreference")
 
@@ -45,56 +45,30 @@ def flush_object_references(realm: Path):
     )
     from dataladmetadatamodel.mapper.gitmapper.utils import locked_backend
 
-    path_infos = [
-        PathInfo(
-            [
-                object_hash[0:3],
-                object_hash[3:6],
-                object_hash[6:9],
-                object_hash[9:],
-            ],
-            object_hash,
-            entry_type)
-        for entry_type, object_hash in cached_object_references
-    ]
+    if cached_object_references:
+        path_infos = [
+            PathInfo(
+                [
+                    object_hash[0:3],
+                    object_hash[3:6],
+                    object_hash[6:9],
+                    object_hash[9:],
+                ],
+                object_hash,
+                entry_type)
+            for entry_type, object_hash in cached_object_references
+        ]
 
-    with locked_backend(realm):
-        try:
-            root_entries = _get_dir(realm, object_reference_name)
-        except RuntimeError:
-            root_entries = []
-        tree_hash = add_paths(realm, path_infos, root_entries)
-        git_update_ref(str(realm), object_reference_name, tree_hash)
-
-    cached_object_references = set()
-
-
-def legacy_flush_object_references(realm: Path):
-    global cached_object_references
-
-    from dataladmetadatamodel.mapper.gitmapper.utils import locked_backend
-    from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
-        git_ls_tree,
-        git_update_ref,
-        git_save_tree,
-    )
-
-    with locked_backend(realm):
-        for git_reference, cached_tree_entries in cached_object_references.items():
+        with locked_backend(realm):
             try:
-                existing_tree_entries = [
-                    tuple(line.split())
-                    for line in git_ls_tree(str(realm), git_reference)
-                ]
+                root_entries = _get_dir(realm, object_reference_name)
             except RuntimeError:
-                existing_tree_entries = []
+                root_entries = []
 
-            existing_tree_entries_set = set(existing_tree_entries)
-            existing_tree_entries_set |= set(cached_tree_entries)
-            tree_hash = git_save_tree(str(realm), existing_tree_entries_set)
-            git_update_ref(str(realm), git_reference, tree_hash)
+            tree_hash = add_paths(realm, path_infos, root_entries)
+            git_update_ref(str(realm), object_reference_name, tree_hash)
 
-    cached_object_references = dict()
+        cached_object_references = set()
 
 
 def add_tree_reference(_, object_hash: str):
