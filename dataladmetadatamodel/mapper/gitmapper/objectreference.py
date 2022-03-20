@@ -20,8 +20,8 @@ cached_object_references: Set[Tuple[EntryType, str]] = set()
 class GitReference(enum.Enum):
     TREE_VERSION_LIST = "refs/datalad/dataset-tree-version-list"
     UUID_SET = "refs/datalad/dataset-uuid-set"
-    TREES = "refs/datalad/object-references/trees"
-    BLOBS = "refs/datalad/object-references/blobs"
+    OLD_TREES = "refs/datalad/object-references/trees"
+    OLD_BLOBS = "refs/datalad/object-references/blobs"
 
 
 def add_object_reference(entry_type: EntryType,
@@ -71,11 +71,11 @@ def flush_object_references(realm: Path):
         cached_object_references = set()
 
 
-def add_tree_reference(_, object_hash: str):
+def add_tree_reference(object_hash: str):
     add_object_reference(EntryType.Directory, object_hash)
 
 
-def add_blob_reference(_, object_hash: str):
+def add_blob_reference(object_hash: str):
     add_object_reference(EntryType.File, object_hash)
 
 
