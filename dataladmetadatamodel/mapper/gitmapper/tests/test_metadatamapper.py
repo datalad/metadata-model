@@ -113,7 +113,6 @@ class TestMetadataMapper(unittest.TestCase):
 
             # ensure that the object reference stores are updated
             add_ref.assert_called_once()
-            assert 0 == 1, "check the asserts above"
 
     def test_double_cache_detection(self):
         metadata_mapper: MetadataGitMapper = cast(

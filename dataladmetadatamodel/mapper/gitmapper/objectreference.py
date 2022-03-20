@@ -10,7 +10,7 @@ from ...mapper.reference import none_location
 from .treeupdater import EntryType
 
 
-object_reference_name = "refs/datalad/object-references-2.0"
+object_reference_name = "refs/datalad_local/object-references"
 
 logger = logging.getLogger("datalad.metalad.gitmapper.objectreference")
 
@@ -20,8 +20,11 @@ cached_object_references: Set[Tuple[EntryType, str]] = set()
 class GitReference(enum.Enum):
     TREE_VERSION_LIST = "refs/datalad/dataset-tree-version-list"
     UUID_SET = "refs/datalad/dataset-uuid-set"
-    OLD_TREES = "refs/datalad/object-references/trees"
-    OLD_BLOBS = "refs/datalad/object-references/blobs"
+    LEGACY_TREES = "refs/datalad/object-references/trees"
+    LEGACY_BLOBS = "refs/datalad/object-references/blobs"
+
+
+checked_legacy_store = False
 
 
 def add_object_reference(entry_type: EntryType,
@@ -34,16 +37,72 @@ def add_object_reference(entry_type: EntryType,
     cached_object_references.add((entry_type, object_hash))
 
 
+def add_legacy_store_entries_from(realm: Path,
+                                  reference: GitReference,
+                                  entry_type: EntryType):
+
+    from .gitbackend.subprocess import git_ls_tree
+
+    try:
+        legacy_entries = (
+            tuple(line.split())
+            for line in git_ls_tree(str(realm), reference.value))
+
+        logger.info(f"converting legacy reference store at {realm} (ref: "
+                    f"{reference.value}) to new format")
+
+        for entry in legacy_entries:
+            cached_object_references.add((entry_type, entry[2]))
+        return True
+    except RuntimeError:
+        return False
+
+
+def add_legacy_store_entries(realm: Path) -> Tuple[bool, bool]:
+    """
+    Add legacy store entries to the cache, if they exist
+    """
+    global checked_legacy_store
+
+    if checked_legacy_store is False:
+        checked_legacy_store = True
+
+        legacy_trees_added = add_legacy_store_entries_from(
+            realm,
+            GitReference.LEGACY_TREES,
+            EntryType.Directory)
+
+        legacy_blobs_added = add_legacy_store_entries_from(
+            realm,
+            GitReference.LEGACY_BLOBS,
+            EntryType.File)
+
+        return legacy_trees_added, legacy_blobs_added
+
+    return False, False
+
+
+def remove_legacy_store_reference(realm: Path, reference: GitReference):
+    from .gitbackend.subprocess import git_delete_ref
+
+    logger.info(
+        f"deleting legacy object reference store: {realm} "
+        f"(ref: {reference.value})")
+    git_delete_ref(str(realm), reference.value)
+
+
 def flush_object_references(realm: Path):
     global cached_object_references
 
-    from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import git_update_ref
-    from dataladmetadatamodel.mapper.gitmapper.treeupdater import (
+    from .gitbackend.subprocess import git_update_ref
+    from ..gitmapper.treeupdater import (
         PathInfo,
         _get_dir,
         add_paths,
     )
-    from dataladmetadatamodel.mapper.gitmapper.utils import locked_backend
+    from ..gitmapper.utils import locked_backend
+
+    legacy_trees_added, legacy_blobs_added = add_legacy_store_entries(realm)
 
     if cached_object_references:
         path_infos = [
@@ -69,6 +128,11 @@ def flush_object_references(realm: Path):
             git_update_ref(str(realm), object_reference_name, tree_hash)
 
         cached_object_references = set()
+
+    if legacy_trees_added is True:
+        remove_legacy_store_reference(realm, GitReference.LEGACY_TREES)
+    if legacy_blobs_added is True:
+        remove_legacy_store_reference(realm, GitReference.LEGACY_BLOBS)
 
 
 def add_tree_reference(object_hash: str):

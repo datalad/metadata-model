@@ -174,6 +174,14 @@ def git_update_ref(repo_dir: str, ref_name: str, location: str) -> None:
     checked_execute(cmd_line)
 
 
+def git_delete_ref(repo_dir: str, ref_name: str) -> None:
+    cmd_line = git_command_line(
+        repo_dir,
+        "update-ref",
+        ["-d", ref_name])
+    checked_execute(cmd_line)
+
+
 def git_fetch_object(repo_dir: str,
                      remote_repo: str,
                      remote_reference: str):
