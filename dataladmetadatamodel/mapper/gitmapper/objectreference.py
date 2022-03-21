@@ -23,7 +23,7 @@ class GitReference(enum.Enum):
     LEGACY_BLOBS = "refs/datalad/object-references/blobs"
 
 
-checked_legacy_store = False
+checked_legacy_stores = set()
 
 
 def add_object_reference(entry_type: EntryType,
@@ -61,10 +61,8 @@ def add_legacy_store_entries(realm: Path) -> Tuple[bool, bool]:
     """
     Add legacy store entries to the cache, if they exist
     """
-    global checked_legacy_store
-
-    if checked_legacy_store is False:
-        checked_legacy_store = True
+    if realm not in checked_legacy_stores:
+        checked_legacy_stores.add(realm)
 
         legacy_trees_added = add_legacy_store_entries_from(
             realm,

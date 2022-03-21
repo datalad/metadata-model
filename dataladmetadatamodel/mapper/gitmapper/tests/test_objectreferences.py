@@ -27,17 +27,6 @@ from ..objectreference import (
 from ..treeupdater import EntryType
 
 
-default_repo = {
-    "a": {
-        "af1": "1234"
-    },
-    "b": {
-        "bf1": "aasdsd"
-    },
-    "LICENSE": "license content"
-}
-
-
 def _does_ref_exist(realm: Path, reference: str) -> bool:
     result = subprocess.run(
         ["git", "--git-dir", str(realm / ".git"), "show-ref", reference])
