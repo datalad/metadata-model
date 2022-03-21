@@ -1,11 +1,6 @@
-import subprocess
 import tempfile
 from collections import defaultdict
 from pathlib import Path
-from typing import (
-    Dict,
-    Optional,
-)
 from unittest.mock import patch
 
 from nose.tools import (
@@ -13,6 +8,7 @@ from nose.tools import (
     assert_in,
 )
 
+from ..utils import create_git_repo
 from ..gitbackend.subprocess import (
     git_ls_tree,
     git_ls_tree_recursive,
@@ -37,38 +33,6 @@ default_repo = {
 }
 
 
-def _create_file_tree(location: Path, content: Dict):
-    for name, value_or_dict in content.items():
-        new_location = location / name
-        if isinstance(value_or_dict, str):
-            new_location.write_text(value_or_dict)
-        else:
-            new_location.mkdir()
-            _create_file_tree(new_location, value_or_dict)
-
-
-def _create_repo(location: Path, content: Optional[Dict] = None):
-    content = content or default_repo
-    subprocess.run(["git", "init", str(location)], check=True)
-    _create_file_tree(location, content)
-    subprocess.run(
-        ["git", "-C", str(location), "add", "."],
-        check=True
-    )
-
-    subprocess.run(
-        ["git", "-C", str(location), "commit", "-m", "create repo"],
-        check=True
-    )
-
-    commit = subprocess.run(
-        ["git", "-C", str(location), "cat-file", "-p", "HEAD"],
-        check=True,
-        stdout=subprocess.PIPE
-    )
-    return commit.stdout.decode().splitlines()[0].split()[1]
-
-
 def test_basic():
     path_infos = [
         PathInfo(["a", "b", "c"], "000000000000000000000000000000000000000c", EntryType.File),
@@ -83,7 +47,7 @@ def test_basic():
 
     with tempfile.TemporaryDirectory() as td:
         repo_path = Path(td)
-        tree_hash = _create_repo(repo_path)
+        tree_hash = create_git_repo(repo_path, default_repo)
         root_entries = _get_dir(repo_path, tree_hash)
         result = add_paths(repo_path, path_infos, root_entries)
 
@@ -106,7 +70,7 @@ def test_dir_adding():
 
     with tempfile.TemporaryDirectory() as td:
         repo_path = Path(td)
-        tree_hash = _create_repo(repo_path)
+        tree_hash = create_git_repo(repo_path, default_repo)
         root_entries = _get_dir(repo_path, tree_hash)
         result = add_paths(repo_path, path_infos, root_entries)
 
@@ -129,7 +93,7 @@ def test_dir_overwrite_error():
 
     with tempfile.TemporaryDirectory() as td:
         repo_path = Path(td)
-        tree_hash = _create_repo(repo_path)
+        tree_hash = create_git_repo(repo_path, default_repo)
         root_entries = _get_dir(repo_path, tree_hash)
 
         try:
@@ -150,7 +114,7 @@ def test_file_overwrite_error():
 
     with tempfile.TemporaryDirectory() as td:
         repo_path = Path(td)
-        tree_hash = _create_repo(repo_path)
+        tree_hash = create_git_repo(repo_path, default_repo)
         root_entries = _get_dir(repo_path, tree_hash)
 
         try:
@@ -228,7 +192,7 @@ def test_minimal_invocation():
         wd_mock.side_effect = wd_counter
 
         repo_path = Path(td)
-        tree_hash = _create_repo(repo_path, complex_repo)
+        tree_hash = create_git_repo(repo_path, complex_repo)
         root_entries = _get_dir(repo_path, tree_hash)
 
         result = add_paths(repo_path, path_infos, root_entries)
@@ -245,4 +209,3 @@ def test_minimal_invocation():
             assert_in(
                 f"100644 blob {path_info.object_hash}\t{'/'.join(path_info.elements)}",
                 lines)
-

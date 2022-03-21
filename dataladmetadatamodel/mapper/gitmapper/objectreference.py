@@ -10,8 +10,6 @@ from ...mapper.reference import none_location
 from .treeupdater import EntryType
 
 
-object_reference_name = "refs/datalad_local/object-references"
-
 logger = logging.getLogger("datalad.metalad.gitmapper.objectreference")
 
 cached_object_references: Set[Tuple[EntryType, str]] = set()
@@ -20,6 +18,7 @@ cached_object_references: Set[Tuple[EntryType, str]] = set()
 class GitReference(enum.Enum):
     TREE_VERSION_LIST = "refs/datalad/dataset-tree-version-list"
     UUID_SET = "refs/datalad/dataset-uuid-set"
+    OBJECT_REFERENCES = "refs/datalad_local/object-references"
     LEGACY_TREES = "refs/datalad/object-references/trees"
     LEGACY_BLOBS = "refs/datalad/object-references/blobs"
 
@@ -120,12 +119,12 @@ def flush_object_references(realm: Path):
 
         with locked_backend(realm):
             try:
-                root_entries = _get_dir(realm, object_reference_name)
+                root_entries = _get_dir(realm, GitReference.OBJECT_REFERENCES.value)
             except RuntimeError:
                 root_entries = []
 
             tree_hash = add_paths(realm, path_infos, root_entries)
-            git_update_ref(str(realm), object_reference_name, tree_hash)
+            git_update_ref(str(realm), GitReference.OBJECT_REFERENCES.value, tree_hash)
 
         cached_object_references = set()
 

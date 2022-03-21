@@ -2,10 +2,12 @@
 Simple lock interface.
 """
 import os
+import subprocess
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Dict
 
 from fasteners import InterProcessLock
 
@@ -77,3 +79,34 @@ def get_lock_dir(realm: Path, create_directory: bool = True) -> Path:
         # dataset.
         os.makedirs(lock_dir, exist_ok=True)
     return lock_dir
+
+
+def create_file_tree(location: Path, content: Dict):
+    for name, value_or_dict in content.items():
+        new_location = location / name
+        if isinstance(value_or_dict, str):
+            new_location.write_text(value_or_dict)
+        else:
+            new_location.mkdir()
+            create_file_tree(new_location, value_or_dict)
+
+
+def create_git_repo(location: Path, content: Dict):
+    subprocess.run(["git", "init", str(location)], check=True)
+    create_file_tree(location, content)
+    subprocess.run(
+        ["git", "-C", str(location), "add", "."],
+        check=True
+    )
+
+    subprocess.run(
+        ["git", "-C", str(location), "commit", "-m", "create repo"],
+        check=True
+    )
+
+    commit = subprocess.run(
+        ["git", "-C", str(location), "cat-file", "-p", "HEAD"],
+        check=True,
+        stdout=subprocess.PIPE
+    )
+    return commit.stdout.decode().splitlines()[0].split()[1]

@@ -35,13 +35,16 @@ def checked_execute(arguments: Union[str, List[str]],
 
     result = execute(arguments, stdin_content)
     if result.returncode != 0:
-        raise RuntimeError(
+        error = RuntimeError(
             f"Command failed (exit code: {result.returncode}) "
             f"{' '.join(arguments)}:\n"
             f"STDOUT:\n"
             f"{result.stdout.decode()}"
             f"STDERR:\n"
             f"{result.stderr.decode()}")
+        error.stdout = result.stdout.decode()
+        error.stderr = result.stderr.decode()
+        raise error
     return (
         result.stdout.decode().splitlines(),
         result.stderr.decode().splitlines())
