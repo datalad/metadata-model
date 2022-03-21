@@ -81,8 +81,7 @@ class MTreeProxy:
             MetadataGitMapper.flush_realm(cache_destination)
 
         if not reference.is_none_reference():
-            add_tree_reference(GitReference.TREES,
-                               reference.location)
+            add_tree_reference(reference.location)
         return reference
 
     def purge(self):

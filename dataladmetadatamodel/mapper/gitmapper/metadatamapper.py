@@ -78,7 +78,7 @@ class MetadataGitMapper(Mapper):
         # JSON-strings that are stored in the
         # repository.
         metadata_blob_location = git_save_str(realm, metadata.to_json())
-        add_blob_reference(GitReference.BLOBS, metadata_blob_location)
+        add_blob_reference(metadata_blob_location)
 
         # Save reference. NB we don't have to save
         # metadata_reference_blob_location to the
@@ -106,7 +106,7 @@ class MetadataGitMapper(Mapper):
         # Cache metadata, and cache a reference object. the
         # following code is "cache"-equivalent to the immediate case
         metadata_blob_location = cache.cache_blob(realm, metadata.to_json())
-        add_blob_reference(GitReference.BLOBS, metadata_blob_location)
+        add_blob_reference(metadata_blob_location)
 
         metadata_reference_blob_location = cache.cache_blob(
             realm,

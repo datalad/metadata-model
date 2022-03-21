@@ -89,9 +89,15 @@ class TestMetadataMapper(unittest.TestCase):
                 mock.patch("dataladmetadatamodel.mapper.gitmapper"
                            ".metadatamapper.git_save_str") as save_str, \
                 mock.patch("dataladmetadatamodel.mapper.gitmapper"
+                           ".treeupdater.git_save_tree_node") as save_tree_node, \
+                mock.patch("dataladmetadatamodel.mapper.gitmapper"
+                           ".gitbackend.subprocess.git_update_ref") as update_ref, \
+                mock.patch("dataladmetadatamodel.mapper.gitmapper"
                            ".metadatamapper.add_blob_reference") as add_ref:
 
             save_str.return_value = get_location(1)
+            save_tree_node.return_value = get_location(2)
+            update_ref.return_value = get_location(3)
 
             realm = "/tmp/t1"
             reference = metadata.write_out(realm, "git")
