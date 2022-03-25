@@ -167,7 +167,8 @@ class TreeVersionList(VersionList):
     def set_dataset_tree(self,
                          primary_data_version: str,
                          time_stamp: str,
-                         dataset_tree: DatasetTree
+                         dataset_tree: DatasetTree,
+                         path: MetadataPath = MetadataPath("")
                          ):
 
         self.touch()
@@ -175,7 +176,7 @@ class TreeVersionList(VersionList):
         return super().set_versioned_element(
             primary_data_version,
             time_stamp,
-            MetadataPath(""),
+            path,
             dataset_tree)
 
     def unget_dataset_tree(self,
