@@ -16,7 +16,7 @@ from dataladmetadatamodel.log import logger
 
 PID = os.getpid()
 
-GIT_MAPPER_LOCK_FILE_NAME = "metadata-model-git.lock"
+GIT_MAPPER_LOCK_FILE_NAME = "metadata-write.lock"
 read_write_locked = dict()
 
 
@@ -26,12 +26,12 @@ class LockState:
     lock: InterProcessLock
 
 
-def _get_lock_state(lock_dict: dict, realm: Path) -> LockState:
-    if realm not in lock_dict:
-        lock_dict[realm] = LockState(
+def _get_lock_state(lock_dict: dict, lock_dir: Path) -> LockState:
+    if lock_dir not in lock_dict:
+        lock_dict[lock_dir] = LockState(
             0,
-            InterProcessLock(str(realm / GIT_MAPPER_LOCK_FILE_NAME)))
-    return lock_dict[realm]
+            InterProcessLock(str(lock_dir / GIT_MAPPER_LOCK_FILE_NAME)))
+    return lock_dict[lock_dir]
 
 
 @contextmanager
@@ -72,7 +72,7 @@ def unlock_backend(realm: Path):
 
 
 def get_lock_dir(realm: Path, create_directory: bool = True) -> Path:
-    lock_dir = realm / ".datalad" / "locks"
+    lock_dir = realm / ".git" / "datalad" / "locks"
     if not lock_dir.exists() and create_directory:
         # if exist_ok is False, we might get an error if
         # a concurrent mapper tries to lock the same
