@@ -44,7 +44,7 @@ def create_metadata_root_record(mapper_family,
                 ExtractorConfiguration("1.2.3", parameters),
                 {
                     "info": f"dataset-level test metadata for parameter set #{count}",
-                    "path": relative_path
+                    "prefix_path": relative_path
                 }
             )
 

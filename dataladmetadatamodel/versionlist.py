@@ -1,6 +1,7 @@
 from typing import (
     cast,
     Dict,
+    Generator,
     Iterable,
     Optional,
     Tuple,
@@ -14,18 +15,21 @@ from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
 from dataladmetadatamodel.mapper.reference import Reference
 
 
+unknown_version = "unknown"
+
+
 class VersionRecord:
     def __init__(self,
                  time_stamp: str,
-                 path: Optional[MetadataPath],
+                 prefix_path: Optional[MetadataPath],
                  element: Union[DatasetTree, MetadataRootRecord]):
 
         assert isinstance(time_stamp, str)
-        assert isinstance(path, (type(None), MetadataPath))
+        assert isinstance(prefix_path, (type(None), MetadataPath)), f"prefix_path is type: {type(prefix_path).__name__}"
         assert isinstance(element, (DatasetTree, MetadataRootRecord))
 
         self.time_stamp = time_stamp
-        self.path = path or MetadataPath("")
+        self.prefix_path = prefix_path or MetadataPath("")
         self.element = element
 
     def deepcopy(self,
@@ -35,7 +39,7 @@ class VersionRecord:
 
         return VersionRecord(
             self.time_stamp,
-            self.path,
+            self.prefix_path,
             self.element.deepcopy(
                 new_mapper_family,
                 new_destination))
@@ -43,7 +47,7 @@ class VersionRecord:
 
 class VersionList(MappableObject):
     def __init__(self,
-                 initial_set: Optional[Dict[str, VersionRecord]] = None,
+                 initial_set: Optional[Dict[str, Dict[MetadataPath, VersionRecord]]] = None,
                  realm: Optional[str] = None,
                  reference: Optional[Reference] = None):
 
@@ -52,38 +56,82 @@ class VersionList(MappableObject):
         assert isinstance(reference, (type(None), Reference))
 
         super().__init__(realm, reference)
-        self.version_set: Dict[str, VersionRecord] = initial_set or dict()
+        self.version_set: Dict[str, Dict[MetadataPath, VersionRecord]] = \
+            initial_set or dict()
+
+    def __len__(self):
+        return sum([len(path_dict) for path_dict in self.version_set.values()])
 
     def purge_impl(self):
-        for version, version_record in self.version_set.items():
-            version_record.element.purge()
+        for version, prefixed_set in self.version_set.items():
+            for version_record in prefixed_set.values():
+                version_record.element.purge()
         self.version_set = dict()
+
+    def _get_version_record(self,
+                            primary_data_version: str,
+                            prefix_path: MetadataPath) -> VersionRecord:
+        return self.version_set[primary_data_version][prefix_path]
+
+    def _get_version_records(self,
+                             primary_data_version: str
+                             ) -> Iterable[VersionRecord]:
+        return self.version_set[primary_data_version].values()
+
+    def _iterate_version_records(self) -> Generator:
+        yield from (
+            (version, version_record)
+            for version, prefixed_set in self.version_set.items()
+            for version_record in prefixed_set.values()
+        )
 
     def modifiable_sub_objects_impl(self) -> Iterable[MappableObject]:
         yield from map(
-            lambda version_record: version_record.element,
-            self.version_set.values())
-
-    def _get_version_record(self, primary_data_version) -> VersionRecord:
-        return self.version_set[primary_data_version]
+            lambda vvr: vvr[1].element,
+            self._iterate_version_records())
 
     def versions(self) -> Iterable:
-        return self.version_set.keys()
+        yield from map(
+            lambda vvr: vvr[0],
+            self._iterate_version_records())
+
+    def versions_and_prefix_paths(self) -> Iterable:
+        yield from map(
+            lambda vvr: (vvr[0], vvr[1].prefix_path),
+            self._iterate_version_records())
 
     def get_versioned_element(self,
-                              primary_data_version: str
+                              primary_data_version: str,
+                              prefix_path: MetadataPath,
                               ) -> Tuple[str, MetadataPath, MappableObject]:
         """
         Get the dataset tree or metadata root record,
-        its timestamp and path for the given version.
+        its timestamp and prefix_path for the given version.
         If it is not mapped yet, it will be mapped.
         """
-        version_record = self._get_version_record(primary_data_version)
+        version_record = self._get_version_record(
+            primary_data_version,
+            prefix_path)
         version_record.element.read_in()
         return (
             version_record.time_stamp,
-            version_record.path,
+            version_record.prefix_path,
             version_record.element)
+
+    def get_versioned_elements(self,
+                               primary_data_version: str,
+                               ) -> Iterable[Tuple[str, MetadataPath, MappableObject]]:
+        """
+        Get all dataset trees or metadata root records, including their
+        timestamp and prefix paths for the given version.
+        If they are not mapped yet, they will be mapped.
+        """
+        for version_record in self._get_version_records(primary_data_version):
+            version_record.element.read_in()
+            yield (
+                version_record.time_stamp,
+                version_record.prefix_path,
+                version_record.element)
 
     @property
     def versioned_elements(self
@@ -91,16 +139,21 @@ class VersionList(MappableObject):
         """
         Get an iterable of all versions and their records
         """
-        for version, version_record in self.version_set.items():
-            yield version, (
-                version_record.time_stamp,
-                version_record.path,
-                version_record.element)
+        yield from (
+            (
+                version,
+                (
+                    version_record.time_stamp,
+                    version_record.prefix_path,
+                    version_record.element
+                )
+            )
+            for version, version_record in self._iterate_version_records())
 
     def set_versioned_element(self,
                               primary_data_version: str,
                               time_stamp: str,
-                              path: MetadataPath,
+                              prefix_path: MetadataPath,
                               element: Union[DatasetTree, MetadataRootRecord]):
         """
         Set a new or updated dataset tree.
@@ -108,13 +161,16 @@ class VersionList(MappableObject):
         The entry is marked as dirty.
         """
         self.touch()
-        self.version_set[primary_data_version] = VersionRecord(
+        if primary_data_version not in self.version_set:
+            self.version_set[primary_data_version] = dict()
+        self.version_set[primary_data_version][prefix_path] = VersionRecord(
             time_stamp,
-            path,
+            prefix_path,
             element)
 
     def unget_versioned_element(self,
                                 primary_data_version: str,
+                                prefix_path: MetadataPath,
                                 new_destination: Optional[str] = None):
         """
         Remove a metadata record from memory. First, persist the
@@ -122,7 +178,7 @@ class VersionList(MappableObject):
         the backend, if it was changed or--- then purge it
         from memory.
         """
-        version_record = self.version_set[primary_data_version]
+        version_record = self.version_set[primary_data_version][prefix_path]
         version_record.element.write_out(new_destination)
         version_record.element.purge()
 
@@ -135,13 +191,15 @@ class VersionList(MappableObject):
         path_prefix = kwargs.get("path_prefix", MetadataPath(""))
 
         copied_version_list = VersionList()
-        for primary_data_version, version_record in self.version_set.items():
-            copied_version_list.set_versioned_element(
-                primary_data_version,
-                version_record.time_stamp,
-                path_prefix / version_record.path,
-                version_record.element.deepcopy(new_mapper_family,
-                                                new_destination))
+        for primary_data_version, prefix_set in self.version_set.items():
+            for version_record in prefix_set.values():
+                copied_version_list.set_versioned_element(
+                    primary_data_version,
+                    version_record.time_stamp,
+                    path_prefix / version_record.prefix_path,
+                    version_record.element.deepcopy(
+                        new_mapper_family,
+                        new_destination))
 
         copied_version_list.write_out(new_destination)
         copied_version_list.purge()
@@ -156,37 +214,48 @@ class TreeVersionList(VersionList):
     """
 
     def get_dataset_tree(self,
-                         primary_data_version: str
-                         ) -> Tuple[str, DatasetTree]:
+                         primary_data_version: str,
+                         prefix_path: MetadataPath,
+                         ) -> Tuple[str, MetadataPath, DatasetTree]:
 
-        time_stamp, _, dataset_tree = super().get_versioned_element(
-            primary_data_version)
-        assert isinstance(dataset_tree, DatasetTree)
-        return time_stamp, dataset_tree
+        time_stamp, prefix_path, dataset_tree = super().get_versioned_element(
+            primary_data_version,
+            prefix_path)
+        dataset_tree = cast(DatasetTree, dataset_tree)
+        return time_stamp, prefix_path, dataset_tree
+
+    def get_dataset_trees(self,
+                          primary_data_version: str,
+                          ) -> Iterable[Tuple[str, MetadataPath, DatasetTree]]:
+
+        return super().get_versioned_elements(primary_data_version)
 
     def set_dataset_tree(self,
                          primary_data_version: str,
                          time_stamp: str,
+                         prefix_path: MetadataPath,
                          dataset_tree: DatasetTree,
-                         path: MetadataPath = MetadataPath("")
                          ):
 
         self.touch()
 
         return super().set_versioned_element(
-            primary_data_version,
-            time_stamp,
-            path,
-            dataset_tree)
+            primary_data_version=primary_data_version,
+            time_stamp=time_stamp,
+            prefix_path=prefix_path,
+            element=dataset_tree)
 
     def unget_dataset_tree(self,
                            primary_data_version: str,
+                           prefix_path: MetadataPath,
                            new_destination: str):
 
         assert isinstance(primary_data_version, str)
         assert isinstance(new_destination, str)
-        super().unget_versioned_element(primary_data_version,
-                                        new_destination)
+        super().unget_versioned_element(
+            primary_data_version,
+            prefix_path,
+            new_destination)
 
     def deepcopy_impl(self,
                       new_mapper_family: Optional[str] = None,
@@ -197,16 +266,16 @@ class TreeVersionList(VersionList):
         path_prefix = kwargs.get("path_prefix", MetadataPath(""))
 
         copied_version_list = TreeVersionList()
-        for primary_data_version, version_record in self.version_set.items():
-
-            copied_version_list.set_versioned_element(
-                primary_data_version,
-                version_record.time_stamp,
-                path_prefix / version_record.path,
-                cast(MetadataRootRecord,
-                     version_record.element.deepcopy(
-                        new_mapper_family,
-                        new_destination)))
+        for primary_data_version, prefix_set in self.version_set.items():
+            for version_record in prefix_set.values():
+                copied_version_list.set_versioned_element(
+                    primary_data_version,
+                    version_record.time_stamp,
+                    path_prefix / version_record.prefix_path,
+                    cast(MetadataRootRecord,
+                         version_record.element.deepcopy(
+                            new_mapper_family,
+                            new_destination)))
 
         copied_version_list.write_out(new_destination)
         copied_version_list.purge()

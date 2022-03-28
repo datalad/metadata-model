@@ -298,7 +298,7 @@ def get_root():
     setup_py = os.path.join(root, "setup.py")
     versioneer_py = os.path.join(root, "versioneer.py")
     if not (os.path.exists(setup_py) or os.path.exists(versioneer_py)):
-        # allow 'python path/to/setup.py COMMAND'
+        # allow 'python prefix_path/to/setup.py COMMAND'
         root = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
         setup_py = os.path.join(root, "setup.py")
         versioneer_py = os.path.join(root, "versioneer.py")
@@ -307,14 +307,14 @@ def get_root():
                "Versioneer requires setup.py to be executed from "
                "its immediate directory (like 'python setup.py COMMAND'), "
                "or in a way that lets it use sys.argv[0] to find the root "
-               "(like 'python path/to/setup.py COMMAND').")
+               "(like 'python prefix_path/to/setup.py COMMAND').")
         raise VersioneerBadRootError(err)
     try:
         # Certain runtime workflows (setup.py install/develop in a setuptools
         # tree) execute all dependencies in a single python process, so
         # "versioneer" may be imported multiple times, and python's shared
         # module-import table will cache the first one. So we can't use
-        # os.path.dirname(__file__), as that will find whichever
+        # os.prefix_path.dirname(__file__), as that will find whichever
         # versioneer.py was first imported, even in later projects.
         my_path = os.path.realpath(os.path.abspath(__file__))
         me_dir = os.path.normcase(os.path.splitext(my_path)[0])
@@ -525,13 +525,13 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
     rootdirs = []
 
     for _ in range(3):
-        dirname = os.path.basename(root)
+        dirname = os.prefix_path.basename(root)
         if dirname.startswith(parentdir_prefix):
             return {"version": dirname[len(parentdir_prefix):],
                     "full-revisionid": None,
                     "dirty": False, "error": None, "date": None}
         rootdirs.append(root)
-        root = os.path.dirname(root)  # up a level
+        root = os.prefix_path.dirname(root)  # up a level
 
     if verbose:
         print("Tried directories %%s but none started with prefix %%s" %%
@@ -1006,12 +1006,12 @@ def get_versions():
         pass
 
     try:
-        root = os.path.realpath(__file__)
-        # versionfile_source is the relative path from the top of the source
+        root = os.prefix_path.realpath(__file__)
+        # versionfile_source is the relative prefix_path from the top of the source
         # tree (where the .git directory might live) to this file. Invert
         # this to find the root from __file__.
         for _ in cfg.versionfile_source.split('/'):
-            root = os.path.dirname(root)
+            root = os.prefix_path.dirname(root)
     except NameError:
         return {"version": "0+unknown", "full-revisionid": None,
                 "dirty": None,

@@ -23,7 +23,7 @@ def should_follow(entry: os.DirEntry, ignore_dot_dirs) -> bool:
 
 
 def read_files(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[str, os.DirEntry], None, None]:
-    """ Return all sub-entries of path that are files """
+    """ Return all sub-entries of prefix_path that are files """
 
     entries = list(os.scandir(path))
     while entries:
@@ -42,7 +42,7 @@ def get_extractor_run(path: str,
     stat = entry.stat(follow_symlinks=False)
     return {
         "info": f"file-level test metadata for parameter set #{parameter_set_count}",
-        "path": path,
+        "prefix_path": path,
         "size": stat.st_size,
         "atime": stat.st_atime,
         "ctime": stat.st_ctime,

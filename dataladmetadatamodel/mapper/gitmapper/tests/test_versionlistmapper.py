@@ -63,19 +63,21 @@ class TestVersionListMapper(unittest.TestCase):
             ]
 
             version_list = VersionList(initial_set={
-                "v0": VersionRecord(
-                    str("1.1"),
-                    MetadataPath("subset0"),
-                    MetadataRootRecord(
-                        get_uuid(0),
-                        "version1",
-                        Metadata(),
-                        create_file_tree(
-                            [MetadataPath("a/b"),
-                             MetadataPath("d/e")]
+                "v0": {
+                    MetadataPath("subset0"): VersionRecord(
+                        str("1.1"),
+                        MetadataPath("subset0"),
+                        MetadataRootRecord(
+                            get_uuid(0),
+                            "version1",
+                            Metadata(),
+                            create_file_tree(
+                                [MetadataPath("a/b"),
+                                 MetadataPath("d/e")]
+                            )
                         )
                     )
-                )
+                }
             })
 
             version_list.write_out("/tmp/t1")

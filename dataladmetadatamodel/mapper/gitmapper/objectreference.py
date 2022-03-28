@@ -18,7 +18,7 @@ cached_object_references: Set[Tuple[EntryType, str]] = set()
 class GitReference(enum.Enum):
     TREE_VERSION_LIST = "refs/datalad/dataset-tree-version-list"
     UUID_SET = "refs/datalad/dataset-uuid-set"
-    OBJECT_REFERENCES = "refs/datalad_local/object-references"
+    OBJECT_REFERENCES = "refs/datalad/object-references-2.0"
     LEGACY_TREES = "refs/datalad/object-references/trees"
     LEGACY_BLOBS = "refs/datalad/object-references/blobs"
 

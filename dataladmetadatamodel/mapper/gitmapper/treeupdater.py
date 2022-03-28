@@ -55,7 +55,7 @@ class DirEntry:
 @dataclass
 class PathInfo:
     """
-    Instances of this class represent object hashes and the path under which
+    Instances of this class represent object hashes and the prefix_path under which
     those hashes should be, or are, available.
     """
     elements: List[str]
@@ -156,7 +156,7 @@ def add_paths(repo: Path,
               path_infos: List[PathInfo],
               root_entries: List[DirEntry]) -> str:
     """
-    Add all path infos to the tree object defined by "root-entries". Load
+    Add all prefix_path infos to the tree object defined by "root-entries". Load
     subtrees if necessary, write subtrees, when they are completely assembled.
 
     This method is called recursively, with path_infos shortened by one and
@@ -168,7 +168,7 @@ def add_paths(repo: Path,
         root_entry.name: root_entry
         for root_entry in root_entries}
 
-    # Collect all leaf entries, i.e. path info has only one element.
+    # Collect all leaf entries, i.e. prefix_path info has only one element.
     leaf_infos = [path_info for path_info in path_infos if path_info.is_leaf()]
 
     # Collect all directory entries, i.e. for each directory name, get all

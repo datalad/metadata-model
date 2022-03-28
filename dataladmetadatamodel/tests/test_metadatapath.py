@@ -36,7 +36,7 @@ class TestMetadataPath(unittest.TestCase):
             MetadataPath("a/b"))
 
     def test_windows_paths(self):
-        # Enforce windows path interpretation
+        # Enforce windows prefix_path interpretation
         with patch("dataladmetadatamodel.metadatapath.PurePosixPath", new=PureWindowsPath):
             metadata_path = MetadataPath("a\\b\\c")
         self.assertEqual(metadata_path, MetadataPath("a/b/c"))

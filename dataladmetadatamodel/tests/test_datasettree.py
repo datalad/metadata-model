@@ -98,7 +98,7 @@ class TestReferenceCreation(unittest.TestCase):
 
             # We expect one call for the dataset-tree itself
             # and one call for each file-tree, one of which
-            # is anchored at each dataset path
+            # is anchored at each dataset prefix_path
             self.assertEqual(
                 add_tree_ref.call_count,
                 1 + len(dataset_test_paths)

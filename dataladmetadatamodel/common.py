@@ -80,6 +80,7 @@ def get_top_nodes_and_metadata_root_record(
         realm: str,
         dataset_id: UUID,
         primary_data_version: str,
+        prefix_path: MetadataPath,
         dataset_tree_path: MetadataPath,
         auto_create: Optional[bool] = False
 ) -> Tuple[Optional[TreeVersionList], Optional[UUIDSet], Optional[MetadataRootRecord]]:
@@ -120,19 +121,24 @@ def get_top_nodes_and_metadata_root_record(
         uuid_version_list = VersionList()
         uuid_set.set_version_list(dataset_id, uuid_version_list)
 
+    # TODO: check for unversioned prefix_path!? Unless we assume that a version
+    #  is only saved once.
     # Get the dataset tree
     if primary_data_version in tree_version_list.versions():
-        time_stamp, dataset_tree = tree_version_list.get_dataset_tree(
-            primary_data_version)
+        time_stamp, prefix_path, dataset_tree = \
+            tree_version_list.get_dataset_tree(primary_data_version, dataset_tree_path)
     else:
         if auto_create is False:
             return None, None, None
         time_stamp = str(time.time())
         dataset_tree = DatasetTree()
+        # TODO: set prefix_path
+        # TODO: distinguish between unversioned prefix_path and dataset tree prefix_path
         tree_version_list.set_dataset_tree(
-            primary_data_version,
-            time_stamp,
-            dataset_tree)
+            primary_data_version=primary_data_version,
+            time_stamp=time_stamp,
+            prefix_path=prefix_path,
+            dataset_tree=dataset_tree)
 
     if dataset_tree_path not in dataset_tree:
         if auto_create is False:
