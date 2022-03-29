@@ -595,7 +595,7 @@ def get_versions():
 
     try:
         root = os.path.realpath(__file__)
-        # versionfile_source is the relative path from the top of the source
+        # versionfile_source is the relative prefix_path from the top of the source
         # tree (where the .git directory might live) to this file. Invert
         # this to find the root from __file__.
         for _ in cfg.versionfile_source.split('/'):

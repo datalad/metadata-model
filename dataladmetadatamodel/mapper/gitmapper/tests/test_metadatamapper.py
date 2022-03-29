@@ -91,9 +91,7 @@ class TestMetadataMapper(unittest.TestCase):
                 mock.patch("dataladmetadatamodel.mapper.gitmapper"
                            ".treeupdater.git_save_tree_node") as save_tree_node, \
                 mock.patch("dataladmetadatamodel.mapper.gitmapper"
-                           ".gitbackend.subprocess.git_update_ref") as update_ref, \
-                mock.patch("dataladmetadatamodel.mapper.gitmapper"
-                           ".metadatamapper.add_blob_reference") as add_ref:
+                           ".gitbackend.subprocess.git_update_ref") as update_ref:
 
             save_str.return_value = get_location(1)
             save_tree_node.return_value = get_location(2)
@@ -110,9 +108,6 @@ class TestMetadataMapper(unittest.TestCase):
             self.assertEqual(
                 json.loads(save_str.call_args_list[1][0][1]),
                 expected_reference_object)
-
-            # ensure that the object reference stores are updated
-            add_ref.assert_called_once()
 
     def test_double_cache_detection(self):
         metadata_mapper: MetadataGitMapper = cast(

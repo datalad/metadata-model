@@ -159,7 +159,7 @@ class MTreeNode(MappableObject):
                            path: Optional[MetadataPath] = None
                            ) -> Optional["MTreeNode"]:
 
-        # Linear search for path
+        # Linear search for prefix_path
         path = path or MetadataPath("")
         current_node = self
         for element in path.parts:

@@ -66,7 +66,7 @@ def from_template(ctx, dataset_path, realm, parameter_set_count):
     \b
     Usage:
     from-template [DATASET_PATH] [REALM]
-    DATASET_PATH: path of the datalad dataset the should be mimicked
+    DATASET_PATH: prefix_path of the datalad dataset the should be mimicked
     REALM: realm in which the metadata should be stored
     """
 

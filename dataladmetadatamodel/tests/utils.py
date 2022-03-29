@@ -196,8 +196,14 @@ def assert_version_lists_equal(test_case: unittest.TestCase,
                                unsafe: bool
                                ):
 
-    a_entries = [a.get_versioned_element(pdv) for pdv in a.versions()]
-    b_entries = [b.get_versioned_element(pdv) for pdv in b.versions()]
+    a_entries = [
+        a.get_versioned_element(pdv, pref)
+        for pdv, pref in a.versions_and_prefix_paths()
+    ]
+    b_entries = [
+        b.get_versioned_element(pdv, pref)
+        for pdv, pref in b.versions_and_prefix_paths()
+    ]
 
     for a_entry, b_entry in zip(a_entries, b_entries):
         test_case.assertEqual(a_entry[0], b_entry[0])

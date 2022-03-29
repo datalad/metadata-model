@@ -40,10 +40,15 @@ class VersionListGitMapper(Mapper):
                     f"unexpected tree class in primary data-metadata "
                     f"assoc: ({reference.class_name})")
 
-            version_records[pdm_assoc["primary_data_version"]] = VersionRecord(
-                pdm_assoc["time_stamp"],
-                MetadataPath(pdm_assoc["path"]),
-                mrr_or_tree)
+            primary_data_version = pdm_assoc["primary_data_version"]
+            prefix_path = MetadataPath(pdm_assoc["path"])
+            if primary_data_version not in version_records:
+                version_records[primary_data_version] = dict()
+            version_records[primary_data_version][prefix_path] = \
+                VersionRecord(
+                    pdm_assoc["time_stamp"],
+                    prefix_path,
+                    mrr_or_tree)
 
         return version_records
 
@@ -70,10 +75,11 @@ class VersionListGitMapper(Mapper):
             {
                 "primary_data_version": primary_data_version,
                 "time_stamp": version_record.time_stamp,
-                "path": version_record.path.as_posix(),
+                "path": version_record.prefix_path.as_posix(),
                 "dataset_tree": version_record.element.write_out(realm).to_json_obj()
             }
-            for primary_data_version, version_record in version_list.version_set.items()
+            for primary_data_version, prefix_set in version_list.version_set.items()
+            for version_record in prefix_set.values()
         ]
 
         location = git_save_json(realm, json_object)

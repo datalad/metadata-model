@@ -33,7 +33,7 @@ def _create_tree_paths(tree_spec: List[Tuple[int, int]], upper_levels: List[int]
             for node_number in range(tree_spec[0][0])
         ]
 
-    # If we create a path that identifies a dataset, add it the the result list
+    # If we create a prefix_path that identifies a dataset, add it the the result list
     result = [
         f"dataset{upper_level_postfix}.{node_number}"
         for node_number in range(tree_spec[0][0])

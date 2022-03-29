@@ -68,16 +68,20 @@ class TestVersionList(unittest.TestCase):
             dataset_trees[1].write_out(original_dir)
 
             version_list = VersionList(initial_set={
-                "v1": VersionRecord(
-                    "0.1",
-                    MetadataPath("a"),
-                    dataset_trees[0]
-                ),
-                "v2": VersionRecord(
-                    "0.2",
-                    MetadataPath("b"),
-                    dataset_trees[1]
-                )
+                "v1": {
+                    MetadataPath("a"): VersionRecord(
+                        "0.1",
+                        MetadataPath("a"),
+                        dataset_trees[0]
+                    )
+                },
+                "v2": {
+                    MetadataPath("b"): VersionRecord(
+                        "0.2",
+                        MetadataPath("b"),
+                        dataset_trees[1]
+                    )
+                }
             })
 
             version_list.write_out(original_dir)
@@ -102,7 +106,7 @@ class TestVersionList(unittest.TestCase):
             # Compare the version lists, taking modified dataset tree paths into account
             for primary_version, (_, path, dataset_tree) in version_list.versioned_elements:
                 expected_path = path_prefix / path
-                _, copy_path, copied_dataset_tree = copied_version_list.get_versioned_element(primary_version)
+                _, copy_path, copied_dataset_tree = copied_version_list.get_versioned_element(primary_version, expected_path)
                 self.assertEqual(expected_path, copy_path)
                 dataset_tree.read_in()
                 copied_dataset_tree.read_in()

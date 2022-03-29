@@ -37,18 +37,22 @@ class TestUUIDSet(unittest.TestCase):
 
             uuid_set = UUIDSet(initial_set={
                 uuid_0: VersionList(initial_set={
-                    "v0": VersionRecord(
-                        "1.2",
-                        MetadataPath("path0"),
-                        create_dataset_tree()
-                    )
+                    "v0": {
+                        MetadataPath("path0"): VersionRecord(
+                            "1.2",
+                            MetadataPath("path0"),
+                            create_dataset_tree()
+                        )
+                    }
                 }),
                 uuid_1: VersionList(initial_set={
-                    "v0.0": VersionRecord(
-                        "1.3",
-                        MetadataPath("path0.0"),
-                        create_dataset_tree()
-                    )
+                    "v0.0": {
+                        MetadataPath("path0.0"): VersionRecord(
+                            "1.3",
+                            MetadataPath("path0.0"),
+                            create_dataset_tree()
+                        )
+                    }
                 })
             })
 
@@ -66,18 +70,22 @@ class TestUUIDSet(unittest.TestCase):
 
             uuid_set = UUIDSet(initial_set={
                 uuid_0: VersionList(initial_set={
-                    "v0": VersionRecord(
-                        "1.2",
-                        MetadataPath("path0"),
-                        create_dataset_tree()
-                    )
+                    "v0": {
+                        MetadataPath("path0"): VersionRecord(
+                            "1.2",
+                            MetadataPath("path0"),
+                            create_dataset_tree()
+                        )
+                    }
                 }),
                 uuid_1: VersionList(initial_set={
-                    "v0.0": VersionRecord(
-                        "1.3",
-                        MetadataPath("path0.0"),
-                        create_dataset_tree()
-                    )
+                    "v0.0": {
+                        MetadataPath("path0.0"): VersionRecord(
+                            "1.3",
+                            MetadataPath("path0.0"),
+                            create_dataset_tree()
+                        )
+                    }
                 })
             })
 

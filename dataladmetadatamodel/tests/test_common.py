@@ -30,24 +30,26 @@ class TestTopLevelObjects(unittest.TestCase):
             self.assertIsNone(uuid_set)
 
             tvl, uuid_set, mrr = get_top_nodes_and_metadata_root_record(
-                "git",
-                realm,
-                uuid_0,
-                "v1",
-                MetadataPath("a/b/c"),
-                False
+                mapper_family="git",
+                realm=realm,
+                dataset_id=uuid_0,
+                primary_data_version="v1",
+                prefix_path=MetadataPath(""),
+                dataset_tree_path=MetadataPath("a/b/c"),
+                auto_create=False
             )
             self.assertIsNone(tvl)
             self.assertIsNone(uuid_set)
             self.assertIsNone(mrr)
 
             tvl, uuid_set, mrr = get_top_nodes_and_metadata_root_record(
-                "git",
-                realm,
-                uuid_0,
-                "v1",
-                MetadataPath("a/b/c"),
-                True
+                mapper_family="git",
+                realm=realm,
+                dataset_id=uuid_0,
+                primary_data_version="v1",
+                prefix_path=MetadataPath(""),
+                dataset_tree_path=MetadataPath("a/b/c"),
+                auto_create=True
             )
             self.assertIsInstance(tvl, TreeVersionList)
             self.assertIsInstance(uuid_set, UUIDSet)

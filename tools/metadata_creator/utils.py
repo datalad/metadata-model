@@ -66,4 +66,4 @@ def read_datasets(path: str, ignore_dot_dirs: bool = True) -> Generator[Tuple[st
         if is_dataset_dir(entry):
             yield entry.path[len(path) + 1:], entry
         if should_follow(entry, ignore_dot_dirs):
-            entries.extend(list(os.scandir(entry.path)))
+            entries.extend(list(os.scandir(entry.prefix_path)))
