@@ -16,7 +16,7 @@ from dataladmetadatamodel.log import logger
 
 PID = os.getpid()
 
-GIT_MAPPER_LOCK_FILE_NAME = "metadata-write.lock"
+GIT_MAPPER_LOCK_FILE_NAME = "datalad-metalad-write.lock"
 read_write_locked = dict()
 
 
@@ -72,7 +72,7 @@ def unlock_backend(realm: Path):
 
 
 def get_lock_dir(realm: Path, create_directory: bool = True) -> Path:
-    lock_dir = realm / ".git" / "datalad" / "locks"
+    lock_dir = realm / ".git"
     if not lock_dir.exists() and create_directory:
         # if exist_ok is False, we might get an error if
         # a concurrent mapper tries to lock the same
