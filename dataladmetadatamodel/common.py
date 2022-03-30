@@ -113,23 +113,59 @@ def get_top_nodes_and_metadata_root_record(
     if uuid_set is None or tree_version_list is None:
         return None, None, None
 
+    metadata_root_record = get_metadata_root_record_from_top_nodes(
+        tree_version_list,
+        uuid_set,
+        dataset_id,
+        primary_data_version,
+        prefix_path,
+        dataset_tree_path,
+        auto_create)
+
+    return tree_version_list, uuid_set, metadata_root_record
+
+
+def get_metadata_root_record_from_top_nodes(
+        tree_version_list: TreeVersionList,
+        uuid_set: UUIDSet,
+        dataset_id: UUID,
+        primary_data_version: str,
+        prefix_path: MetadataPath,
+        dataset_tree_path: MetadataPath,
+        auto_create: Optional[bool] = False
+) -> Optional[MetadataRootRecord]:
+
+    """
+    The metadata root record for a given dataset id and a given dataset version.
+
+    If auto_create is True, create the metadata root record with empty
+    dataset metadata and an empty file-tree connected to it.
+
+    If auto_create is False and the metadata root record does not exist, None
+    is returned.
+
+    If you want to preserve any changes, to the created metadata objects,
+    you have to save the returned objects (or their containers) and flush the
+    realm.
+    """
+    if uuid_set is None or tree_version_list is None:
+        return None
+
     if dataset_id in uuid_set.uuids():
         uuid_version_list = uuid_set.get_version_list(dataset_id)
     else:
         if auto_create is False:
-            return None, None, None
+            return None
         uuid_version_list = VersionList()
         uuid_set.set_version_list(dataset_id, uuid_version_list)
 
-    # TODO: check for unversioned prefix_path!? Unless we assume that a version
-    #  is only saved once.
     # Get the dataset tree
-    if primary_data_version in tree_version_list.versions():
+    if (primary_data_version, prefix_path) in tree_version_list.versions_and_prefix_paths():
         time_stamp, prefix_path, dataset_tree = \
-            tree_version_list.get_dataset_tree(primary_data_version, dataset_tree_path)
+            tree_version_list.get_dataset_tree(primary_data_version, prefix_path)
     else:
         if auto_create is False:
-            return None, None, None
+            return None
         time_stamp = str(time.time())
         dataset_tree = DatasetTree()
         # TODO: set prefix_path
@@ -142,7 +178,7 @@ def get_top_nodes_and_metadata_root_record(
 
     if dataset_tree_path not in dataset_tree:
         if auto_create is False:
-            return None, None, None
+            return None
 
         dataset_level_metadata = Metadata()
         file_tree = FileTree()
@@ -162,4 +198,4 @@ def get_top_nodes_and_metadata_root_record(
         dataset_tree_path,
         metadata_root_record)
 
-    return tree_version_list, uuid_set, metadata_root_record
+    return metadata_root_record
