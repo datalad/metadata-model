@@ -12,7 +12,9 @@ from dataladmetadatamodel.tests.utils import get_uuid
 from dataladmetadatamodel.uuidset import UUIDSet
 from dataladmetadatamodel.versionlist import TreeVersionList
 
+
 uuid_0 = get_uuid(0)
+uuid_1 = get_uuid(1)
 
 
 class TestTopLevelObjects(unittest.TestCase):
@@ -36,6 +38,8 @@ class TestTopLevelObjects(unittest.TestCase):
                 primary_data_version="v1",
                 prefix_path=MetadataPath(""),
                 dataset_tree_path=MetadataPath("a/b/c"),
+                sub_dataset_id=None,
+                sub_dataset_version=None,
                 auto_create=False
             )
             self.assertIsNone(tvl)
@@ -49,6 +53,8 @@ class TestTopLevelObjects(unittest.TestCase):
                 primary_data_version="v1",
                 prefix_path=MetadataPath(""),
                 dataset_tree_path=MetadataPath("a/b/c"),
+                sub_dataset_id=uuid_1,
+                sub_dataset_version="v-sub1",
                 auto_create=True
             )
             self.assertIsInstance(tvl, TreeVersionList)
