@@ -53,6 +53,7 @@ class MetadataRootRecord(MappableObject):
         self._file_tree = None
 
     def set_file_tree(self, file_tree: FileTree):
+        self.ensure_mapped()
         self.touch()
         self._file_tree = file_tree
 
@@ -65,6 +66,7 @@ class MetadataRootRecord(MappableObject):
     file_tree = property(fget=get_file_tree, fset=set_file_tree)
 
     def set_dataset_level_metadata(self, dataset_level_metadata: Metadata):
+        self.ensure_mapped()
         self.touch()
         self.dataset_level_metadata = dataset_level_metadata
 

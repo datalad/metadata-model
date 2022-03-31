@@ -71,14 +71,17 @@ class VersionList(MappableObject):
     def _get_version_record(self,
                             primary_data_version: str,
                             prefix_path: MetadataPath) -> VersionRecord:
+        self.ensure_mapped()
         return self.version_set[primary_data_version][prefix_path]
 
     def _get_version_records(self,
                              primary_data_version: str
                              ) -> Iterable[VersionRecord]:
+        self.ensure_mapped()
         return self.version_set[primary_data_version].values()
 
     def _iterate_version_records(self) -> Generator:
+        self.ensure_mapped()
         yield from (
             (version, version_record)
             for version, prefixed_set in self.version_set.items()
@@ -91,11 +94,13 @@ class VersionList(MappableObject):
             self._iterate_version_records())
 
     def versions(self) -> Iterable:
+        self.ensure_mapped()
         yield from map(
             lambda vvr: vvr[0],
             self._iterate_version_records())
 
     def versions_and_prefix_paths(self) -> Iterable:
+        self.ensure_mapped()
         yield from map(
             lambda vvr: (vvr[0], vvr[1].prefix_path),
             self._iterate_version_records())
@@ -109,6 +114,7 @@ class VersionList(MappableObject):
         its timestamp and prefix_path for the given version.
         If it is not mapped yet, it will be mapped.
         """
+        self.ensure_mapped()
         version_record = self._get_version_record(
             primary_data_version,
             prefix_path)
@@ -126,6 +132,7 @@ class VersionList(MappableObject):
         timestamp and prefix paths for the given version.
         If they are not mapped yet, they will be mapped.
         """
+        self.ensure_mapped()
         for version_record in self._get_version_records(primary_data_version):
             version_record.element.read_in()
             yield (
@@ -139,6 +146,7 @@ class VersionList(MappableObject):
         """
         Get an iterable of all versions and their records
         """
+        self.ensure_mapped()
         yield from (
             (
                 version,
@@ -160,6 +168,7 @@ class VersionList(MappableObject):
         Existing references are deleted.
         The entry is marked as dirty.
         """
+        self.ensure_mapped()
         self.touch()
         if primary_data_version not in self.version_set:
             self.version_set[primary_data_version] = dict()
@@ -218,6 +227,7 @@ class TreeVersionList(VersionList):
                          prefix_path: MetadataPath,
                          ) -> Tuple[str, MetadataPath, DatasetTree]:
 
+        self.ensure_mapped()
         time_stamp, prefix_path, dataset_tree = super().get_versioned_element(
             primary_data_version,
             prefix_path)
@@ -228,6 +238,7 @@ class TreeVersionList(VersionList):
                           primary_data_version: str,
                           ) -> Iterable[Tuple[str, MetadataPath, DatasetTree]]:
 
+        self.ensure_mapped()
         return super().get_versioned_elements(primary_data_version)
 
     def set_dataset_tree(self,
@@ -237,8 +248,8 @@ class TreeVersionList(VersionList):
                          dataset_tree: DatasetTree,
                          ):
 
+        self.ensure_mapped()
         self.touch()
-
         return super().set_versioned_element(
             primary_data_version=primary_data_version,
             time_stamp=time_stamp,

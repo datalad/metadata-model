@@ -251,13 +251,16 @@ class Metadata(MappableObject):
 
     @property
     def extractors(self) -> Generator[str, None, None]:
+        self.ensure_mapped()
         yield from self.instance_sets.keys()
 
     @property
     def extractor_runs(self) -> Generator[Tuple[str, MetadataInstanceSet], None, None]:
+        self.ensure_mapped()
         yield from self.instance_sets.items()
 
     def extractor_runs_for_extractor(self, extractor_name: str) -> MetadataInstanceSet:
+        self.ensure_mapped()
         return self.instance_sets[extractor_name]
 
     def add_extractor_run(self,
@@ -268,6 +271,7 @@ class Metadata(MappableObject):
                           configuration: ExtractorConfiguration,
                           metadata_content: JSONObject):
 
+        self.ensure_mapped()
         self.touch()
 
         instance_set = self.instance_sets.get(
