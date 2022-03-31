@@ -82,6 +82,8 @@ def get_top_nodes_and_metadata_root_record(
         primary_data_version: str,
         prefix_path: MetadataPath,
         dataset_tree_path: MetadataPath,
+        sub_dataset_id: Optional[UUID],
+        sub_dataset_version: Optional[str],
         auto_create: Optional[bool] = False
 ) -> Tuple[Optional[TreeVersionList], Optional[UUIDSet], Optional[MetadataRootRecord]]:
 
@@ -120,6 +122,8 @@ def get_top_nodes_and_metadata_root_record(
         primary_data_version,
         prefix_path,
         dataset_tree_path,
+        sub_dataset_id,
+        sub_dataset_version,
         auto_create)
 
     return tree_version_list, uuid_set, metadata_root_record
@@ -132,6 +136,8 @@ def get_metadata_root_record_from_top_nodes(
         primary_data_version: str,
         prefix_path: MetadataPath,
         dataset_tree_path: MetadataPath,
+        sub_dataset_id: Optional[UUID],
+        sub_dataset_version: Optional[str],
         auto_create: Optional[bool] = False
 ) -> Optional[MetadataRootRecord]:
 
@@ -182,11 +188,20 @@ def get_metadata_root_record_from_top_nodes(
 
         dataset_level_metadata = Metadata()
         file_tree = FileTree()
-        metadata_root_record = MetadataRootRecord(
-            dataset_id,
-            primary_data_version,
-            dataset_level_metadata,
-            file_tree)
+        if dataset_tree_path != MetadataPath(""):
+            assert sub_dataset_id is not None
+            assert sub_dataset_version is not None
+            metadata_root_record = MetadataRootRecord(
+                sub_dataset_id,
+                sub_dataset_version,
+                dataset_level_metadata,
+                file_tree)
+        else:
+            metadata_root_record = MetadataRootRecord(
+                dataset_id,
+                primary_data_version,
+                dataset_level_metadata,
+                file_tree)
         dataset_tree.add_dataset(dataset_tree_path, metadata_root_record)
     else:
         metadata_root_record = dataset_tree.get_metadata_root_record(

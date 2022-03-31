@@ -33,6 +33,7 @@ class UUIDSet(MappableObject):
         self.uuid_set = dict()
 
     def uuids(self):
+        self.ensure_mapped()
         return self.uuid_set.keys()
 
     def set_version_list(self,
@@ -51,6 +52,7 @@ class UUIDSet(MappableObject):
         Get the version list for uuid. If it is not mapped yet,
         it will be mapped.
         """
+        self.ensure_mapped()
         return self.uuid_set[uuid].read_in()
 
     def unget_version_list(self, uuid):
