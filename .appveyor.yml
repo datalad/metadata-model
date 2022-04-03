@@ -45,8 +45,8 @@
 #     respective CI run configuration).
 
 
-# make repository clone cheap
-shallow_clone: true
+# do not clone repositories shallow because we use versioneer
+shallow_clone: false
 
 
 environment:
