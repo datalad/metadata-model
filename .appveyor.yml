@@ -49,6 +49,10 @@
 shallow_clone: false
 
 
+# Do not build a branch, if a PR with the branch exists
+skip_branch_with_pr: true
+
+
 environment:
   # Do not use `image` as a matrix dimension, to have fine-grained control over
   # what tests run on which platform
