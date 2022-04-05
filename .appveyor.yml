@@ -187,7 +187,7 @@ after_test:
   - ps: Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM -Outfile codecov.exe.SHA256SUM
   - ps: Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM.sig -Outfile codecov.exe.SHA256SUM.sig
   # Disable verification on windows for now because it fails
-  #- ps: gpgv codecov.exe.SHA256SUM.sig codecov.exe.SHA256SUM
+  - ps: gpg.exe --verify codecov.exe.SHA256SUM.sig codecov.exe.SHA256SUM
   - ps: .\codecov.exe -f "coverage.xml"
 
 
