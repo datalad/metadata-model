@@ -1,6 +1,7 @@
 appdirs
-nose
 click
 dataclasses
 fasteners
 coverage
+pytest
+nose

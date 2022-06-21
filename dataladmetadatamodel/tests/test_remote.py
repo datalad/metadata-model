@@ -14,10 +14,13 @@ class TestRemote(unittest.TestCase):
             "git",
             "https://github.com/datalad/test_metadata"
         )
-        self.assertEqual(len(tree_version_list.version_set), 1)
-        self.assertEqual(len(uuid_set.uuid_set), 1)
+        self.assertEqual(len(tree_version_list.version_set), 2)
+        self.assertEqual(len(uuid_set.uuid_set), 2)
 
         for version, element_info in tree_version_list.versioned_elements:
+            # Ignore versions that are not known
+            if version == "73ad0039ade25bd0f6b0dbf9dd13006e3721cc38":
+                break
             time_stamp, dataset_path, dataset_tree = element_info
             dataset_tree = cast(DatasetTree, dataset_tree)
             dataset_tree.read_in()
