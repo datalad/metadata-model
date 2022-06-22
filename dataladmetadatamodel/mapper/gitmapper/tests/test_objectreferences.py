@@ -8,11 +8,6 @@ from typing import (
     Tuple,
 )
 
-from nose.tools import (
-    assert_false,
-    assert_in,
-)
-
 from ..utils import create_git_repo
 
 from ..gitbackend.subprocess import (
@@ -111,10 +106,8 @@ def test_old_reference_conversion():
 
         # Check that the new references exist.
         for i in range(100, 300):
-            assert_in(_create_hash(i), references)
+            assert _create_hash(i) in references
 
         # Check that the old references are gone by trying to update them
-        assert_false(_does_ref_exist(realm, GitReference.LEGACY_BLOBS.value))
-        assert_false(_does_ref_exist(realm, GitReference.LEGACY_TREES.value))
-
-
+        assert _does_ref_exist(realm, GitReference.LEGACY_BLOBS.value) is False
+        assert _does_ref_exist(realm, GitReference.LEGACY_TREES.value) is False

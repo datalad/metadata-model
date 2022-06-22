@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 from typing import (
     Dict,
     List,
+    Tuple,
     Union,
 )
 
@@ -27,7 +28,7 @@ class GitBlobCache:
 
         self.realm = realm
         self.maxsize = maxsize
-        self.cached_objects: List[Union[str, bytes]] = list()
+        self.cached_objects: List[Tuple[Union[str, bytes], str]] = list()
         self.flushed_objects: Dict[Union[str, bytes], str] = dict()
         self.temporary_directory = TemporaryDirectory()
         self.temp_dir_path = Path(self.temporary_directory.name)

@@ -1,9 +1,9 @@
-from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_load_json,
     git_save_json,
-    git_update_ref
+    git_update_ref,
 )
+from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference
 from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
 

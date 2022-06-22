@@ -3,11 +3,6 @@ from collections import defaultdict
 from pathlib import Path
 from unittest.mock import patch
 
-from nose.tools import (
-    assert_equal,
-    assert_in,
-)
-
 from ..utils import create_git_repo
 from ..gitbackend.subprocess import (
     git_ls_tree,
@@ -53,10 +48,7 @@ def test_basic():
 
         lines = git_ls_tree_recursive(str(repo_path), result)
         for path_info in path_infos:
-            assert_in(
-                f"100644 blob {path_info.object_hash}\t{'/'.join(path_info.elements)}",
-                lines
-            )
+            assert f"100644 blob {path_info.object_hash}\t{'/'.join(path_info.elements)}" in lines
 
 
 def test_dir_adding():
@@ -76,10 +68,7 @@ def test_dir_adding():
 
         lines = git_ls_tree(str(repo_path), result)
         for path_info in path_infos:
-            assert_in(
-                f"040000 tree {path_info.object_hash}\t{'/'.join(path_info.elements)}",
-                lines
-            )
+            assert f"040000 tree {path_info.object_hash}\t{'/'.join(path_info.elements)}" in lines
 
 
 def test_dir_overwrite_error():
@@ -100,7 +89,7 @@ def test_dir_overwrite_error():
             add_paths(repo_path, path_infos, root_entries)
             raise RuntimeError("did not get expected ValueError")
         except ValueError as ve:
-            assert_equal(ve.args[0], "cannot convert Directory to File: a")
+            assert ve.args[0] == "cannot convert Directory to File: a"
 
 
 def test_file_overwrite_error():
@@ -121,9 +110,7 @@ def test_file_overwrite_error():
             add_paths(repo_path, path_infos, root_entries)
             raise RuntimeError("did not get expected ValueError")
         except ValueError as ve:
-            assert_equal(
-                ve.args[0],
-                "cannot convert File to Directory: LICENSE")
+            assert ve.args[0], "cannot convert File to Directory: LICENSE"
 
 
 def test_minimal_invocation():
@@ -206,6 +193,4 @@ def test_minimal_invocation():
 
         lines = git_ls_tree_recursive(str(repo_path), result)
         for path_info in path_infos:
-            assert_in(
-                f"100644 blob {path_info.object_hash}\t{'/'.join(path_info.elements)}",
-                lines)
+            assert f"100644 blob {path_info.object_hash}\t{'/'.join(path_info.elements)}" in lines

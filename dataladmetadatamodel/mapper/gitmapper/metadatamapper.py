@@ -1,9 +1,6 @@
 from typing import Dict
 
-from dataladmetadatamodel.mapper.gitmapper.objectreference import (
-    GitReference,
-    add_blob_reference,
-)
+from dataladmetadatamodel.mapper.gitmapper.objectreference import add_blob_reference
 from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_load_str,
     git_save_str,

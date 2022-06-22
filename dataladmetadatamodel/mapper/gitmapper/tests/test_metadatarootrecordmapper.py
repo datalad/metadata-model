@@ -3,6 +3,7 @@ from unittest import mock
 from uuid import UUID
 
 from dataladmetadatamodel.mapper.gitmapper.gitblobcache import hash_blob
+from dataladmetadatamodel.mapper.gitmapper.treeupdater import EntryType
 from dataladmetadatamodel.metadata import Metadata
 from dataladmetadatamodel.metadatapath import MetadataPath
 from dataladmetadatamodel.metadatarootrecord import MetadataRootRecord
@@ -33,6 +34,9 @@ default_paths = [
 class TestMetadataMapper(unittest.TestCase):
 
     def test_basic_unmapping(self):
+        from dataladmetadatamodel.mapper.gitmapper.objectreference import (
+            cached_object_references,
+        )
 
         file_tree = create_file_tree_with_metadata(default_paths, [
             Metadata()
@@ -88,6 +92,12 @@ class TestMetadataMapper(unittest.TestCase):
                         'location': location_3}
                 }
             )
+
+            # check for object references
+            assert (EntryType.File, location_1) in cached_object_references, \
+                "Dataset-level metadata reference not found in object cache"
+            assert (EntryType.Directory, location_3) in cached_object_references, \
+                "File-level metadata tree reference not found in object cache"
 
 
 if __name__ == '__main__':
