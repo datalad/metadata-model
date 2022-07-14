@@ -1,6 +1,6 @@
 appdirs
 click
-dataclasses;python_version < '3.8'
+dataclasses;python_version < '3.7'
 fasteners
 coverage
 nose
