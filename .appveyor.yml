@@ -62,10 +62,18 @@ environment:
     # List a CI run for each platform first, to have immediate access when there
     # is a need for debugging
 
-    # Ubuntu core tests
-    - ID: Ubu20
+    # Ubuntu core tests python 3.7
+    - ID: Ubu20P37
       DTS: dataladmetadatamodel
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      PY: 3.7
+      INSTALL_SYSPKGS: python3-virtualenv
+      CODECOV_PLATFORM: linux
+    # Ubuntu core tests python 3.8
+    - ID: Ubu20P37
+      DTS: dataladmetadatamodel
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      PY: 3.8
       INSTALL_SYSPKGS: python3-virtualenv
       CODECOV_PLATFORM: linux
     # Windows core tests
