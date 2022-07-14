@@ -70,7 +70,7 @@ environment:
       INSTALL_SYSPKGS: python3-virtualenv
       CODECOV_PLATFORM: linux
     # Ubuntu core tests python 3.8
-    - ID: Ubu20P37
+    - ID: Ubu20P38
       DTS: dataladmetadatamodel
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       PY: 3.8
