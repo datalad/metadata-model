@@ -38,11 +38,5 @@ setuptools.setup(
         "console_scripts": [
             "mdc=tools.metadata_creator.main:main"
         ]
-    },
-    install_requires=[
-        "appdirs",
-        "click",
-        "dataclasses",
-        "fasteners"
-    ]
+    }
 )
