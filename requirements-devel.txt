@@ -2,3 +2,6 @@ appdirs
 click
 dataclasses;python_version < '3.8'
 fasteners
+coverage
+nose
+pytest
