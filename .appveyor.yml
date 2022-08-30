@@ -171,7 +171,7 @@ test_script:
   - cd __testhome__
     # run test selecion (--traverse-namespace needed from Python 3.8 onwards)
   - cmd: python -m pytest -s -v --cov=dataladmetadatamodel ..\%DTS%
-  - sh:  pytest -m pytest -s -v --cov=dataladmetadatamodel ../${DTS}
+  - sh:  python -m pytest -s -v --cov=dataladmetadatamodel ../${DTS}
 
 
 after_test:
