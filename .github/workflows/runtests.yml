@@ -1,4 +1,4 @@
-name: Run nose tests
+name: Run tests via pytest
 on:
   push:
     branches:
@@ -26,5 +26,5 @@ jobs:
           git config --global init.defaultBranch main
           git config --global user.email "test.action@example.com"
           git config --global user.name "Test Action"
-      - name: Run nosetests
-        run: nosetests dataladmetadatamodel
+      - name: Run pytest
+        run: python -m pytest --cov=dataladmetadatamodel dataladmetadatamodel
