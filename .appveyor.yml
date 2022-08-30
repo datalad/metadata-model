@@ -170,8 +170,8 @@ test_script:
   - sh: mkdir __testhome__
   - cd __testhome__
     # run test selecion (--traverse-namespace needed from Python 3.8 onwards)
-  - cmd: python -m nose --traverse-namespace -s -v --with-coverage --cover-package=dataladmetadatamodel %DTS%
-  - sh:  python -m nose --traverse-namespace -s -v --with-coverage --cover-package=dataladmetadatamodel ${DTS}
+  - cmd: python -m pytest -s -v --cov=dataladmetadatamodel ..\%DTS%
+  - sh:  pytest -m pytest -s -v --cov=dataladmetadatamodel ../${DTS}
 
 
 after_test:
