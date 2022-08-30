@@ -4,10 +4,9 @@ import unittest
 from typing import List
 from unittest import mock
 
-from dataladmetadatamodel.metadatapath import MetadataPath
-from dataladmetadatamodel.mtreenode import MTreeNode
-from dataladmetadatamodel.text import Text
-from dataladmetadatamodel.mapper.reference import Reference
+from ...reference import Reference
+from ....mtreenode import MTreeNode
+from ....text import Text
 
 
 tree_location = "a000000000000000000000000000000000000000"
@@ -34,8 +33,8 @@ class TestMTreeNodeMapper(unittest.TestCase):
     def test_basic_unmapping(self):
 
         realm = "/tmp/t1"
-        file_names = ["a", "b", "c"]
-        sub_dir_names = ["sub0", "sub1", "sub2"]
+        file_names = ["a a", "b b", "c c"]
+        sub_dir_names = ["sub 0", "sub 1", "sub 2"]
 
         root_node = create_tree(file_names, sub_dir_names)
 

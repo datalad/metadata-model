@@ -1,10 +1,11 @@
 
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+from .gitbackend.subprocess import (
     git_read_tree_node,
     git_save_tree_node,
 )
-from dataladmetadatamodel.mapper.mapper import Mapper
-from dataladmetadatamodel.mapper.reference import Reference
+from .utils import split_git_lstree_line
+from ..mapper import Mapper
+from ..reference import Reference
 
 
 class MTreeNodeGitMapper(Mapper):
@@ -25,23 +26,24 @@ class MTreeNodeGitMapper(Mapper):
         lines = git_read_tree_node(realm,
                                    reference.location)
 
-        for entry in [line.split() for line in lines]:
-            if entry[1] == "tree":
+        for line in lines:
+            flag, node_type, hash_value, name = split_git_lstree_line(line)
+            fixed_fields, name = line.split("\t")
+            flag, node_type, hash_value = fixed_fields.split(" ")
+            if node_type == "tree":
                 child = MTreeNode(
                     leaf_class=mtree_node.leaf_class,
                     realm=realm,
-                    reference=Reference("MTreeNode",
-                                        entry[2]))
+                    reference=Reference("MTreeNode", hash_value))
 
-            elif entry[1] == "blob":
+            elif node_type == "blob":
                 child = mtree_node.leaf_class.get_empty_instance(
                     realm=realm,
-                    reference=Reference(mtree_node.leaf_class_name,
-                                        entry[2]))
+                    reference=Reference(mtree_node.leaf_class_name, hash_value))
 
             else:
-                raise ValueError(f"unknown git tree entry type: {entry[1]}")
-            mtree_node.child_nodes[entry[3]] = child
+                raise ValueError(f"unknown git tree entry type: {node_type}")
+            mtree_node.child_nodes[name] = child
 
     def map_out_impl(self,
                      mtree_node: "MTreeNode",

@@ -7,7 +7,10 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
+from typing import (
+    Dict,
+    Tuple,
+)
 
 from fasteners import InterProcessLock
 
@@ -110,3 +113,9 @@ def create_git_repo(location: Path, content: Dict):
         stdout=subprocess.PIPE
     )
     return commit.stdout.decode().splitlines()[0].split()[1]
+
+
+def split_git_lstree_line(line: str) -> Tuple[str, str, str, str]:
+    fixed_fields, name = line.split("\t")
+    flag, node_type, hash_value = fixed_fields.split(" ")
+    return flag, node_type, hash_value, name

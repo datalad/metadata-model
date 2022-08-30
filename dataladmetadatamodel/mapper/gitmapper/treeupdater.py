@@ -23,6 +23,7 @@ from typing import (
 
 from .gitbackend.subprocess import git_read_tree_node
 from .gitbackend.subprocess import git_save_tree_node
+from .utils import split_git_lstree_line
 
 
 logger = logging.getLogger("datalad.metalad.gitmapper.treeupdater")
@@ -135,7 +136,7 @@ def _check_entries_validity(leaf_infos: List[PathInfo],
 def _get_dir(repo: Path, object_hash: str) -> List:
     result = []
     for entry in git_read_tree_node(str(repo), object_hash):
-        _, object_type, object_hash, name = entry.split()
+        _, object_type, object_hash, name = split_git_lstree_line(entry)
         result.append(
             DirEntry(
                 type=EntryType.File

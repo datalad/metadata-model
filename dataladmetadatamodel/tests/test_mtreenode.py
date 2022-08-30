@@ -14,7 +14,8 @@ default_paths = [
     "a/1",
     "a/b/0",
     "a/b/1",
-    "a/b/2"
+    "a/b/2",
+    "a a/b b b/2 2 2 2",
 ]
 
 

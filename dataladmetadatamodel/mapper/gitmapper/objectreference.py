@@ -8,6 +8,7 @@ from typing import (
 
 from ...mapper.reference import none_location
 from .treeupdater import EntryType
+from .utils import split_git_lstree_line
 
 
 logger = logging.getLogger("datalad.metalad.gitmapper.objectreference")
@@ -44,7 +45,7 @@ def add_legacy_store_entries_from(realm: Path,
 
     try:
         legacy_entries = (
-            tuple(line.split())
+            split_git_lstree_line(line)
             for line in git_ls_tree(str(realm), reference.value))
 
         logger.info(f"converting legacy reference store at {realm} (ref: "

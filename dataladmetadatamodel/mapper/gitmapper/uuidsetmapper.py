@@ -1,13 +1,14 @@
 from uuid import UUID
 
-from dataladmetadatamodel.mapper.gitmapper.objectreference import GitReference
-from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
+from .gitbackend.subprocess import (
     git_ls_tree,
     git_save_tree,
     git_update_ref
 )
-from dataladmetadatamodel.mapper.mapper import Mapper
-from dataladmetadatamodel.mapper.reference import Reference
+from .objectreference import GitReference
+from .utils import split_git_lstree_line
+from ..mapper import Mapper
+from ..reference import Reference
 
 
 class UUIDSetGitMapper(Mapper):
@@ -26,7 +27,7 @@ class UUIDSetGitMapper(Mapper):
 
         uuid_set.uuid_set = dict()
         for line in git_ls_tree(realm, reference.location):
-            line_elements = line.split()
+            line_elements = split_git_lstree_line(line)
             version_list = VersionList(
                 realm=realm,
                 reference=Reference("VersionList", line_elements[2]))

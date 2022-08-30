@@ -8,8 +8,6 @@ from typing import (
     Tuple,
 )
 
-from ..utils import create_git_repo
-
 from ..gitbackend.subprocess import (
     git_ls_tree,
     git_save_tree_node,
@@ -20,6 +18,10 @@ from ..objectreference import (
     flush_object_references,
 )
 from ..treeupdater import EntryType
+from ..utils import (
+    create_git_repo,
+    split_git_lstree_line,
+)
 
 
 def _does_ref_exist(realm: Path, reference: str) -> bool:
@@ -68,8 +70,10 @@ def _write_legacy_tree(realm: Path,
 
 def _read_tree(realm: Path, reference: str) -> Iterable[Tuple[str, str]]:
     return (
-        (line.split()[3], line.split()[2])
-        for line in git_ls_tree(str(realm), reference))
+        (element[3], element[2])
+        for element in (
+            split_git_lstree_line(line)
+            for line in git_ls_tree(str(realm), reference)))
 
 
 def _read_reference_tree(realm: Path,
