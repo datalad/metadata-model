@@ -13,6 +13,25 @@ tree_location = "a000000000000000000000000000000000000000"
 file_location = "a001000000000000000000000000000000000001"
 
 
+default_file_names = [
+    "a a",
+    "b b",
+    ";< |F|| >- \\.",
+    "🐶🐷",
+    "\\F\\",
+    "\\ .dat\\|",
+]
+
+default_sub_dir_names = [
+    "sub 0",
+    "sub 1",
+    "sub 2",
+    ";< [A] ||| >- \\.",
+    "🐶 [B] 🐷 .datc",
+    "\\[C]",
+]
+
+
 def create_tree(file_names: List[str],
                 sub_dir_names: List[str]
                 ) -> MTreeNode:
@@ -33,8 +52,8 @@ class TestMTreeNodeMapper(unittest.TestCase):
     def test_basic_unmapping(self):
 
         realm = "/tmp/t1"
-        file_names = ["a a", "b b", "c c"]
-        sub_dir_names = ["sub 0", "sub 1", "sub 2"]
+        file_names = default_file_names[3:6] #["a a", "b b", "c c"]
+        sub_dir_names = default_sub_dir_names[3:6] #["sub 0", "sub 1", "sub 2"]
 
         root_node = create_tree(file_names, sub_dir_names)
 
@@ -89,8 +108,8 @@ class TestMTreeNodeMapper(unittest.TestCase):
         self.assertEqual(len(tree.child_nodes), 0)
 
     def test_mapping_end_to_end(self):
-        file_names = ["a", "b", "c"]
-        sub_dir_names = ["sub0", "sub1", "sub2"]
+        file_names = default_file_names[3:6]  #["a", "b", "c"]
+        sub_dir_names = default_sub_dir_names[3:6]  #["sub0", "sub1", "sub2"]
 
         with tempfile.TemporaryDirectory() as realm:
 
@@ -108,25 +127,26 @@ class TestMTreeNodeMapper(unittest.TestCase):
             tree_elements = list(new_root_node.get_paths_recursive())
             self.assertEqual(len(tree_elements),
                              len(file_names) * len(sub_dir_names))
+
             self.assertEqual(
-                [str(tree_element[0]) for tree_element in tree_elements],
-                [
+                sorted([str(tree_element[0]) for tree_element in tree_elements]),
+                sorted([
                     sub_dir_name + "/" + file_name
                     for sub_dir_name in sub_dir_names
                     for file_name in file_names
-                ]
+                ])
             )
 
             self.assertEqual(
-                [
+                sorted([
                     tree_element[1].read_in().content
                     for tree_element in tree_elements
-                ],
-                [
+                ]),
+                sorted([
                     f"content of: /{sub_dir_name}/{file_name}"
                     for sub_dir_name in sub_dir_names
                     for file_name in file_names
-                ]
+                ])
             )
 
 

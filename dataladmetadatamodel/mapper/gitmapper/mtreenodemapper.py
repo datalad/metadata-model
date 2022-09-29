@@ -1,3 +1,4 @@
+import codecs
 
 from .gitbackend.subprocess import (
     git_read_tree_node,
@@ -28,8 +29,11 @@ class MTreeNodeGitMapper(Mapper):
 
         for line in lines:
             flag, node_type, hash_value, name = split_git_lstree_line(line)
-            fixed_fields, name = line.split("\t")
-            flag, node_type, hash_value = fixed_fields.split(" ")
+            #fixed_fields, name = line.split("\t")
+            #flag, node_type, hash_value = fixed_fields.split(" ")
+            if name.startswith('"'):
+                name = codecs.escape_decode(name[1:-1])[0].decode("utf-8")
+
             if node_type == "tree":
                 child = MTreeNode(
                     leaf_class=mtree_node.leaf_class,
