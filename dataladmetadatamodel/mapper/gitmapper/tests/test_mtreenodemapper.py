@@ -1,9 +1,11 @@
+import codecs
 import subprocess
 import tempfile
 import unittest
 from typing import List
 from unittest import mock
 
+from ..mtreenodemapper import MTreeNodeGitMapper
 from ...reference import Reference
 from ....mtreenode import MTreeNode
 from ....text import Text
@@ -20,6 +22,10 @@ default_file_names = [
     "🐶🐷",
     "\\F\\",
     "\\ .dat\\|",
+    '"',
+    '\\"',
+    "\\",
+    "'",
 ]
 
 default_sub_dir_names = [
@@ -52,8 +58,8 @@ class TestMTreeNodeMapper(unittest.TestCase):
     def test_basic_unmapping(self):
 
         realm = "/tmp/t1"
-        file_names = default_file_names[3:6] #["a a", "b b", "c c"]
-        sub_dir_names = default_sub_dir_names[3:6] #["sub 0", "sub 1", "sub 2"]
+        file_names = default_file_names
+        sub_dir_names = default_sub_dir_names
 
         root_node = create_tree(file_names, sub_dir_names)
 
@@ -70,26 +76,39 @@ class TestMTreeNodeMapper(unittest.TestCase):
 
             root_node.write_out(realm, "git")
 
-            # Expect one (root) plus three (sub-dir trees) calls
-            self.assertEqual(save_tree_node.call_count, 4)
+            # Expect one (root) plus len(sub-dir trees) calls
+            assert save_tree_node.call_count == 1 + len(sub_dir_names)
 
             expected_sub_tree_calls = [
                 mock.call(
                     realm,
                     [
-                        ("100644", "blob", file_location, file_name)
+                        (
+                            "100644",
+                            "blob",
+                            file_location,
+                            MTreeNodeGitMapper.escape_double_quotes(file_name)
+                        )
                         for file_name in file_names
                     ]
                 )
                 for _ in range(len(sub_dir_names))
             ]
-            save_tree_node.assert_has_calls(expected_sub_tree_calls, any_order=True)
+            save_tree_node.assert_has_calls(
+                expected_sub_tree_calls,
+                any_order=True
+            )
 
             expected_root_calls = [
                 mock.call(
                     realm,
                     [
-                        ("040000", "tree", tree_location, sub_dir_name)
+                        (
+                            "040000",
+                            "tree",
+                            tree_location,
+                            MTreeNodeGitMapper.escape_double_quotes(sub_dir_name)
+                        )
                         for sub_dir_name in sub_dir_names
                     ]
                 )
@@ -108,8 +127,8 @@ class TestMTreeNodeMapper(unittest.TestCase):
         self.assertEqual(len(tree.child_nodes), 0)
 
     def test_mapping_end_to_end(self):
-        file_names = default_file_names[3:6]  #["a", "b", "c"]
-        sub_dir_names = default_sub_dir_names[3:6]  #["sub0", "sub1", "sub2"]
+        file_names = default_file_names
+        sub_dir_names = default_sub_dir_names
 
         with tempfile.TemporaryDirectory() as realm:
 
@@ -125,29 +144,38 @@ class TestMTreeNodeMapper(unittest.TestCase):
             new_root_node.read_in()
 
             tree_elements = list(new_root_node.get_paths_recursive())
-            self.assertEqual(len(tree_elements),
-                             len(file_names) * len(sub_dir_names))
+            assert len(tree_elements) == len(file_names) * len(sub_dir_names)
 
-            self.assertEqual(
-                sorted([str(tree_element[0]) for tree_element in tree_elements]),
-                sorted([
+            assert (
+                sorted([str(tree_element[0]) for tree_element in tree_elements])
+                == sorted([
                     sub_dir_name + "/" + file_name
                     for sub_dir_name in sub_dir_names
                     for file_name in file_names
                 ])
             )
 
-            self.assertEqual(
+            assert (
                 sorted([
                     tree_element[1].read_in().content
                     for tree_element in tree_elements
-                ]),
-                sorted([
+                ])
+                == sorted([
                     f"content of: /{sub_dir_name}/{file_name}"
                     for sub_dir_name in sub_dir_names
                     for file_name in file_names
                 ])
             )
+
+
+def test_decode_assumptions():
+    encoded_decoded_pairs = [
+        ('\\"', '"'),
+        ('\\\\', '\\'),
+        ('\\303\\204', 'Ä'),
+    ]
+    for encoded, decoded in encoded_decoded_pairs:
+        assert codecs.escape_decode(encoded)[0].decode("utf-8") == decoded
 
 
 if __name__ == '__main__':

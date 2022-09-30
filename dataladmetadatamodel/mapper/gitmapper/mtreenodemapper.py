@@ -29,8 +29,6 @@ class MTreeNodeGitMapper(Mapper):
 
         for line in lines:
             flag, node_type, hash_value, name = split_git_lstree_line(line)
-            #fixed_fields, name = line.split("\t")
-            #flag, node_type, hash_value = fixed_fields.split(" ")
             if name.startswith('"'):
                 name = codecs.escape_decode(name[1:-1])[0].decode("utf-8")
 
@@ -69,9 +67,22 @@ class MTreeNodeGitMapper(Mapper):
                 "040000" if isinstance(child_node, MTreeNode) else "100644",
                 "tree" if isinstance(child_node, MTreeNode) else "blob",
                 child_node.reference.location,
-                child_name
+                self.escape_double_quotes(child_name)
             )
             for child_name, child_node in mtree_node.child_nodes.items()
         ]
         mtree_node_location = git_save_tree_node(realm, dir_entries)
         return Reference("MTreeNode", mtree_node_location)
+
+    @classmethod
+    def escape_double_quotes(cls, input_string: str) -> str:
+        if '"' in input_string:
+            return (
+                '"'
+                + input_string
+                .replace('\\', '\\\\')
+                .replace('\"', '\\"')
+                + '"'
+            )
+        else:
+            return input_string
