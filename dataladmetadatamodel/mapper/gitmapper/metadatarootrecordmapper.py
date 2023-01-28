@@ -4,7 +4,10 @@ from dataladmetadatamodel.mapper.gitmapper.gitbackend.subprocess import (
     git_load_json,
     git_save_json,
 )
-from dataladmetadatamodel.mapper.gitmapper.objectreference import add_blob_reference
+from dataladmetadatamodel.mapper.gitmapper.objectreference import (
+    add_blob_reference,
+    add_tree_reference,
+)
 from dataladmetadatamodel.mapper.mapper import Mapper
 from dataladmetadatamodel.mapper.reference import Reference
 
@@ -72,6 +75,7 @@ class MetadataRootRecordGitMapper(Mapper):
                 realm,
                 "git",
                 force_write)
+            add_tree_reference(file_tree_reference.location)
 
         if mrr.dataset_level_metadata is None:
             dataset_level_metadata_reference = Reference.get_none_reference("Metadata")
