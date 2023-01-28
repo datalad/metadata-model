@@ -77,10 +77,12 @@ class MetadataGitMapper(Mapper):
         metadata_blob_location = git_save_str(realm, metadata.to_json())
         add_blob_reference(metadata_blob_location)
 
-        # Save reference. NB we don't have to save
-        # metadata_reference_blob_location to the
-        # reference objects because they will be
-        # reachable by a git tree entry.
+        # Save reference. NB we don't add the metadata reference to the object
+        # tree here. Our "owner" will do that if necessary. For example, the
+        # "MetadataRootRecord"-mapper will save the reference if it is used for
+        # dataset-level metadata. It will not save it, if it is used for
+        # file-level metadata, because that is reachable in a git-tree that is
+        # added to the object tree.
         metadata_reference_blob_location = git_save_str(
             realm,
             Reference(
