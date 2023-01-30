@@ -7,14 +7,19 @@ from typing import (
     Iterable,
     Tuple,
 )
+from unittest.mock import patch
 
 from ..gitbackend.subprocess import (
     git_ls_tree,
     git_save_tree_node,
     git_update_ref,
 )
+from ...reference import none_location
 from ..objectreference import (
     GitReference,
+    add_blob_reference,
+    add_object_reference,
+    add_tree_reference,
     flush_object_references,
 )
 from ..treeupdater import EntryType
@@ -115,3 +120,11 @@ def test_old_reference_conversion():
         # Check that the old references are gone by trying to update them
         assert _does_ref_exist(realm, GitReference.LEGACY_BLOBS.value) is False
         assert _does_ref_exist(realm, GitReference.LEGACY_TREES.value) is False
+
+
+def test_none_reference_warning():
+    with patch("dataladmetadatamodel.mapper.gitmapper.objectreference.logger") as logger_mock:
+        add_object_reference(EntryType.Directory, none_location)
+        add_blob_reference(none_location)
+        add_tree_reference(none_location)
+    assert logger_mock.warning.call_count == 3
