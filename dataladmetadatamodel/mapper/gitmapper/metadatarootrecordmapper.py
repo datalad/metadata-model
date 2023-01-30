@@ -75,7 +75,8 @@ class MetadataRootRecordGitMapper(Mapper):
                 realm,
                 "git",
                 force_write)
-            add_tree_reference(file_tree_reference.location)
+            if not file_tree_reference.is_none_reference():
+                add_tree_reference(file_tree_reference.location)
 
         if mrr.dataset_level_metadata is None:
             dataset_level_metadata_reference = Reference.get_none_reference("Metadata")
