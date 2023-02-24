@@ -215,15 +215,16 @@ def get_metadata_root_record_from_top_nodes(
                 file_tree=FileTree())
             dataset_tree.add_dataset(MetadataPath(""), root_mrr)
         else:
-            root_mrr = dataset_tree.get_metadata_root_record(
-                dataset_tree_path)
+            root_mrr = dataset_tree.get_metadata_root_record(MetadataPath(""))
 
-        root_uuid_version_list.set_versioned_element(
-            primary_data_version=root_dataset_version,
-            time_stamp=str(time.time()),
-            prefix_path=prefix_path,
-            element=root_mrr)
+        if (root_dataset_version, prefix_path) not in root_uuid_version_list.versions_and_prefix_paths():
+            root_uuid_version_list.set_versioned_element(
+                primary_data_version=root_dataset_version,
+                time_stamp=str(time.time()),
+                prefix_path=prefix_path,
+                element=root_mrr)
 
+        prefix_path = MetadataPath("")
     else:
 
         # Get the dataset tree
@@ -262,10 +263,11 @@ def get_metadata_root_record_from_top_nodes(
         metadata_root_record = dataset_tree.get_metadata_root_record(
             dataset_tree_path)
 
-    uuid_version_list.set_versioned_element(
-        primary_data_version,
-        str(time.time()),
-        dataset_tree_path,
-        metadata_root_record)
+    if (primary_data_version, prefix_path) not in uuid_version_list.versions_and_prefix_paths():
+        uuid_version_list.set_versioned_element(
+            primary_data_version,
+            str(time.time()),
+            dataset_tree_path,
+            metadata_root_record)
 
     return metadata_root_record
