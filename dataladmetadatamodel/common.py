@@ -265,9 +265,9 @@ def get_metadata_root_record_from_top_nodes(
 
     if (primary_data_version, prefix_path) not in uuid_version_list.versions_and_prefix_paths():
         uuid_version_list.set_versioned_element(
-            primary_data_version,
-            str(time.time()),
-            dataset_tree_path,
-            metadata_root_record)
+            primary_data_version=primary_data_version,
+            time_stamp=str(time.time()),
+            prefix_path=prefix_path,
+            element=metadata_root_record)
 
     return metadata_root_record
