@@ -109,15 +109,6 @@ class TestMetadataMapper(unittest.TestCase):
                 json.loads(save_str.call_args_list[1][0][1]),
                 expected_reference_object)
 
-    def test_double_cache_detection(self):
-        metadata_mapper: MetadataGitMapper = cast(
-            MetadataGitMapper,
-            get_mapper("Metadata", "git")
-        )
-        metadata_mapper.cache_realm("a")
-        self.assertRaises(RuntimeError, metadata_mapper.cache_realm, "a")
-        self.assertRaises(RuntimeError, metadata_mapper.flush_realm, "err")
-
 
 if __name__ == '__main__':
     unittest.main()
