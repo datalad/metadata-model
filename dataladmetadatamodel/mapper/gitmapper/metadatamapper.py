@@ -30,7 +30,6 @@ class MetadataGitMapper(Mapper):
         if cache is None:
             raise RuntimeError(f"realm is not cached: {realm}")
         cache.flush()
-        del cls.metadata_caches[realm]
 
     def map_in_impl(self,
                     metadata: "Metadata",
