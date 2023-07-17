@@ -45,8 +45,14 @@ The model elements have to be persisted on a storage backend.
 storage layer, that is to a large degree independent of the model layer. 
 The intention is to support multiple storage backends in the past.
 
-Currently only one storage backend is supported:
+Currently, only one storage backend is supported:
 
 - `git-mapping` -- a storage backend that stores a metadata model in a
 git repository. The model objects are stored outside of existing branches.
 They are referenced by `datalad`-specific git-references under `refs/datalad/*`
+
+
+## Acknowledgements
+
+This DataLad extension was developed with support from the German Federal Ministry of Education and Research (BMBF 01GQ1905), and the US National Science Foundation (NSF 1912266).
+
