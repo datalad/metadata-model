@@ -5,8 +5,8 @@
 
 # Datalad Metadata Model
 
-This software implements the metadata model that datalad and datalad-metalad will
-use in the future (datalad-metalad>=0.3.0) to handle metadata.
+This software implements the metadata model that datalad and datalad-metalad 
+(from version 0.3.0) use to store metadata.
 
 #### Model Elements (the model layer)
 The metadata model is defined by the API of the top-level
