@@ -1,13 +1,10 @@
 import json
 import unittest
 from pathlib import Path
-from typing import cast
 from unittest import mock
 
 from .... import version_string
 from ....tests.utils import get_location
-from dataladmetadatamodel.mapper import get_mapper
-from dataladmetadatamodel.mapper.gitmapper.metadatamapper import MetadataGitMapper
 from dataladmetadatamodel.mapper.gitmapper.objectreference import flush_object_references
 from dataladmetadatamodel.metadata import (
     ExtractorConfiguration,
@@ -108,15 +105,6 @@ class TestMetadataMapper(unittest.TestCase):
             self.assertEqual(
                 json.loads(save_str.call_args_list[1][0][1]),
                 expected_reference_object)
-
-    def test_double_cache_detection(self):
-        metadata_mapper: MetadataGitMapper = cast(
-            MetadataGitMapper,
-            get_mapper("Metadata", "git")
-        )
-        metadata_mapper.cache_realm("a")
-        self.assertRaises(RuntimeError, metadata_mapper.cache_realm, "a")
-        self.assertRaises(RuntimeError, metadata_mapper.flush_realm, "err")
 
 
 if __name__ == '__main__':

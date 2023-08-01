@@ -21,9 +21,8 @@ class MetadataGitMapper(Mapper):
 
     @classmethod
     def cache_realm(cls, realm: str):
-        if cls.get_cache(realm) is not None:
-            raise RuntimeError(f"already caching realm: {realm}")
-        cls.metadata_caches[realm] = GitBlobCache(realm)
+        if cls.get_cache(realm) is None:
+            cls.metadata_caches[realm] = GitBlobCache(realm)
 
     @classmethod
     def flush_realm(cls, realm: str):
@@ -31,7 +30,6 @@ class MetadataGitMapper(Mapper):
         if cache is None:
             raise RuntimeError(f"realm is not cached: {realm}")
         cache.flush()
-        del cls.metadata_caches[realm]
 
     def map_in_impl(self,
                     metadata: "Metadata",
