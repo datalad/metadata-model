@@ -18,12 +18,11 @@ class MetadataPath(PurePosixPath):
                 cls,
                 "/".join(original_path.parts))
         else:
-            created_path = super().__new__(
-                cls,
-                "/".join(original_path.parts[1:]))
+            modified_path = "/".join(original_path.parts[1:])
+            created_path = super().__new__(cls, modified_path)
             logger.warning(
                 f"Denied creation of absolute metadata path: {original_path}, "
-                f"created {created_path} instead. This is considered an error "
+                f"created {modified_path} instead. This is considered an error "
                 f"in the calling code.")
 
         return created_path
